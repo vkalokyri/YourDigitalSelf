@@ -1,0 +1,20 @@
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <header
+        android:fragment="com.rutgers.neemi.SettingsActivity$DataSyncPreferenceFragment"
+        android:icon="@drawable/ic_sync_black_24dp"
+        android:title="@string/pref_header_data_sync">
+        <extra android:name="settings" android:value="prefs_sync" ></extra>
+    </header>
+    <header
+        android:fragment="com.rutgers.neemi.SettingsActivity$DataSyncPreferenceFragment"
+    android:icon="@drawable/ic_notifications_black_24dp"
+    android:title="Notifications" >
+    <extra android:name="settings" android:value="prefs_notification" ></extra>
+</header>
+
+
+    </preference-headers>

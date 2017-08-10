@@ -1,0 +1,406 @@
+#
+# generated on 2017/08/07 10:44:15
+#
+# --table-start--
+dataClass=com.rutgers.neemi.model.Email
+tableName=Email
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=timestamp
+# --field-end--
+# --field-start--
+fieldName=id
+# --field-end--
+# --field-start--
+fieldName=threadId
+# --field-end--
+# --field-start--
+fieldName=historyId
+# --field-end--
+# --field-start--
+fieldName=from
+# --field-end--
+# --field-start--
+fieldName=to
+# --field-end--
+# --field-start--
+fieldName=cc
+# --field-end--
+# --field-start--
+fieldName=bcc
+# --field-end--
+# --field-start--
+fieldName=date
+# --field-end--
+# --field-start--
+fieldName=textContent
+# --field-end--
+# --field-start--
+fieldName=htmlContent
+# --field-end--
+# --field-start--
+fieldName=hasAttachments
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.Event
+tableName=Event
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=timestamp
+# --field-end--
+# --field-start--
+fieldName=id
+columnName=ID
+# --field-end--
+# --field-start--
+fieldName=title
+# --field-end--
+# --field-start--
+fieldName=description
+# --field-end--
+# --field-start--
+fieldName=creator
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=dateCreated
+# --field-end--
+# --field-start--
+fieldName=startTime
+# --field-end--
+# --field-start--
+fieldName=endTime
+# --field-end--
+# --field-start--
+fieldName=location
+# --field-end--
+# --field-start--
+fieldName=organizer
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+foreignAutoCreate=true
+# --field-end--
+# --field-start--
+fieldName=source
+# --field-end--
+# --field-start--
+fieldName=place
+columnName=place_id
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+foreignAutoCreate=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.Person
+tableName=Person
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=id
+columnName=ID
+# --field-end--
+# --field-start--
+fieldName=name
+columnName=NAME
+# --field-end--
+# --field-start--
+fieldName=email
+columnName=EMAIL
+# --field-end--
+# --field-start--
+fieldName=isSelf
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.Album
+tableName=Album
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=id
+columnName=ID
+# --field-end--
+# --field-start--
+fieldName=name
+# --field-end--
+# --field-start--
+fieldName=description
+# --field-end--
+# --field-start--
+fieldName=created_time
+# --field-end--
+# --field-start--
+fieldName=event
+columnName=event_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=place
+columnName=place_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=creator
+columnName=creator_id
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.Photo
+tableName=Photo
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=timestamp
+# --field-end--
+# --field-start--
+fieldName=id
+# --field-end--
+# --field-start--
+fieldName=name
+# --field-end--
+# --field-start--
+fieldName=link
+# --field-end--
+# --field-start--
+fieldName=album
+columnName=album_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=created_time
+# --field-end--
+# --field-start--
+fieldName=event
+columnName=event_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=place
+columnName=place_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=creator
+columnName=creator_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=picture
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.Place
+tableName=Place
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=id
+columnName=ID
+# --field-end--
+# --field-start--
+fieldName=name
+# --field-end--
+# --field-start--
+fieldName=city
+# --field-end--
+# --field-start--
+fieldName=country
+# --field-end--
+# --field-start--
+fieldName=latitude
+columnName=LATITUDE
+# --field-end--
+# --field-start--
+fieldName=longitude
+columnName=LONGITUDE
+# --field-end--
+# --field-start--
+fieldName=region
+# --field-end--
+# --field-start--
+fieldName=state
+# --field-end--
+# --field-start--
+fieldName=street
+# --field-end--
+# --field-start--
+fieldName=zip
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.EventAttendees
+tableName=EventAttendees
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=attendee
+columnName=person_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=event
+columnName=event_id
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.PhotoTags
+tableName=PhotoTags
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=tagged
+columnName=person_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=photo
+columnName=photo_id
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.PaymentHasCategory
+tableName=PaymentHasCategory
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=transaction
+columnName=transaction_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=category
+columnName=category_id
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.Payment
+tableName=Payment
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=id
+columnName=ID
+# --field-end--
+# --field-start--
+fieldName=timestamp
+# --field-end--
+# --field-start--
+fieldName=name
+# --field-end--
+# --field-start--
+fieldName=description
+# --field-end--
+# --field-start--
+fieldName=account_id
+# --field-end--
+# --field-start--
+fieldName=transaction_type
+# --field-end--
+# --field-start--
+fieldName=amount
+# --field-end--
+# --field-start--
+fieldName=payee
+columnName=payee_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=payer
+columnName=payer_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=payment_method
+# --field-end--
+# --field-start--
+fieldName=date
+# --field-end--
+# --field-start--
+fieldName=place
+columnName=place_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=pending
+# --field-end--
+# --field-start--
+fieldName=account_owner
+columnName=owner_id
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.PaymentCategory
+tableName=PaymentCategory
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=categoryName
+columnName=category
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################

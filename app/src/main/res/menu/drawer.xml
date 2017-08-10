@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group  android:id="@+id/grp1" android:checkableBehavior="single">
+        <item
+            android:id="@+id/restaurants"
+            android:checked="false"
+            android:icon="@drawable/restaurant"
+            android:title="Restaurants" />
+
+        <item android:id="@+id/trips"
+            android:icon="@drawable/travel"
+            android:title="Trips" />
+    </group>
+
+    <group android:id="@+id/grp2" android:checkableBehavior="single">
+        <item android:id="@+id/action_settings"
+            android:icon="@drawable/settings"
+            android:title="Settings" />
+    </group>
+</menu>
