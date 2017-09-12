@@ -17,6 +17,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+
 
 public class SettingsFragment extends Fragment {
 
@@ -35,7 +43,7 @@ public class SettingsFragment extends Fragment {
             R.drawable.google_calendar,
             R.drawable.gmail_icon,
             R.drawable.bank,
-            R.drawable.location,
+            R.drawable.location
     };
 
     @Override
@@ -59,8 +67,55 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                String Slecteditem= itemname[+position];
-                Toast.makeText(getActivity(), Slecteditem, Toast.LENGTH_SHORT).show();
+                String Selecteditem= itemname[+position];
+
+                if (Selecteditem.equalsIgnoreCase("Google Calendar")){
+                    Intent myIntent = new Intent(getActivity(), GcalActivity.class);
+                    startActivity(myIntent);
+                }
+                 if (Selecteditem.equalsIgnoreCase("Facebook")) {
+                     Intent myIntent = new Intent(getActivity(), FacebookActivity.class);
+                     startActivity(myIntent);
+                 }
+                if (Selecteditem.equalsIgnoreCase("Gmail")){
+                    Intent myIntent = new Intent(getActivity(), GmailActivity.class);
+                    startActivity(myIntent);
+                }
+                if (Selecteditem.equalsIgnoreCase("Bank data")){
+                    ArrayList accountNames = new ArrayList();
+                    String line;
+                    try {
+                        FileInputStream fis = getActivity().openFileInput("BankAccounts");
+                        InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
+                        BufferedReader br = new BufferedReader(isr);
+                        while ((line = br.readLine()) != null) {
+                            accountNames.add(line);
+                        }
+                        fis.close();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (accountNames.size()==0) {
+                        Intent myIntent = new Intent(getActivity(), PlaidActivity.class);
+                        startActivity(myIntent);
+                    }else{
+                        BankFragment bankfragment = new BankFragment();
+                        Bundle args = new Bundle();
+                        args.putStringArrayList("Accounts", accountNames);
+                        bankfragment.setArguments(args);
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.replace(R.id.frame,bankfragment);
+                        setfragmentTransaction.commit();
+                    }
+
+//                    Intent myIntent = new Intent(getActivity(), PlaidActivity.class);
+//                    startActivity(myIntent);
+                }
+
+                Toast.makeText(getActivity(), Selecteditem, Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -73,38 +128,7 @@ public class SettingsFragment extends Fragment {
 
 //    @Override
 //    public void onItemClick(AdapterView<?> parent, View view, int position,long id) {
-//        if (position==1){
-//            Intent myIntent = new Intent(getActivity(), GcalActivity.class);
-//            startActivity(myIntent);
-////            GcalFragment gcalFragment = new GcalFragment();
-////            android.support.v4.app.FragmentTransaction gcalfragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-////            gcalfragmentTransaction.replace(R.id.frame,gcalFragment);
-////            gcalfragmentTransaction.commit();
-//        }
-//        if (position==0){
-//            Intent myIntent = new Intent(getActivity(), FacebookActivity.class);
-//            startActivity(myIntent);
-////            FacebookActivity fbFragment = new FacebookActivity();
-////            android.support.v4.app.FragmentTransaction fbfragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-////            fbfragmentTransaction.replace(R.id.frame, fbFragment);
-////            fbfragmentTransaction.commit();
-//        }
-//        if (position==2){
-//            Intent myIntent = new Intent(getActivity(), GmailActivity.class);
-//            startActivity(myIntent);
-////            GmailActivity gmailFragment = new GmailActivity();
-////            android.support.v4.app.FragmentTransaction gmailfragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-////            gmailfragmentTransaction.replace(R.id.frame, gmailFragment);
-////            gmailfragmentTransaction.commit();
-//        }
-//        if (position==3){
-//            Intent myIntent = new Intent(getActivity(), PlaidActivity.class);
-//            startActivity(myIntent);
-////            PlaidActivity plaidFragment = new PlaidActivity();
-////            android.support.v4.app.FragmentTransaction plaidfragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-////            plaidfragmentTransaction.replace(R.id.frame, plaidFragment);
-////            plaidfragmentTransaction.commit();
-//        }
+
 //
 //
 ////
@@ -112,7 +136,7 @@ public class SettingsFragment extends Fragment {
 //    }
 
 
-    public class CustomListAdapter extends ArrayAdapter<String> {
+    private class CustomListAdapter extends ArrayAdapter<String> {
 
         private final Activity context;
         private final String[] itemname;

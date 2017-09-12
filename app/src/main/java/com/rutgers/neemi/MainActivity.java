@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                 setfragmentTransaction.replace(R.id.frame, settingsfragment);
                 setfragmentTransaction.commit();
                 if (items == 0) {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No facebook photos fetched.", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No financial transactions fetched.", Snackbar.LENGTH_LONG).show();
                 } else {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout),  items+" financial transactions fetched.", Snackbar.LENGTH_LONG).show();
                 }

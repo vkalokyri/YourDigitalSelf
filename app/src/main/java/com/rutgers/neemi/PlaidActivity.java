@@ -27,8 +27,11 @@ import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.Where;
 import com.plaid.client.PlaidClient;
+import com.plaid.client.request.AccountsGetRequest;
 import com.plaid.client.request.ItemPublicTokenExchangeRequest;
 import com.plaid.client.request.TransactionsGetRequest;
+import com.plaid.client.response.Account;
+import com.plaid.client.response.AccountsGetResponse;
 import com.plaid.client.response.ItemPublicTokenExchangeResponse;
 import com.plaid.client.response.TransactionsGetResponse;
 import com.rutgers.neemi.model.PaymentCategory;
@@ -38,11 +41,16 @@ import com.rutgers.neemi.model.PaymentHasCategory;
 import com.rutgers.neemi.model.Place;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -56,14 +64,19 @@ import retrofit2.Response;
 public class PlaidActivity extends AppCompatActivity {
 
 
+    String client_id = "596e6db04e95b810ac887f56";
+    String secret = "d1ba7f8c06c7d70da0cef6e28b6b2f";
+
     PlaidClient plaidClient = PlaidClient.newBuilder()
-            .clientIdAndSecret("596e6db04e95b810ac887f56", "d1ba7f8c06c7d70da0cef6e28b6b2f")
+            .clientIdAndSecret(client_id, secret)
             .publicKey("0ea8ed7c85e1c6d8aa4695cb156c97") // optional. only needed to call endpoints that require a public key
-            .sandboxBaseUrl() // or equivalent, depending on which environment you're calling into
+            .developmentBaseUrl() // or equivalent, depending on which environment you're calling into
             .build();
 
     ProgressDialog mProgress;
     DatabaseHelper helper;
+    String account_name;
+    String accountId;
 
 
     @Override
@@ -86,13 +99,13 @@ public class PlaidActivity extends AppCompatActivity {
         // Initialize Link
         HashMap<String, String> linkInitializeOptions = new HashMap<String,String>();
         linkInitializeOptions.put("key", "0ea8ed7c85e1c6d8aa4695cb156c97");
-        linkInitializeOptions.put("client_id", "596e6db04e95b810ac887f56");
-        linkInitializeOptions.put("secret", "d1ba7f8c06c7d70da0cef6e28b6b2f");
+        linkInitializeOptions.put("client_id", client_id);
+        linkInitializeOptions.put("secret", secret);
         linkInitializeOptions.put("apiVersion", "v2");
         //linkInitializeOptions.put("product", "auth");
         linkInitializeOptions.put("product", "transactions");
         linkInitializeOptions.put("selectAccount", "true");
-        linkInitializeOptions.put("env", "sandbox");
+        linkInitializeOptions.put("env", "development");
         linkInitializeOptions.put("clientName", "Neemi");
         linkInitializeOptions.put("webhook", "http://requestb.in");
         linkInitializeOptions.put("baseUrl", "https://cdn.plaid.com/link/v2/stable/link.html");
@@ -108,8 +121,27 @@ public class PlaidActivity extends AppCompatActivity {
         WebSettings webSettings = plaidLinkWebview.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
-        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        //webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         WebView.setWebContentsDebuggingEnabled(true);
+
+       // File file = new File(FILENAME);
+       // if (file.exists()) {
+//            try {
+//                FileInputStream fis = openFileInput(FILENAME);
+//                int ac_token;
+//                while ((ac_token = fis.read()) != -1) {
+//                    this.access_token = this.access_token + (char) ac_token;
+//
+//                }
+//                System.out.println("ACCESS_TOKEN HERE " + access_token);
+//                fis.close();
+//                new AsyncGetTransactionsTask().execute(access_token);
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+       // }
 
         // Initialize Link by loading the Link initiaization URL in the Webview
         plaidLinkWebview.loadUrl(linkInitializationUrl.toString());
@@ -136,52 +168,13 @@ public class PlaidActivity extends AppCompatActivity {
                         Log.d("Public token: ", linkData.get("public_token"));
                         Log.d("Account ID: ", linkData.get("account_id"));
                         Log.d("Account name: ", linkData.get("account_name"));
+                        account_name = linkData.get("account_name");
+
+
 
                        new RetrieveTransactionsTask(getApplicationContext()).execute(linkData.get("public_token"));
 
-//
-//
-//
-//                        Response<AuthGetResponse> response = null;
-//                        try {
-//                            response = plaidClient.service().authGet(new AuthGetRequest("ACCESS_TOKEN")).execute();
-//                        } catch (IOException e1) {
-//                            e1.printStackTrace();
-//                        }
-//                        System.out.println(response);
 
-                        // User successfully linked
-
-
-
-
-
-//                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-//                        startDate = simpleDateFormat.parse("2017-01-01");
-//                        endDate = simpleDateFormat.parse("2017-02-01");
-//
-//                        Response<TransactionsGetResponse> response = client().service().transactionsGet(
-//                                new TransactionsGetRequest(
-//                                        "ACCESS_TOKEN",
-//                                        startDate,
-//                                        endDate))
-//                                .execute();
-//
-//                        Response<TransactionsGetResponse> response = client().service().transactionsGet(
-//                                new TransactionsGetRequest(
-//                                        accessToken,
-//                                        startDate,
-//                                        endDate)
-//                                        .withAccountIds(Arrays.asList(someAccountId))
-//                                        .withCount(numTxns)
-//                                        .withOffset(1)).execute();
-//
-//                        for (TransactionsGetResponse.Transaction txn : response.body().getTransactions()) { ... }
-
-
-
-                        // You will likely want to transition the view at this point.
-                        //plaidLinkWebview.loadUrl(linkInitializationUrl.toString());
                     } else if (action.equals("exit")) {
                         // User exited
                         // linkData may contain information about the user's status in the Link flow,
@@ -279,6 +272,7 @@ public class PlaidActivity extends AppCompatActivity {
                         public void onResponse(Call<ItemPublicTokenExchangeResponse> call, Response<ItemPublicTokenExchangeResponse> response) {
                             if (response.isSuccessful()) {
                                 final String accessToken = response.body().getAccessToken();
+                                new AsyncGetAccountsTask().execute(accessToken);
                                 new AsyncGetTransactionsTask().execute(accessToken);
                             }
 
@@ -299,7 +293,48 @@ public class PlaidActivity extends AppCompatActivity {
 
     }
 
-    private class AsyncGetTransactionsTask extends AsyncTask<String, Void, Integer> {
+
+    private class AsyncGetAccountsTask extends AsyncTask<String, Void, Integer> {
+
+        @Override
+        protected Integer doInBackground(String... params) {
+            String accessToken = params[0];
+            try {
+                Response<AccountsGetResponse> accountsResponse = plaidClient.service().accountsGet(
+                        new AccountsGetRequest(
+                                accessToken)).execute();
+
+                List<Account> accounts = accountsResponse.body().getAccounts();
+                for (Account account:accounts) {
+                    String last4digits = account.getMask();
+                    String accountName = account.getName();
+                    accountId = account.getAccountId();
+                    String full_account = accountName+"_@#_"+last4digits+"_@#_"+accountId;
+
+                    try {
+                        FileOutputStream fos = openFileOutput(full_account, Context.MODE_PRIVATE);
+                        fos.write(accessToken.getBytes());
+                        fos.close();
+                        FileOutputStream fos2 = openFileOutput("BankAccounts", Context.MODE_APPEND);
+                        fos2.write((full_account+System.getProperty("line.separator")).getBytes());
+                        fos2.close();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return 1;
+        }
+    }
+
+
+        private class AsyncGetTransactionsTask extends AsyncTask<String, Void, Integer> {
 
         final RuntimeExceptionDao<PaymentCategory, String> categoryDao = helper.getCategoryDao();
         final RuntimeExceptionDao<Payment, String> paymentDao = helper.getPaymentDao();
@@ -313,6 +348,7 @@ public class PlaidActivity extends AppCompatActivity {
         @Override
         protected Integer doInBackground(String... params) {
             String accessToken = params[0];
+
             try {
                 try {
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -335,7 +371,7 @@ public class PlaidActivity extends AppCompatActivity {
 
                     String timestamp = null;
 
-                    GenericRawResults<String[]> rawResults = paymentDao.queryRaw("select max(timestamp) from Payment;");
+                    GenericRawResults<String[]> rawResults = paymentDao.queryRaw("select max(timestamp) from Payment where account_id='"+accountId+"';");
                     List<String[]> results = null;
                     try {
                         results = rawResults.getResults();
@@ -365,6 +401,7 @@ public class PlaidActivity extends AppCompatActivity {
                                         accessToken,
                                         startDate,
                                         endDate)
+                                        .withAccountIds(Arrays.asList(accountId))
                                         .withOffset(transactionsRetrieved)).execute();
 
 
@@ -520,8 +557,6 @@ public class PlaidActivity extends AppCompatActivity {
             myIntent.putExtra("key", "bank");
             myIntent.putExtra("items", output);
             startActivity(myIntent);
-
-            //Snackbar.make(findViewById(R.id.myCoordinatorLayout),  output+" financial transactions fetched.", Snackbar.LENGTH_LONG).show();
 
         }
 
