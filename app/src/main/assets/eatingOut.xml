@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions id="definitions" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+	targetNamespace="http://www.omg.org/spec/BPMN/20100524/MODEL">
+<process isExecutable="true" id="eatingOut">
+<locals>
+<who name="whoAttended"/>
+<what name="whatEaten"/>
+<when name="whenEatingOccurred" />
+<where name="whereEatingOccurred"/>
+<why name="purpose"/>
+</locals>
+<startEvent name="" id="StartProcess"/>
+<callActivity calledElement="initiateDiscussion" name="initiateGoingOut" id="subProcessInitiateGoingOut"/>
+<parallelGateway gatewayDirection="Diverging" name="" id="EstablishW4"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="EstablishWhenEat" id="EstablishWhenEat"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="EstablishWhereEat" id="EstablishWhereEat"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="EstablishWhoEat" id="EstablishWhoEat"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="EstablishWhatEat" id="EstablishWhatEat"/>
+<parallelGateway gatewayDirection="Converging" name="" id="AfterEstablishingW4"/>
+<parallelGateway gatewayDirection="Diverging" name="" id="OptionalWriteInCalendar"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="writeInCalendar" id="writeInCalendar">
+<locals>
+<who name="whoIsTheOrganizer"/>
+<who name="whoIsTheEventCreator"/>
+<who name="whoWillBeInTheEvent"/>
+<what name="whatEvent"/>
+<when name="whenTheEventStarts"/>
+<when name="whenTheEventEnds"/>
+<when name="whenWasTheEventCreated"/>
+</locals>
+</task>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="OptionalReservation"/>
+<callActivity calledElement="makeReservation" name="makeReservation" T="restaurant" id="SubProcessMakeReservation" />
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ChangePlans" id="ChangePlans"/>
+<endEvent name="" id="EndProcess"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="CancelORchangePlans"/>
+<exclusiveGateway gatewayDirection="Converging" name="" id="AfterOptionalReservation"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="ChangePlansORremindEatingOut"/>
+<callActivity calledElement="remindEatingOut" name="remindEatingOut" id="SubProcessRemindEatingOut"/>
+<exclusiveGateway gatewayDirection="Converging" name="" id="AfterOptionalRemindEatingOut"/>
+<inclusiveGateway gatewayDirection="Diverging" name="" id="CheckingWeatherAndHowToGo"/>
+<task name="EstablishHowToGo" id="EstablishHowToGo"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="CheckTheWeather" id="CheckTheWeather"/>
+<parallelGateway gatewayDirection="Converging" name="" id="AfterCheckingWeatherAndHowToGo"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="BeforeGoingToThePlace"/>
+<callActivity calledElement="goToAPlace" name="GoToTheRestaurant" id="SubProcessGoToTheRestaurant"/>
+<callActivity calledElement="attendEatingOutEvent" name="AttendEatingOutEvent" id="SubProcessAttendEatingOutEvent" minDuration="30m" maxDuration="3h"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="GoHomeORgoElsewhere"/>
+<callActivity calledElement="goToAPlace" name="GoHome" id="SubProcessGoHome" minDuration="10m" maxDuration="2h"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="GoElsewhere" id="GoElsewhere"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="OptionalAfterEatingDiscussion"/>
+<callActivity calledElement="initiateDiscussion" name="AfterEating" id="SubProcessAfterEating"/>
+<exclusiveGateway gatewayDirection="Converging" name="" id="AfterEatingDiscussionConverge"/>
+<sequenceFlow sourceRef="StartProcess" targetRef="InitiateGoingOut" name="" id=""/>
+<sequenceFlow sourceRef="InitiateGoingOut" targetRef="EstablishW4" name="" id=""/>
+<sequenceFlow sourceRef="EstablishW4" targetRef="EstablishWhatEat" name="" id=""/>
+<sequenceFlow sourceRef="EstablishW4" targetRef="EstablishWhenEat" name="" id=""/>
+<sequenceFlow sourceRef="EstablishW4" targetRef="EstablishWhereEat" name="" id=""/>
+<sequenceFlow sourceRef="EstablishW4" targetRef="EstablishWhoEat" name="" id=""/>
+<sequenceFlow sourceRef="EstablishWhatEat" targetRef="AfterEstablishingW4" name="" id=""/>
+<sequenceFlow sourceRef="EstablishWhenEat" targetRef="AfterEstablishingW4" name="" id=""/>
+<sequenceFlow sourceRef="EstablishWhereEat" targetRef="AfterEstablishingW4" name="" id=""/>
+<sequenceFlow sourceRef="EstablishWhoEat" targetRef="AfterEstablishingW4" name="" id=""/>
+<sequenceFlow sourceRef="AfterEstablishingW4" targetRef="OptionalWriteInCalendar" name="" id=""/>
+<sequenceFlow sourceRef="OptionalWriteInCalendar" targetRef="WriteInCalendar" name="" id=""/>
+<sequenceFlow sourceRef="OptionalWriteInCalendar" targetRef="OptionalReservation" name="" id=""/>
+<sequenceFlow sourceRef="OptionalReservation" targetRef="SubProcessMakeReservation" name="" id=""/>
+<sequenceFlow sourceRef="OptionalReservation" targetRef="ChangePlans" name="" id=""/>
+<sequenceFlow sourceRef="OptionalReservation" targetRef="AfterOptionalReservation" name="" id=""/>
+<sequenceFlow sourceRef="ChangePlans" targetRef="CancelORchangePlans" name="" id=""/>
+<sequenceFlow sourceRef="CancelORchangePlans" targetRef="EndProcess" name="" id=""/>
+<sequenceFlow sourceRef="CancelORchangePlans" targetRef="EstablishW4" name="" id=""/>
+<sequenceFlow sourceRef="SubProcessMakeReservation" targetRef="AfterOptionalReservation" name="" id=""/>
+<sequenceFlow sourceRef="AfterOptionalReservation" targetRef="ChangePlansORremindEatingOut" name="" id=""/>
+<sequenceFlow sourceRef="ChangePlansORremindEatingOut" targetRef="ChangePlans" name="" id=""/>
+<sequenceFlow sourceRef="ChangePlansORremindEatingOut" targetRef="SubProcessRemindEatingOut" name="" id=""/>
+<sequenceFlow sourceRef="ChangePlansORremindEatingOut" targetRef="AfterOptionalRemindEatingOut" name="" id=""/>
+<sequenceFlow sourceRef="SubProcessRemindEatingOut" targetRef="" name="AfterOptionalRemindEatingOut" id=""/>
+<sequenceFlow sourceRef="AfterOptionalRemindEatingOut" targetRef="CheckingWeatherAndHowToGo" name="" id=""/>
+<sequenceFlow sourceRef="CheckingWeatherAndHowToGo" targetRef="SubProcessEstablishHowToGo" name="" id=""/>
+<sequenceFlow sourceRef="CheckingWeatherAndHowToGo" targetRef="SubProcessCheckTheWeather" name="" id=""/>
+<sequenceFlow sourceRef="CheckingWeatherAndHowToGo" targetRef="ChangePlans" name="" id=""/>
+<sequenceFlow sourceRef="CheckingWeatherAndHowToGo" targetRef="AfterCheckingWeatherAndHowToGo" name="" id=""/>
+<sequenceFlow sourceRef="SubProcessEstablishHowToGo" targetRef="AfterCheckingWeatherAndHowToGo" name="" id=""/>
+<sequenceFlow sourceRef="SubProcessCheckTheWeather" targetRef="AfterCheckingWeatherAndHowToGo" name="" id=""/>
+<sequenceFlow sourceRef="AfterCheckingWeatherAndHowToGo" targetRef="BeforeGoingToThePlace" name="" id=""/>
+<sequenceFlow sourceRef="BeforeGoingToThePlace" targetRef="SubProcessGoToThePlace" name="" id=""/>
+<sequenceFlow sourceRef="BeforeGoingToThePlace" targetRef="ChangePlans" name="" id=""/>
+<sequenceFlow sourceRef="SubProcessGoToThePlace" targetRef="SubProcessAttendEatingOutEvent" name="" id=""/>
+<sequenceFlow sourceRef="SubProcessAttendEatingOutEvent" targetRef="GoHomeORgoElsewhere" name="" id=""/>
+<sequenceFlow sourceRef="GoHomeORgoElsewhere" targetRef="SubProcessGoHome" name="" id=""/>
+<sequenceFlow sourceRef="GoHomeORgoElsewhere" targetRef="GoElsewhere" name="" id=""/>
+<sequenceFlow sourceRef="SubProcessGoHome" targetRef="OptionalAfterEatingDiscussion" name="" id=""/>
+<sequenceFlow sourceRef="OptionalAfterEatingDiscussion" targetRef="SubProcessAfterEatingDiscussion" name="" id=""/>
+<sequenceFlow sourceRef="OptionalAfterEatingDiscussion" targetRef="AfterEatingDiscussionConverge" name="" id=""/>
+<sequenceFlow sourceRef="SubProcessAfterEatingDiscussion" targetRef="AfterEatingDiscussionConverge" name="" id=""/>
+<sequenceFlow sourceRef="AfterEatingDiscussionConverge" targetRef="EndProcess" name="" id=""/>
+</process>
+
+</definitions>

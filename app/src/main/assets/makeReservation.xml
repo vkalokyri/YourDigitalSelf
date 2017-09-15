@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions id="definitions" 
+xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+targetNamespace="http://www.activiti.org/bpmn2.0">
+
+
+<process binding="Process" isExecutable="true" id="MakeReservation">
+<locals>
+<who name="whoMadeTheReservation"/>
+<who name="forWhoIsTheReservation "/>
+<what name="whatToBeReserved"/>
+<when name="whenWasTheReservationMade"/>
+<when name="whenWasTheReservationScheduled "/>
+<where name="whereWasTheReservationMade "/>
+</locals>
+<startEvent name="" id="SubProcessStart"/>
+<endEvent name="" id="SubProcessEnd"/>
+<inclusiveGateway gatewayDirection="Diverging" name="" id="selectFromWhereToDoTheReservation"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="VisitVenueWebPage" id="VisitVenueWebPage"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="AccessReservationApp" id="AccessReservationApp"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="CallTheStore" id="CallTheStore"/>
+<inclusiveGateway gatewayDirection="Converging" name="" id="AfterFindingHowToMakeTheReservation"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="MakeTheReservation" id="MakeTheReservation"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="WasReservationSuccessful"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceiveConfirmationEmail" id="ReceiveConfirmationEmail"/>
+<sequenceFlow sourceRef="SubProcessStart" targetRef="selectFromWhereToDoTheReservation" name="" id=""/>
+<sequenceFlow sourceRef="selectFromWhereToDoTheReservation" targetRef="VisitStoreWebPage_" name="" id=""/>
+<sequenceFlow sourceRef="selectFromWhereToDoTheReservation" targetRef="AccessReservationApp" name="" id=""/>
+<sequenceFlow sourceRef="selectFromWhereToDoTheReservation" targetRef="CallTheStore" name="" id=""/>
+<sequenceFlow sourceRef="VisitVenueWebPage" targetRef="AfterFindingHowToMakeTheReservation" name="" id=""/>
+<sequenceFlow sourceRef="AccessReservationApp" targetRef="AfterFindingHowToMakeTheReservation" name="" id=""/>
+<sequenceFlow sourceRef="CallTheStore" targetRef="AfterFindingHowToMakeTheReservation" name="" id=""/>
+<sequenceFlow sourceRef="AfterFindingHowToMakeTheReservation" targetRef="MakeTheReservation" name="" id=""/>
+<sequenceFlow sourceRef="MakeTheReservation" targetRef="WasReservationSuccessful" name="" id=""/>
+<sequenceFlow sourceRef="WasReservationSuccessful" targetRef="ReceiveConfirmationEmail" name="" id=""/>
+<sequenceFlow sourceRef="WasReservationSuccessful" targetRef="SubProcessEnd" name="" id=""/>
+<sequenceFlow sourceRef="WasReservationSuccessful" targetRef="selectFromWhereToDoTheReservation" name="" id=""/>
+<sequenceFlow sourceRef="ReceiveConfirmationEmail" targetRef="SubProcessEnd" name="" id=""/>
+</process>
+
+</definitions>

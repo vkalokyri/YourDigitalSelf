@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions id="definitions" 
+xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+targetNamespace="http://www.activiti.org/bpmn2.0">
+
+
+<process binding="Process" isExecutable="true" id="goToAPlace">
+<locals>
+<who name="whoWillGoTogether"/>
+<when name="whenToLeave"/>
+<how name="meansOfTransportation"/>
+</locals>
+<startEvent name="" id="SubProcessStart"/>
+<endEvent name="" id="SubProcessEnd"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="selectMeansOfTransportation"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="GoByTrain" id="GoByTrain"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="GoByCar" id="GoByCar"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="GoOnFoot" id="GoOnFoot"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="GoByTaxi" id="GoByTaxi"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="CallUberOrLyft" id="CallUberOrLyft"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="getTrainTicket"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="AccessTrainApp" id="AccessTrainApp"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="AccessTrainWebsite" id="AccessTrainWebsite"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="GetItFromTrainStation" id="GetItFromTrainStation"/>
+<inclusiveGateway gatewayDirection="Converging" name="" id="AfterDecidingTicket"/>
+<callActivity calledElement="makeAPayment" name="SubProcessPay" id="SubProcessPay"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="OptionalGetTicketReceiptEmail"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="GetTicketReceiptEmail" id="GetTicketReceiptEmail"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="GetGasOrNot"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="GetGas" id="GetGas"/>
+<exclusiveGateway gatewayDirection="Converging" name="" id="arrivedToDestination"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="retakeMeansOfTransportation"/>
+<sequenceFlow sourceRef="SubProcessStart" targetRef="selectMeansOfTransportation" name="" id=""/>
+<sequenceFlow sourceRef="selectMeansOfTransportation" targetRef="GoByTrain" name="" id=""/>
+<sequenceFlow sourceRef="selectMeansOfTransportation" targetRef="GoByCar" name="" id=""/>
+<sequenceFlow sourceRef="selectMeansOfTransportation" targetRef="GoOnFoot" name="" id=""/>
+<sequenceFlow sourceRef="selectMeansOfTransportation" targetRef="GoByTaxi" name="" id=""/>
+<sequenceFlow sourceRef="selectMeansOfTransportation" targetRef="CallUberOrLyft" name="" id=""/>
+<sequenceFlow sourceRef="GoByTrain" targetRef="getTrainTicket" name="" id=""/>
+<sequenceFlow sourceRef="getTrainTicket" targetRef="AccessTrainApp" name="" id=""/>
+<sequenceFlow sourceRef="getTrainTicket" targetRef="AccessTrainWebsite" name="" id=""/>
+<sequenceFlow sourceRef="getTrainTicket" targetRef="GetItFromTrainStation" name="" id=""/>
+<sequenceFlow sourceRef="AccessTrainApp" targetRef="AfterDecidingTicket" name="" id=""/>
+<sequenceFlow sourceRef="AccessTrainWebsite" targetRef="AfterDecidingTicket" name="" id=""/>
+<sequenceFlow sourceRef="GetItFromTrainStation" targetRef="AfterDecidingTicket" name="" id=""/>
+<sequenceFlow sourceRef="AfterDecidingTicket" targetRef="SubProcessPay" name="" id=""/>
+<sequenceFlow sourceRef="SubProcessPay" targetRef="OptionalGetTicketReceiptEmail" name="" id=""/>
+<sequenceFlow sourceRef="OptionalGetTicketReceiptEmail" targetRef="GetTicketReceiptEmail" name="" id=""/>
+<sequenceFlow sourceRef="OptionalGetTicketReceiptEmail" targetRef="arrivedToDestination" name="" id=""/>
+<sequenceFlow sourceRef="GoByCar" targetRef="GetGasOrNot" name="" id=""/>
+<sequenceFlow sourceRef="GetGasOrNot" targetRef="GetGas" name="" id=""/>
+<sequenceFlow sourceRef="GetGasOrNot" targetRef="arrivedToDestination" name="" id=""/>
+<sequenceFlow sourceRef="GetGas" targetRef="SubProcessPay" name="" id=""/>
+<sequenceFlow sourceRef="GoByTaxi" targetRef="SubProcessPay" name="" id=""/>
+<sequenceFlow sourceRef="CallUberOrLyft" targetRef="OptionalGetTicketReceiptEmail" name="" id=""/>
+<sequenceFlow sourceRef="arrivedToDestination" targetRef="retakeMeansOfTransportation" name="" id=""/>
+<sequenceFlow sourceRef="retakeMeansOfTransportation" targetRef="SubProcessEnd" name="" id=""/>
+<sequenceFlow sourceRef="retakeMeansOfTransportation" targetRef="selectMeansOfTransportation" name="" id=""/>
+</process>  
+ 
+
+</definitions>

@@ -123,10 +123,10 @@ public class MainActivity extends AppCompatActivity {
                         fragmentTransaction.commit();
                         return true;
                     case R.id.restaurants:
-                        GcalFragment gcalFragment = new GcalFragment();
-                        android.support.v4.app.FragmentTransaction gcalfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                        gcalfragmentTransaction.replace(R.id.frame,gcalFragment);
-                        gcalfragmentTransaction.commit();
+                        RestaurantsFragment restFragment = new RestaurantsFragment();
+                        android.support.v4.app.FragmentTransaction restaurantsfragmentTrans = getSupportFragmentManager().beginTransaction();
+                        restaurantsfragmentTrans.replace(R.id.frame,restFragment);
+                        restaurantsfragmentTrans.commit();
                         return true;
 
                     // For rest of the options we just show a toast on click

@@ -1,0 +1,29 @@
+restaurant
+dinner
+lunch
+breakfast
+steakhouse
+bistro
+ouzeri
+taverna
+tavern
+brasserie
+brewpub
+brunch
+canteen
+diner
+grill
+rotisserie
+fast food
+barbecue
+barbeque
+dining room
+dining hall
+food truck
+osteria
+rodizio
+soup kitchen
+trattoria
+buffet
+pizzeria
+seafood

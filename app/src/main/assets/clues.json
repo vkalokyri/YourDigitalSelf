@@ -1,0 +1,129 @@
+{
+	"makeReservation": {
+		"restaurant": [{
+			"AccessReservationApp": {
+				"from": "Email",
+				"where":{
+					"and": {
+						"from": ["member_services@opentable.com"]
+					}
+				}
+			}
+		}],
+		"hotel": []
+
+	},
+	"makeAPayment": {
+		"restaurant": [{
+			"PayByCreditCard": {
+				"from": ["PaymentCategory","Payment","PaymentHasCategory"],
+				"where": {
+					"and": {
+						"category" :["Food and Beverage Store","Food and Drink", "Restaurants", "Fast Food"],
+						"Payment._id": "PaymentHasCategory.transaction_id",
+						"PaymentCategory._id":"PaymentHasCategory.category_id"
+					}
+				}
+			}
+		}],
+		"gas": [{
+			"PayByCreditCard": {
+				"from": ["PaymentCategory","Payment","PaymentHasCategory"],
+				"where":{
+					"and": {
+						"category": "Gas Stations"
+					}
+				}
+			}
+		}]
+
+	},
+	"initiateDiscussion": {
+		"restaurant": [{
+				"SendEmail": {
+					"from": "Email",
+					"where": {
+						"or": {
+							"htmlContent":	["KEYWORDS_FILE"],
+							"subject": ["KEYWORDS_FILE"]
+						}
+					}
+				}
+			}],
+		"opera": [
+
+		]
+	},
+	"writeInCalendar": {
+		"restaurant": [{
+			"reminder": {
+				"from": "Event",
+				"where": {
+					"and": {
+						"description": ["KEYWORDS_FILE"]
+					}
+				}
+			}
+		}]
+	},
+	"GoToEventReminder": {
+		"restaurant": [{
+				"ReceiveGoogleCalendarNotification": {
+					"from": "Email",
+					"where": {
+						"from": "calendar-notification@google.com"
+					}
+				}
+			}, {
+				"ReceiveEmail": {
+					"from": "Email",
+					"where": {
+						"or": {
+							"htmlContent": "KEYWORDS_FILE",
+							"subject": "KEYWORDS_FILE"
+						}
+					}
+				}
+			}
+		]
+	},
+
+	"GoToThePlace": {
+		"restaurant": [{
+				"CallUberOrLyft": {
+					"GetTicketReceiptEmail": {
+						"from": "Email",
+						"where": {
+							"or": {
+								"from": [
+									"Uber Receipts", "<noreply@uber.com>"
+								],
+								"subject": "trip with Uber"
+
+							}
+						}
+					}
+				}
+			}, {
+				"GoByCar": {
+					"GetGas": {
+						"makeAPayment": "Gas"
+					}
+				}
+			}
+
+		]
+	},
+	"momentCapturing": {
+		"restaurant": [
+			{
+				"PostOnFacebook": {
+					"from": [
+						"Photo"
+					]
+
+				}
+		}]
+	}
+
+}

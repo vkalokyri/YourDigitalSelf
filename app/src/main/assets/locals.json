@@ -1,0 +1,35 @@
+{
+	"whenPaid":
+	{	"Payment":"date"
+	},
+	"wherePaymentOccured":
+	{	"Payment": "name"
+	}, 
+	"whoMadeTheReservation":{
+		"Email": "from"
+	},
+	"whenWasTheReservationMade":{
+		 "Email":"date"
+	},
+	"whoIsTheOrganizer":{
+		"Event": "organizer_id"
+	},
+	"whoIsTheEventCreator":{
+		"Event": "creator_id"
+	},
+	"whenTheEventStarts":{
+		"Event":"startTime"
+	},
+	"whenTheEventEnds":{
+		"Event":"endTime"
+	},
+	"whenWasTheEventCreated":{
+		"Event":"dateCreated"
+	},
+	"whatEvent":{
+		"Event":"description"
+	},
+	"whoInitiatedTheConversation":{
+		"Email":"from"
+	}
+}

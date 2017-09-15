@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions id="definitions" 
+xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+targetNamespace="http://www.activiti.org/bpmn2.0">
+
+
+<process binding="Process" isExecutable="true" id="attendEatingOutEvent">
+<startEvent name="" id="SubProcessStart"/>
+<endEvent name="" id="SubProcessEnd"/>
+<parallelGateway gatewayDirection="Diverging" name="" id="whileInVenue"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="TakePictures" id="TakePictures"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="TakeVideo" id="TakeVideo"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="PostOnFacebook" id="PostOnFacebook"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="PostOnInstagram" id="PostOnInstagram"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="PostOnTwitter" id="PostOnTwitter"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="CheckinOnFacebook" id="CheckinOnFacebook"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="CheckinOnFoursquare" id="CheckinOnFoursquare"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="SavePlaceInGoogleMaps" id="SavePlaceInGoogleMaps"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="BookmarkVenueOnYelp" id="BookmarkVenueOnYelp"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="EatMeal" id="EatMeal"/>
+<parallelGateway gatewayDirection="Diverging" name="" id="EstablishWhatWhoPays"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="EstablishWhoPays" id="EstablishWhoPays"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="EstablishWhatEveryonePays" id="EstablishWhatEveryonePays"/>
+<parallelGateway gatewayDirection="Converging" name="" id="AfterEstablishingWhatWhoPays"/>
+<callActivity calledElement="makeAPayment" name="makeAPayment" id="SubProcessPayMeal"/>
+<parallelGateway gatewayDirection="Converging" name="" id="afterFinishingWithEvent"/>
+<sequenceFlow sourceRef="SubProcessStart" targetRef="whileInVenue" name="" id=""/>
+<sequenceFlow sourceRef="whileInVenue" targetRef="TakePictures" name="" id=""/>
+<sequenceFlow sourceRef="whileInVenue" targetRef="TakeVideo" name="" id=""/>
+<sequenceFlow sourceRef="whileInVenue" targetRef="PostOnFacebook" name="" id=""/>
+<sequenceFlow sourceRef="whileInVenue" targetRef="PostOnInstagram" name="" id=""/>
+<sequenceFlow sourceRef="whileInVenue" targetRef="PostOnTwitter" name="" id=""/>
+<sequenceFlow sourceRef="whileInVenue" targetRef="CheckinOnFacebook" name="" id=""/>
+<sequenceFlow sourceRef="whileInVenue" targetRef="CheckinOnFoursquare" name="" id=""/>
+<sequenceFlow sourceRef="whileInVenue" targetRef="SavePlaceInGoogleMaps" name="" id=""/>
+<sequenceFlow sourceRef="whileInVenue" targetRef="BookmarkVenueOnYelp" name="" id=""/>
+<sequenceFlow sourceRef="whileInVenue" targetRef="EatMeal" name="" id=""/>
+<sequenceFlow sourceRef="EatMeal" targetRef="EstablishWhatWhoPays" name="" id=""/>
+<sequenceFlow sourceRef="EstablishWhatWhoPays" targetRef="EstablishWhoPays" name="" id=""/>
+<sequenceFlow sourceRef="EstablishWhatWhoPays" targetRef="EstablishWhatEveryonePays" name="" id=""/>
+<sequenceFlow sourceRef="EstablishWhoPays" targetRef="" name="AfterEstablishingWhatWhoPays" id=""/>
+<sequenceFlow sourceRef="EstablishWhatEveryonePays" targetRef="" name="AfterEstablishingWhatWhoPays" id=""/>
+<sequenceFlow sourceRef="AfterEstablishingWhatWhoPays" targetRef="SubProcessPayMeal" name="" id=""/>
+<sequenceFlow sourceRef="TakePictures" targetRef="afterFinishingWithEvent" name="" id=""/>
+<sequenceFlow sourceRef="TakeVideo" targetRef="afterFinishingWithEvent" name="" id=""/>
+<sequenceFlow sourceRef="PostOnFacebook" targetRef="afterFinishingWithEvent" name="" id=""/>
+<sequenceFlow sourceRef="PostOnInstagram" targetRef="afterFinishingWithEvent" name="" id=""/>
+<sequenceFlow sourceRef="PostOnTwitter" targetRef="afterFinishingWithEvent" name="" id=""/>
+<sequenceFlow sourceRef="CheckinOnFacebook" targetRef="afterFinishingWithEvent" name="" id=""/>
+<sequenceFlow sourceRef="CheckinOnFoursquare" targetRef="afterFinishingWithEvent" name="" id=""/>
+<sequenceFlow sourceRef="SavePlaceInGoogleMaps" targetRef="afterFinishingWithEvent" name="" id=""/>
+<sequenceFlow sourceRef="BookmarkVenueOnYelp" targetRef="afterFinishingWithEvent" name="" id=""/>
+<sequenceFlow sourceRef="SubProcessPayMeal" targetRef="afterFinishingWithEvent" name="" id=""/>
+<sequenceFlow sourceRef="afterFinishingWithEvent" targetRef="SubProcessEnd" name="" id=""/>
+</process> 
+
+</definitions>

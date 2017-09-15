@@ -1,0 +1,6 @@
+{
+  "Eating_Out":{
+    "whenEatingOccurred":["whenPaid","whenTheEventStarts","",""]
+    
+    }
+}

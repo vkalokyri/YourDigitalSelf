@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions id="definitions" 
+xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+targetNamespace="http://www.activiti.org/bpmn2.0">
+
+  
+<process binding="Process" isExecutable="true" id="makeAPayment">
+<locals>
+<who name="whoPaid"/>
+<when name="whenPaid"/>
+<where name="wherePaymentOccured"/>
+<what name="whatWasPaymentAbout"/>
+<how name="howWasPaid"/>
+</locals>
+<startEvent name="" id="SubProcessStart"/>
+<endEvent name="" id="SubProcessEnd"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="selectPayment"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="PayByCash" id="PayByCash"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="PayByCreditCard" id="PayByCreditCard"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="PayByDebitCard" id="PayByDebitCard"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="PayByCheck" id="PayByCheck"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="optionalConfirmationEmail"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceiveConfirmationEmail" id="ReceiveConfirmationEmail"/>
+<exclusiveGateway gatewayDirection="Converging" name="" id="paymentCompleted"/>
+<sequenceFlow sourceRef="SubProcessStart" targetRef="selectPayment" name="" id=""/>
+<sequenceFlow sourceRef="selectPayment" targetRef="PayByCash" name="" id=""/>
+<sequenceFlow sourceRef="selectPayment" targetRef="PayByCreditCard" name="" id=""/>
+<sequenceFlow sourceRef="selectPayment" targetRef="PayByDebitCard" name="" id=""/>
+<sequenceFlow sourceRef="selectPayment" targetRef="PayByCheck" name="" id=""/>
+<sequenceFlow sourceRef="PayByCash" targetRef="paymentCompleted" name="" id=""/>
+<sequenceFlow sourceRef="PayByCreditCard" targetRef="optionalConfirmationEmail" name="" id=""/>
+<sequenceFlow sourceRef="PayByDebitCard" targetRef="optionalConfirmationEmail" name="" id=""/>
+<sequenceFlow sourceRef="PayByCheck" targetRef="optionalConfirmationEmail" name="" id=""/>
+<sequenceFlow sourceRef="optionalConfirmationEmail" targetRef="paymentCompleted" name="" id=""/>
+<sequenceFlow sourceRef="optionalConfirmationEmail" targetRef="paymentCompleted" name="" id=""/>
+<sequenceFlow sourceRef="optionalConfirmationEmail" targetRef="paymentCompleted" name="" id=""/>
+<sequenceFlow sourceRef="optionalConfirmationEmail" targetRef="ReceiveConfirmationEmail" name="" id=""/>
+<sequenceFlow sourceRef="optionalConfirmationEmail" targetRef="ReceiveConfirmationEmail" name="" id=""/>
+<sequenceFlow sourceRef="optionalConfirmationEmail" targetRef="ReceiveConfirmationEmail" name="" id=""/>
+<sequenceFlow sourceRef="ReceiveConfirmationEmail" targetRef="paymentCompleted" name="" id=""/>
+<sequenceFlow sourceRef="paymentCompleted" targetRef="SubProcessEnd" name="" id=""/>
+</process>   
+
+
+</definitions>

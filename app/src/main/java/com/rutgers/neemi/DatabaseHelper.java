@@ -48,6 +48,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private RuntimeExceptionDao<Payment, String> paymentRuntimeDao = null;
 	private RuntimeExceptionDao<PaymentCategory, String> categoryRuntimeDao = null;
 	private RuntimeExceptionDao<PaymentHasCategory, String> transactionCategoriesRuntimeDao = null;
+	public static SQLiteDatabase myDB;
 
 
 
@@ -62,6 +63,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource) {
 		try {
+			myDB=db;
 			Log.i(DatabaseHelper.class.getName(), "onCreate");
 			TableUtils.createTable(connectionSource, Email.class);
             TableUtils.createTable(connectionSource, Event.class);

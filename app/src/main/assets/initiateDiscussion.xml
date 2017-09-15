@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions id="definitions" 
+xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+targetNamespace="http://www.activiti.org/bpmn2.0">
+
+
+<process binding="Process" isExecutable="true" id="initiateDiscussion">
+<locals>
+<who name="whoInitiatedTheConversation"/>
+<who name="whoWasIncludedInTheConversation"/>
+<what name="whatToBeDiscussed"/>
+<when name="whenWasTheConversationInitiated"/>
+<when name="whenIsTheProposedEvent"/>
+<where name="whereIsThePlanToGo"/>
+<why name="purposeOfTheEventDiscussed"/>
+</locals>
+<startEvent name="" id="SubProcessStart"/>
+<endEvent name="" id="SubProcessEnd"/>
+<inclusiveGateway gatewayDirection="Diverging" name="" id="SelectWaysOfCommunicating"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="SendEmail" id="SendEmail">
+<locals>
+<who name="whoSentEmail"/>
+<who name="ToWhom"/>
+<who name="whoWasCCed"/>
+<who name="whoWasBCCed"/>
+<what name="WhatAbout"/>
+<when name="timeWasSent"/>
+</locals>
+</task>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="SendFacebookInboxMsg" id="SendFacebookInboxMsg">
+<locals>
+<who name="whoSentMessage"/>
+<who name="whoReceivedMessage"/>
+<what name="WhatAbout"/>
+<when name="timeWasSent"/>
+</locals>
+</task>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="PostOnFacebook" id="PostOnFacebook">
+<locals>
+<who name="whoPosted"/>
+<who name="whoIsTheAudienceOfPost"/>
+<what name="WhatAbout"/>
+<when name="timeWasPosted"/>
+</locals>
+</task>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="SendFacebookEvent" id="SendFacebookEvent">
+<locals>
+<who name="whoIsTheCreator"/>
+<who name="whoIsInvited"/>
+<what name="WhatEvent"/>
+<when name="timeTheInvitationWasSent"/>
+<when name="whenIsTheEvent"/>
+<where name="WhereIsTheEvent"/>
+</locals>
+</task>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="SendHangoutsMessage" id="SendHangoutsMessage">
+<locals>
+<who name="whoSentMessage"/>
+<who name="whoReceivedMessage"/>
+<what name="WhatAbout"/>
+<when name="timeWasSent"/>
+</locals>
+</task>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="Tweet" id="Tweet">
+<locals>
+<who name="whoSentTweet"/>
+<who name="whoRepliedToTweet"/>
+<what name="WhatAbout"/>
+<when name="timeWasSent"/>
+</locals>
+</task>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="SendTwitterInboxMsg" id="SendTwitterInboxMsg">
+<locals>
+<who name="whoSentMessage"/>
+<who name="whoReceivedMessage"/>
+<what name="WhatAbout"/>
+<when name="timeWasSent"/>
+</locals>
+</task>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="CheckTrainSchedule" id="CheckTrainSchedule"/>
+<inclusiveGateway gatewayDirection="Converging" name="" id="ConvergeWaysOfCommunication"/>
+<sequenceFlow sourceRef="SubProcessStart" targetRef="SelectWaysOfCommunicating" name="" id=""/>
+<sequenceFlow sourceRef="SelectWaysOfCommunicating" targetRef="SendEmail" name="" id=""/>
+<sequenceFlow sourceRef="SelectWaysOfCommunicating" targetRef="SendFacebookInboxMsg" name="" id=""/>
+<sequenceFlow sourceRef="SelectWaysOfCommunicating" targetRef="PostOnFacebook" name="" id=""/>
+<sequenceFlow sourceRef="SelectWaysOfCommunicating" targetRef="SendFacebookEvent" name="" id=""/>
+<sequenceFlow sourceRef="SelectWaysOfCommunicating" targetRef="SendHangoutsMessage" name="" id=""/>
+<sequenceFlow sourceRef="SelectWaysOfCommunicating" targetRef="Tweet" name="" id=""/>
+<sequenceFlow sourceRef="SelectWaysOfCommunicating" targetRef="SendTwitterInboxMsg" name="" id=""/>
+<sequenceFlow sourceRef="SelectWaysOfCommunicating" targetRef="CheckTrainSchedule" name="" id=""/>
+<sequenceFlow sourceRef="SendEmail" targetRef="ConvergeWaysOfCommunication" name="" id=""/>
+<sequenceFlow sourceRef="SendFacebookInboxMsg" targetRef="ConvergeWaysOfCommunication" name="" id=""/>
+<sequenceFlow sourceRef="PostOnFacebook" targetRef="ConvergeWaysOfCommunication" name="" id=""/>
+<sequenceFlow sourceRef="SendFacebookEvent" targetRef="ConvergeWaysOfCommunication" name="" id=""/>
+<sequenceFlow sourceRef="SendHangoutsMessage" targetRef="ConvergeWaysOfCommunication" name="" id=""/>
+<sequenceFlow sourceRef="Tweet" targetRef="ConvergeWaysOfCommunication" name="" id=""/>
+<sequenceFlow sourceRef="SendTwitterInboxMsg" targetRef="ConvergeWaysOfCommunication" name="" id=""/>
+<sequenceFlow sourceRef="SendTwitterInboxMsg" targetRef="CheckTrainSchedule" name="" id=""/>
+<sequenceFlow sourceRef="ConvergeWaysOfCommunication" targetRef="SubProcessEnd" name="" id=""/>
+</process>
+
+
+</definitions>

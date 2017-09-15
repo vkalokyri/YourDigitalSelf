@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions id="definitions" 
+xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+targetNamespace="http://www.activiti.org/bpmn2.0">
+
+
+
+<process binding="Process" isExecutable="true" id="remindEatingOut">
+<locals>
+<who name="whoRemindedYou "/>
+<when name="whenWasTheReminder "/>
+<when name="forWhenWasTheReminder  "/>
+<what name="whatWasTheReminderAbout  "/>
+</locals>
+<startEvent name="" id="SubProcessStart"/>
+<endEvent name="" id="SubProcessEnd"/>
+<inclusiveGateway gatewayDirection="Diverging" name="" id="typesOfReminders"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceiveGoogleCalendarNotification" id="ReceiveGoogleCalendarNotification"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceiveEmail" id="ReceiveEmail"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceiveFacebookInboxMsg" id="ReceiveFacebookInboxMsg"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceivePostCommentOnFacebook" id="ReceivePostCommentOnFacebook"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceivePostOnMyWall" id="ReceivePostOnMyWall"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="ReceiveFacebookEventNotification" id="ReceiveFacebookEventNotification"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceiveHangoutsMessage" id="ReceiveHangoutsMessage"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceiveTweet" id="ReceiveTweet"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceiveTwitterInboxMsg" id="ReceiveTwitterInboxMsg"/>
+<inclusiveGateway gatewayDirection="Converging" name="" id="ConvergeTypesOfReminders"/>
+<sequenceFlow sourceRef="SubProcessStart" targetRef="typesOfReminders" name="" id=""/>
+<sequenceFlow sourceRef="typesOfReminders" targetRef="ReceiveGoogleCalendarNotification" name="" id=""/>
+<sequenceFlow sourceRef="typesOfReminders" targetRef="ReceiveEmail" name="" id=""/>
+<sequenceFlow sourceRef="typesOfReminders" targetRef="ReceiveFacebookInboxMsg" name="" id=""/>
+<sequenceFlow sourceRef="typesOfReminders" targetRef="ReceivePostCommentOnFacebook" name="" id=""/>
+<sequenceFlow sourceRef="typesOfReminders" targetRef="ReceivePostOnMyWall" name="" id=""/>
+<sequenceFlow sourceRef="typesOfReminders" targetRef="ReceiveFacebookEventNotification" name="" id=""/>
+<sequenceFlow sourceRef="typesOfReminders" targetRef="ReceiveHangoutsMessage" name="" id=""/>
+<sequenceFlow sourceRef="typesOfReminders" targetRef="ReceiveTweet" name="" id=""/>
+<sequenceFlow sourceRef="typesOfReminders" targetRef="ReceiveTwitterInboxMsg" name="" id=""/>
+<sequenceFlow sourceRef="ReceiveGoogleCalendarNotification" targetRef="ConvergeTypesOfReminders" name="" id=""/>
+<sequenceFlow sourceRef="ReceiveEmail" targetRef="ConvergeTypesOfReminders" name="" id=""/>
+<sequenceFlow sourceRef="ReceiveFacebookInboxMsg" targetRef="ConvergeTypesOfReminders" name="" id=""/>
+<sequenceFlow sourceRef="ReceivePostCommentOnFacebook" targetRef="ConvergeTypesOfReminders" name="" id=""/>
+<sequenceFlow sourceRef="ReceivePostOnMyWall" targetRef="ConvergeTypesOfReminders" name="" id=""/>
+<sequenceFlow sourceRef="ReceiveFacebookEventNotification" targetRef="ConvergeTypesOfReminders" name="" id=""/>
+<sequenceFlow sourceRef="ReceiveHangoutsMessage" targetRef="ConvergeTypesOfReminders" name="" id=""/>
+<sequenceFlow sourceRef="ReceiveTweet" targetRef="ConvergeTypesOfReminders" name="" id=""/>
+<sequenceFlow sourceRef="ReceiveTwitterInboxMsg" targetRef="ConvergeTypesOfReminders" name="" id=""/>
+<sequenceFlow sourceRef="ConvergeTypesOfReminders" targetRef="SubProcessEnd" name="" id=""/>
+</process> 
+
+</definitions>
