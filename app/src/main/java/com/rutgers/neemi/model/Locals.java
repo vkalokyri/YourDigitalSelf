@@ -1,5 +1,6 @@
 package com.rutgers.neemi.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Locals {
@@ -9,7 +10,7 @@ public class Locals {
 		
 
 	public Locals(){
-		
+		value = new ArrayList<String>();
 	}
 	
 	public String getW5h_label() {
@@ -29,6 +30,9 @@ public class Locals {
 		this.value = value;
 	}
 
+	public void addValue(String addedvalue) {
+		this.value.add(addedvalue);
+	}
 
 	
 

@@ -17,6 +17,7 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -35,9 +36,12 @@ import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.EventAttendee;
 import com.google.api.services.calendar.model.Events;
+import com.j256.ormlite.android.AndroidConnectionSource;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.EventAttendees;
 import com.rutgers.neemi.model.Person;
@@ -109,7 +113,7 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
         //view = inflater.inflate(R.layout.activity_gcal,container,false);
 
 
-        deleteDB();
+        //deleteDB();
         //setContentView(R.layout.activity_gcal);
 
 
@@ -391,19 +395,14 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
 //            ConnectionSource connectionSource = new AndroidConnectionSource(dbHelper);
 //            try {
 //                TableUtils.dropTable(connectionSource, Event.class,false);
-//                TableUtils.dropTable(connectionSource, Person.class,false);
+//               // TableUtils.dropTable(connectionSource, Person.class,false);
 //
 //            } catch (SQLException e) {
 //                Log.e("GcalActivity","Error when dropping tables in DB");
 //                e.printStackTrace();
 //            }
-//            try {
-//                TableUtils.createTable(connectionSource, Person.class);
-//                TableUtils.createTable(connectionSource, Event.class);
-//            } catch (SQLException e) {
-//                Log.e("GcalActivity","Error when creating tables in DB");
-//                e.printStackTrace();
-//            }
+            //TableUtils.createTable(connectionSource, Person.class);
+            //TableUtils.createTable(connectionSource, Event.class);
 
             RuntimeExceptionDao<Event, String> calendarDao = helper.getEventDao();
             RuntimeExceptionDao<Person, String> personDao = helper.getPersonDao();
@@ -542,7 +541,29 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
             }while(pageToken != null);
 
             System.out.println("Gcal inserted = " + totalItemsInserted);
+            loadEventIndex(totalItemsInserted);
+
+
             return totalItemsInserted;
+        }
+
+        private void loadEventIndex(final int totalItemsInserted) {
+
+                try {
+                    GenericRawResults<String[]> rawResults = helper.getEventDao().queryRaw("select * from Event_fts limit 1");
+                    if (rawResults.getResults().size()==0){
+                        helper.getEventDao().queryRaw("INSERT INTO Event_fts SELECT \"_id\", \"description\" from Event");
+                    }else{
+                        helper.getEventDao().queryRaw("INSERT INTO Event_fts SELECT \"_id\", \"description\" from Event order by \"_id\" desc limit "+totalItemsInserted);
+                    }
+                    GenericRawResults<String[]> vrResults =helper.getEventDao().queryRaw("SELECT * FROM Event_fts;");
+                    System.err.println("VIRTUAL TABLE ADDED = "+vrResults.getResults().size());
+
+                }catch (SQLException e){
+                    helper.getEventDao().queryRaw("DROP TABLE IF EXISTS Event_fts ");
+                    helper.getEventDao().queryRaw("CREATE VIRTUAL TABLE Event_fts USING fts4 ( \"_id\", \"description\" )");
+                    helper.getEventDao().queryRaw("INSERT INTO Event_fts SELECT \"_id\", \"description\" from Event");
+                }
         }
 
 

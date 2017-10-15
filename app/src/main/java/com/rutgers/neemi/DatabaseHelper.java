@@ -76,6 +76,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, PaymentCategory.class);
 			TableUtils.createTable(connectionSource, Payment.class);
 			TableUtils.createTable(connectionSource, PaymentHasCategory.class);
+			createIndexes();
 		} catch (SQLException e) {
 			Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
 			throw new RuntimeException(e);
@@ -90,6 +91,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 //		simple = new SimpleData(millis + 1);
 //		dao.create(simple);
 //		Log.i(DatabaseHelper.class.getName(), "created new entries in onCreate: " + millis);
+	}
+
+	public void createIndexes(){
+		getEmailDao().queryRaw("CREATE VIRTUAL TABLE Email_fts USING fts4 ( \"_id\", \"htmlContent\" )");
+		getEventDao().queryRaw("CREATE VIRTUAL TABLE Event_fts USING fts4 ( \"_id\", \"description\" )");
 	}
 
 	/**

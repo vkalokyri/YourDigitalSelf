@@ -20,66 +20,66 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <task binding="Task" completionQuantity="1" startQuantity="1" name="SendEmail" id="SendEmail">
 <locals>
 <who name="whoSentEmail"/>
-<who name="ToWhom"/>
+<who name="whoReceivedEmail"/>
 <who name="whoWasCCed"/>
 <who name="whoWasBCCed"/>
-<what name="WhatAbout"/>
-<when name="timeWasSent"/>
+<what name="whatAbout"/>
+<when name="whenWasSent"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="SendFacebookInboxMsg" id="SendFacebookInboxMsg">
 <locals>
 <who name="whoSentMessage"/>
 <who name="whoReceivedMessage"/>
-<what name="WhatAbout"/>
-<when name="timeWasSent"/>
+<what name="whatAbout"/>
+<when name="whenWasSent"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="PostOnFacebook" id="PostOnFacebook">
 <locals>
 <who name="whoPosted"/>
 <who name="whoIsTheAudienceOfPost"/>
-<what name="WhatAbout"/>
-<when name="timeWasPosted"/>
+<what name="whatAbout"/>
+<when name="whenWasPosted"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="SendFacebookEvent" id="SendFacebookEvent">
 <locals>
 <who name="whoIsTheCreator"/>
 <who name="whoIsInvited"/>
-<what name="WhatEvent"/>
-<when name="timeTheInvitationWasSent"/>
+<what name="whatEvent"/>
+<when name="whenTheInvitationWasSent"/>
 <when name="whenIsTheEvent"/>
-<where name="WhereIsTheEvent"/>
+<where name="whereIsTheEvent"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="SendHangoutsMessage" id="SendHangoutsMessage">
 <locals>
 <who name="whoSentMessage"/>
 <who name="whoReceivedMessage"/>
-<what name="WhatAbout"/>
-<when name="timeWasSent"/>
+<what name="whatAbout"/>
+<when name="whenWasSent"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="Tweet" id="Tweet">
 <locals>
 <who name="whoSentTweet"/>
 <who name="whoRepliedToTweet"/>
-<what name="WhatAbout"/>
-<when name="timeWasSent"/>
+<what name="whatAbout"/>
+<when name="whenWasSent"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="SendTwitterInboxMsg" id="SendTwitterInboxMsg">
 <locals>
 <who name="whoSentMessage"/>
 <who name="whoReceivedMessage"/>
-<what name="WhatAbout"/>
-<when name="timeWasSent"/>
+<what name="whatAbout"/>
+<when name="whenWasSent"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="CheckTrainSchedule" id="CheckTrainSchedule"/>
 <inclusiveGateway gatewayDirection="Converging" name="" id="ConvergeWaysOfCommunication"/>
-<sequenceFlow sourceRef="SubProcessStart" targetRef="SelectWaysOfCommunicating" name="" id=""/>
+<!--<sequenceFlow sourceRef="SubProcessStart" targetRef="SelectWaysOfCommunicating" name="" id=""/>
 <sequenceFlow sourceRef="SelectWaysOfCommunicating" targetRef="SendEmail" name="" id=""/>
 <sequenceFlow sourceRef="SelectWaysOfCommunicating" targetRef="SendFacebookInboxMsg" name="" id=""/>
 <sequenceFlow sourceRef="SelectWaysOfCommunicating" targetRef="PostOnFacebook" name="" id=""/>
@@ -96,8 +96,6 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <sequenceFlow sourceRef="Tweet" targetRef="ConvergeWaysOfCommunication" name="" id=""/>
 <sequenceFlow sourceRef="SendTwitterInboxMsg" targetRef="ConvergeWaysOfCommunication" name="" id=""/>
 <sequenceFlow sourceRef="SendTwitterInboxMsg" targetRef="CheckTrainSchedule" name="" id=""/>
-<sequenceFlow sourceRef="ConvergeWaysOfCommunication" targetRef="SubProcessEnd" name="" id=""/>
+<sequenceFlow sourceRef="ConvergeWaysOfCommunication" targetRef="SubProcessEnd" name="" id=""/>-->
 </process>
-
-
 </definitions>

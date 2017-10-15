@@ -19,8 +19,7 @@ import javax.json.JsonValue;
 
 
 public class JsonTriggers implements Triggers {
-	
-	
+
 	ConfigReader config;
 	LinkedList<String> strongTriggers;
 	LinkedList<String> weakTriggers;
@@ -32,14 +31,11 @@ public class JsonTriggers implements Triggers {
 				
 				//create JsonReader object
 				JsonReader jsonReader = Json.createReader(fis);
-					 
 	            JsonObject jsonObject = jsonReader.readObject();
 	            jsonReader.close();
 	    		fis.close();
 	            
 	    		JsonObject scriptObject = jsonObject.getJsonObject(config.getStr(PROPERTIES.SCRIPT));
-
-
 	    		
 	    		JsonArray jsonStrongArray = scriptObject.getJsonArray("strongTriggers");
 	    		this.strongTriggers = new LinkedList<String>();
@@ -60,7 +56,6 @@ public class JsonTriggers implements Triggers {
 	
 	@Override
 	public LinkedList<String> getStrongTriggers() {
-		
 		return this.strongTriggers;
 	}
 

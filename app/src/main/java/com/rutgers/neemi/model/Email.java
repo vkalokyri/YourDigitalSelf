@@ -42,7 +42,10 @@ public class Email implements Serializable{
         @DatabaseField
         String htmlContent;
         @DatabaseField
+        String subject;
+        @DatabaseField
         boolean hasAttachments;
+
 
 
     public Email() {
@@ -153,4 +156,11 @@ public class Email implements Serializable{
         this.hasAttachments = hasAttachments;
     }
 
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
 }

@@ -2,9 +2,39 @@
 	"whenPaid":
 	{	"Payment":"date"
 	},
+	"whoSentEmail":
+	{	"Email":"from"
+	},
+	"whoReceivedEmail":
+	{	"Email":"to"
+	},
+	"whoWasCCed":
+	{	"Email":"cc"
+	},
+	"whoWasBCCed":
+	{	"Email":"bcc"
+	},
+	"whatAbout":
+	{	"Email":"subject"
+	},
+	"whenWasSent":
+	{	"Email":"date"
+	},
+	"whoPaid":
+	{	"Payment": "payer"
+	},
 	"wherePaymentOccured":
 	{	"Payment": "name"
-	}, 
+	},
+	"whenPaid":
+	{	"Payment": "date"
+	},
+	"whatWasPaymentAbout":
+	{	"Payment": "description"
+	},
+	"howWasPaid":
+	{	"Payment": "payment_method"
+	},
 	"whoMadeTheReservation":{
 		"Email": "from"
 	},

@@ -201,7 +201,6 @@ public class BankFragment extends Fragment {
 
         }
 
-        ;
     }
 
 

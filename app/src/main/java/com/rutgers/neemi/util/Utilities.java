@@ -24,64 +24,64 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class Utilities {
 
 	
-	public void saveInExcel(List<Process> listOfProcesses){
-		//Blank workbook
-        XSSFWorkbook workbook = new XSSFWorkbook();
-         
-        //Create a blank sheet
-        XSSFSheet sheet = workbook.createSheet(ConfigReader.getInstance().getStr(PROPERTIES.DB_NAME));
-          
-        //This data needs to be written (Object[])
-//        Map<String, Object[]> data = new TreeMap<String, Object[]>();
-//        data.put("1", new Object[] {"ID", "NAME", "LASTNAME"});
-//        data.put("2", new Object[] {1, "Amit", "Shukla"});
-//        data.put("3", new Object[] {2, "Lokesh", "Gupta"});
-//        data.put("4", new Object[] {3, "John", "Adwards"});
-//        data.put("5", new Object[] {4, "Brian", "Schultz"});
-        
-        
-        
-        int rownum = 0;
-        for (Process process:listOfProcesses){
-            Row row = sheet.createRow(rownum++);
-    		int cellnum = 0;
-    		Cell cell = row.createCell(cellnum++);
-    		cell.setCellValue("Score");
-        	for (Task task:process.getTasks()){
-        		for (Locals sublocals:task.getLocals()){
-        			cell = row.createCell(cellnum++);
-            		cell.setCellValue(sublocals.getW5h_label());
-        		}
-	    		row = sheet.createRow(rownum++);
-	    		cellnum = 0;
-	    		cell = row.createCell(cellnum++);
-	    		cell.setCellValue(process.getScore());
-        		for (Locals sublocals:task.getLocals()){
-        			if (sublocals.getValue()!=null){
-	        			cell = row.createCell(cellnum++);
-	            		cell.setCellValue(sublocals.getValue().toString());
-        			}else{
-        				cellnum++;
-        			}
-        		}
-	    		//Document pid = task.getPid();
-	    		//cell = row.createCell(cellnum++);
-	    		//cell.setCellValue(((Document)pid.get("data")).toJson());
-        	}
-        }
-        try
-        {
-            //Write the workbook in file system
-            FileOutputStream out = new FileOutputStream(new File(ConfigReader.getInstance().getStr(PROPERTIES.SCRIPT)+".xlsx"));
-            workbook.write(out);
-            out.close();
-            System.out.println("Written successfully on disk.");
-        } 
-        catch (Exception e) 
-        {
-            e.printStackTrace();
-        }
-    }
+//	public void saveInExcel(List<Process> listOfProcesses){
+//		//Blank workbook
+//        XSSFWorkbook workbook = new XSSFWorkbook();
+//
+//        //Create a blank sheet
+//        XSSFSheet sheet = workbook.createSheet(ConfigReader.getInstance().getStr(PROPERTIES.DB_NAME));
+//
+//        //This data needs to be written (Object[])
+////        Map<String, Object[]> data = new TreeMap<String, Object[]>();
+////        data.put("1", new Object[] {"ID", "NAME", "LASTNAME"});
+////        data.put("2", new Object[] {1, "Amit", "Shukla"});
+////        data.put("3", new Object[] {2, "Lokesh", "Gupta"});
+////        data.put("4", new Object[] {3, "John", "Adwards"});
+////        data.put("5", new Object[] {4, "Brian", "Schultz"});
+//
+//
+//
+//        int rownum = 0;
+//        for (Process process:listOfProcesses){
+//            Row row = sheet.createRow(rownum++);
+//    		int cellnum = 0;
+//    		Cell cell = row.createCell(cellnum++);
+//    		cell.setCellValue("Score");
+//        	for (Task task:process.getTasks()){
+//        		for (Locals sublocals:task.getLocals()){
+//        			cell = row.createCell(cellnum++);
+//            		cell.setCellValue(sublocals.getW5h_label());
+//        		}
+//	    		row = sheet.createRow(rownum++);
+//	    		cellnum = 0;
+//	    		cell = row.createCell(cellnum++);
+//	    		cell.setCellValue(process.getScore());
+//        		for (Locals sublocals:task.getLocals()){
+//        			if (sublocals.getValue()!=null){
+//	        			cell = row.createCell(cellnum++);
+//	            		cell.setCellValue(sublocals.getValue().toString());
+//        			}else{
+//        				cellnum++;
+//        			}
+//        		}
+//	    		//Document pid = task.getPid();
+//	    		//cell = row.createCell(cellnum++);
+//	    		//cell.setCellValue(((Document)pid.get("data")).toJson());
+//        	}
+//        }
+//        try
+//        {
+//            //Write the workbook in file system
+//            FileOutputStream out = new FileOutputStream(new File(ConfigReader.getInstance().getStr(PROPERTIES.SCRIPT)+".xlsx"));
+//            workbook.write(out);
+//            out.close();
+//            System.out.println("Written successfully on disk.");
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
+//    }
 
 
 	
@@ -192,42 +192,42 @@ public class Utilities {
 //		}
 //	}
 //
-	public Process assignScore(Process process){
-		List<Task> tasks = process.getTasks();
-		float instanceScore = process.getScore();
-		for (Task task:tasks){
-			Object pid = task.getPid();
-			String source = pid.getClass().toString();
-			float addedScore=0;
-			if (source.equals("Payment") ){
-				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.BANK_WEIGHT));
-			}else if (source.equals("EMAIL")){
-				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.EMAIL_WEIGHT));
-				String from =((Email)pid).getFrom();
-				if(((String)from).contains("member_services@opentable.com")){
-					addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.OPENTABLE_WEIGHT));
-				}
-		    			//else if(((String)who.get("value")).contains("calendar-notification@google.com")){
-		    			//	addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.GCAL_WEIGHT));
-		    			//}
-
-
-			}else if (source.equals("gcal")){
-				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.GCAL_WEIGHT));
-			}else if (source.equals("facebook")){
-				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.FACEBOOK_WEIGHT));
-			}else if (source.equals("foursquare")){
-				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.FOURSQUARE_WEIGHT));
-			}else if (source.equals("twitter")){
-				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.TWITTER_WEIGHT));
-			}
-			float newScore = scoreFunction(instanceScore, addedScore);
-			instanceScore=newScore;
-			process.setScore(newScore);
-		}
-		return process;
-
-	}
+//	public Process assignScore(Process process){
+//		List<Task> tasks = process.getTasks();
+//		float instanceScore = process.getScore();
+//		for (Task task:tasks){
+//			Object pid = task.getPid();
+//			String source = pid.getClass().toString();
+//			float addedScore=0;
+//			if (source.equals("Payment") ){
+//				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.BANK_WEIGHT));
+//			}else if (source.equals("EMAIL")){
+//				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.EMAIL_WEIGHT));
+//				String from =((Email)pid).getFrom();
+//				if(((String)from).contains("member_services@opentable.com")){
+//					addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.OPENTABLE_WEIGHT));
+//				}
+//		    			//else if(((String)who.get("value")).contains("calendar-notification@google.com")){
+//		    			//	addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.GCAL_WEIGHT));
+//		    			//}
+//
+//
+//			}else if (source.equals("gcal")){
+//				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.GCAL_WEIGHT));
+//			}else if (source.equals("facebook")){
+//				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.FACEBOOK_WEIGHT));
+//			}else if (source.equals("foursquare")){
+//				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.FOURSQUARE_WEIGHT));
+//			}else if (source.equals("twitter")){
+//				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.TWITTER_WEIGHT));
+//			}
+//			float newScore = scoreFunction(instanceScore, addedScore);
+//			instanceScore=newScore;
+//			process.setScore(newScore);
+//		}
+//		return process;
+//
+//	}
 	
 	public float scoreFunction(float previousScore,float addedScore){
 		return (1-((1-previousScore)*(1-addedScore)));

@@ -15,12 +15,52 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <startEvent name="" id="SubProcessStart"/>
 <endEvent name="" id="SubProcessEnd"/>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="selectPayment"/>
-<task binding="Task" completionQuantity="1" startQuantity="1" name="PayByCash" id="PayByCash"/>
-<task binding="Task" completionQuantity="1" startQuantity="1" name="PayByCreditCard" id="PayByCreditCard"/>
-<task binding="Task" completionQuantity="1" startQuantity="1" name="PayByDebitCard" id="PayByDebitCard"/>
-<task binding="Task" completionQuantity="1" startQuantity="1" name="PayByCheck" id="PayByCheck"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="PayByCash" id="PayByCash">
+<locals>
+    <who name="whoPaid"/>
+    <when name="whenPaid"/>
+    <where name="wherePaymentOccured"/>
+    <what name="whatWasPaymentAbout"/>
+    <how name="howWasPaid"/>
+</locals>
+</task>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="PayByCreditCard" id="PayByCreditCard">
+<locals>
+    <who name="whoPaid"/>
+    <when name="whenPaid"/>
+    <where name="wherePaymentOccured"/>
+    <what name="whatWasPaymentAbout"/>
+    <how name="howWasPaid"/>
+</locals>
+</task>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="PayByDebitCard" id="PayByDebitCard">
+<locals>
+    <who name="whoPaid"/>
+    <when name="whenPaid"/>
+    <where name="wherePaymentOccured"/>
+    <what name="whatWasPaymentAbout"/>
+    <how name="howWasPaid"/>
+</locals>
+</task>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="PayByCheck" id="PayByCheck">
+<locals>
+    <who name="whoPaid"/>
+    <when name="whenPaid"/>
+    <where name="wherePaymentOccured"/>
+    <what name="whatWasPaymentAbout"/>
+    <how name="howWasPaid"/>
+</locals>
+</task>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="optionalConfirmationEmail"/>
-<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceiveConfirmationEmail" id="ReceiveConfirmationEmail"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceiveConfirmationEmail" id="ReceiveConfirmationEmail">
+<locals>
+    <who name="whoPaid"/>
+    <when name="whenPaid"/>
+    <where name="wherePaymentOccured"/>
+    <what name="whatWasPaymentAbout"/>
+    <how name="howWasPaid"/>
+</locals>
+</task>
 <exclusiveGateway gatewayDirection="Converging" name="" id="paymentCompleted"/>
 <sequenceFlow sourceRef="SubProcessStart" targetRef="selectPayment" name="" id=""/>
 <sequenceFlow sourceRef="selectPayment" targetRef="PayByCash" name="" id=""/>

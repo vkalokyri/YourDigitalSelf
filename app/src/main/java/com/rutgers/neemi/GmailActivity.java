@@ -100,7 +100,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
 
         mProgress = new ProgressDialog(this);
-        mProgress.setMessage("Calling Gmail API ...");
+        mProgress.setMessage("Getting your emails ...");
 
         mCredential = GoogleAccountCredential.usingOAuth2(
                 this, Arrays.asList(SCOPES))
@@ -414,14 +414,16 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                             email.setDate(new Date(msg.getInternalDate()));
                             for (MessagePartHeader header : headers) {
                                 String name = header.getName();
-                                if (name.equals("From") || name.equals("from")) {
+                                if (name.equalsIgnoreCase("From")) {
                                     email.setFrom(header.getValue());
-                                } else if (name.equals("To") || name.equals("to")) {
+                                } else if (name.equalsIgnoreCase("To")) {
                                     email.setTo(header.getValue());
-                                } else if (name.equals("Bcc") || name.equals("bcc")) {
+                                } else if (name.equalsIgnoreCase("Bcc")) {
                                     email.setBcc(header.getValue());
-                                } else if (name.equals("Cc") || name.equals("cc")) {
+                                } else if (name.equalsIgnoreCase("Cc")) {
                                     email.setCc(header.getValue());
+                                }else if(name.equalsIgnoreCase("subject")){
+                                    email.setSubject(header.getValue());
                                 }
                             }
                             emailDao.create(email);
@@ -433,9 +435,34 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                     }
                 }
             }while(pageToken != null);
-
             System.out.println("EmailsInserted = " + totalItemsInserted);
+            loadEmailIndex(totalItemsInserted);
             return totalItemsInserted;
+        }
+
+
+        private void loadEmailIndex(final int totalItemsInserted) {
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        GenericRawResults<String[]> rawResults = helper.getEmailDao().queryRaw("select * from Email_fts limit 1");
+                        if (rawResults.getResults().size()==0){
+                            helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"htmlContent\" from Email");
+                        }else{
+                            helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"htmlContent\" from Email order by \"_id\" desc limit "+totalItemsInserted);
+                        }
+                        GenericRawResults<String[]> vrResults =helper.getEmailDao().queryRaw("SELECT * FROM Email_fts;");
+                        System.err.println("VIRTUAL TABLE ADDED = "+vrResults.getResults().size());
+
+                    }catch (SQLException e){
+                        helper.getEmailDao().queryRaw("DROP TABLE IF EXISTS Email_fts ");
+                        helper.getEmailDao().queryRaw("CREATE VIRTUAL TABLE Email_fts USING fts4 ( \"_id\", \"htmlContent\" )");
+                        helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"htmlContent\" from Email");
+                    }
+
+
+                }
+            }).start();
         }
 
 
@@ -460,7 +487,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 }
 
             }catch(Exception e){
-                // get file here
+                System.err.println("Error on reading email parts" +e);// get file here
 
             }
 
