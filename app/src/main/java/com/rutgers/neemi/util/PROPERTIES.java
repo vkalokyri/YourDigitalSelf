@@ -24,7 +24,8 @@ public enum PROPERTIES {
 	OPENTABLE_WEIGHT("openTable_weight"),
 	FACEBOOK_WEIGHT("facebook_weight"),
 	FOURSQUARE_WEIGHT("foursquare_weight"),
-	TWITTER_WEIGHT("twitter_weight");
+	TWITTER_WEIGHT("twitter_weight"),
+	GMAPS("google_maps_API");
 	
 	private String strVal;
 	private PROPERTIES(final String pstrVal) {

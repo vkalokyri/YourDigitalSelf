@@ -8,8 +8,8 @@ import java.io.Serializable;
 /**
  * Created by suitcase on 7/19/17.
  */
-@DatabaseTable(tableName = "PaymentCategory")
-public class PaymentCategory implements Serializable {
+@DatabaseTable(tableName = "Category")
+public class Category implements Serializable {
 
     public static final String CATEGORY = "category";
 
@@ -20,7 +20,7 @@ public class PaymentCategory implements Serializable {
     String categoryName;
 
 
-    public PaymentCategory() {
+    public Category() {
     }
 
     public int get_id() {

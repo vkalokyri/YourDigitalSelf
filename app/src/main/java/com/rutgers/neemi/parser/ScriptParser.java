@@ -78,7 +78,7 @@ public class ScriptParser {
 				Task task = new Task();
 				task = readTask(parser, task);
 				//System.out.println("Task = "+task.getName());
-				process.addTask(task.getName(), task);
+				process.addTaskMap(task.getName(), task);
 				//scriptElements.put(task.getName(),task);
 				scriptElements.put(process.getId(),process);
 				// eventType = parser.nextTag();

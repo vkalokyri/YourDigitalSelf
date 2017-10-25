@@ -40,11 +40,14 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.rutgers.neemi.parser.InitiateScript.JsonTriggerFactory;
+import static com.rutgers.neemi.parser.InitiateScript.util;
 
 
 public class RestaurantsFragment extends Fragment {
@@ -57,6 +60,7 @@ public class RestaurantsFragment extends Fragment {
     DatabaseHelper helper;
     List<Task> tasksRunning=new ArrayList<Task>();
     static Map <String, Object> scriptElements;
+    List<Process> listOfProcesses = new ArrayList<Process>();
 
     Integer[] imgid={
             R.drawable.restaurant
@@ -147,7 +151,16 @@ public class RestaurantsFragment extends Fragment {
                 task.setLocals(localValues);
             }
 
-            CustomListAdapter adapter=new CustomListAdapter(getActivity(), tasksrunning, imgid);
+
+            mergeThreads(tasksRunning);
+
+
+//            for (Process p:listOfProcesses){
+//                for(HashMap.Entry<String, Task> processTask : p.getTasks().entrySet())
+//                    System.out.println("processTasks = "+processTask.getValue());
+//            }
+
+            CustomListAdapter adapter=new CustomListAdapter(getActivity(), listOfProcesses, imgid);
             ListView list=(ListView) myView.findViewById(R.id.restaurant_list);
             list.setAdapter(adapter);
             } catch (FileNotFoundException e1) {
@@ -158,12 +171,84 @@ public class RestaurantsFragment extends Fragment {
     }
 
 
+
+    //	public static void mergeProcessesByEventDate(List<Process> listOfProcesses){
+//		LinkedList<String> strongTriggers = scriptTriggers.getStrongTriggers();
+//		for (Process process:listOfProcesses){
+//        	for (Task task:process.getTasks()){
+//        		String taskName = task.getName();
+//        		if (strongTriggers.contains(taskName)){
+//        			System.err.println("It's a strong trigger task");
+//            		String source = task.getPid().getString("source");
+//            		if (source.equals("gcal")){
+//
+//            		}
+//
+//        		}
+//        		for (Locals sublocals:task.getLocals()){
+//        			if (sublocals.getValue()!=null){
+//	        			sublocals.getValue().toString();
+//        			}else{
+//        			}
+//
+//        		}
+//
+//        	}
+//        }
+//	}
+
+
+	public void mergeThreads(List<Task> tasks){
+
+		//hashmap of key:threadId and value:task
+        HashMap<String,List<Task>> mergeTasksByThread = new HashMap();
+        for (Task task:tasks) {
+            if (task.getPid() instanceof Email) {
+                String key = ((Email) task.getPid()).getThreadId();
+                List<Task> list = mergeTasksByThread.get(key);
+                if (list == null) {
+                    list = new ArrayList<Task>();
+                    mergeTasksByThread.put(key, list);
+                }
+                list.add(task);
+            }else {
+                Process process = new Process();
+                process.addTask(task);
+                process.setLocals(task.getLocals());
+                Process newProcess = util.assignScore(process, getContext());
+                listOfProcesses.add(newProcess);
+            }
+        }
+
+        for (HashMap.Entry<String, List<Task>>  mergedThreads: mergeTasksByThread.entrySet()) {
+            List<Task> mergedtasks = mergedThreads.getValue();
+            Process process = new Process();
+            for (Task task:mergedtasks){
+                process.addTask(task);
+            }
+            Process newProcess = util.assignScore(process, getContext());
+            listOfProcesses.add(newProcess);
+        }
+
+
+
+		System.err.println("Total processes running after threading ="+listOfProcesses.size());
+
+		Collections.sort(listOfProcesses, new Comparator<Process>() {
+	        @Override public int compare(Process p1, Process p2) {
+	            return Float.compare(p2.getScore(),p1.getScore()); // Ascending
+	        }
+
+	    });
+	}
+
+
     public List<Locals> extractTaskLocals(String taskName){
         for (HashMap.Entry<String, Object> entry : scriptElements.entrySet()) {
             String key = entry.getKey();
             Process p = (Process) entry.getValue();
-            if  (p.getTasks().get(taskName)!=null){
-                return p.getTasks().get(taskName).getLocals();
+            if  (p.getTaskMap().get(taskName)!=null){
+                return p.getTaskMap().get(taskName).getLocals();
             }
         }
         return null;
@@ -247,12 +332,16 @@ public class RestaurantsFragment extends Fragment {
                         }
                         if (!foundKeywordsFile){
                             fromClause = fromClause.replace("\"", "");
-                            if (fromTable.contains("Payment")){
+                            if (fromClause.contains("Payment")){
                                 query="select distinct Payment._id, Payment.name ";                            }
                             query = query + fromClause + whereClause;
                             query=query.substring(0,query.length()-4) +");";
-                            //System.out.println("QUERY = " + query);
-                            tasksRunning.addAll(queryDatabase(query,fromTable,subtask));
+                            System.out.println("QUERY = " + query);
+                            try {
+                                tasksRunning.addAll(queryDatabase(query,fromClause,subtask));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }else{
                             foundKeywordsFile=false;
                             tasksRunning.addAll(fullTextSearch(keywordsSearchColumn,fromTable, subtask));
@@ -306,11 +395,9 @@ public class RestaurantsFragment extends Fragment {
 
     public List<Task> queryDatabase(String query, String fromTable, String subtask){
         List<Task> tasks = new ArrayList<Task>();
-        RuntimeExceptionDao<Event, String> calendarDao = helper.getEventDao();
-        RuntimeExceptionDao<Payment, String> paymentDao = helper.getPaymentDao();
 
 
-        GenericRawResults<String[]> rawResults = calendarDao.queryRaw(query);
+        GenericRawResults<String[]> rawResults = helper.getPaymentDao().queryRaw(query);
         List<String[]> results = null;
         try {
             results = rawResults.getResults();
@@ -318,23 +405,24 @@ public class RestaurantsFragment extends Fragment {
             e.printStackTrace();
         }
         if (results!=null){
-            //System.out.println("QueryReturn= " + results.size());
             if (results.size()>0){
                 if (fromTable.contains("Payment")){
-                    for (String[] tuple:results){
-                        Payment payment= new Payment();
+                    for (String[] tuple:results) {
+                        Payment payment = new Payment();
                         payment.setId(tuple[0]);
                         payment.setName(tuple[1]);
 
-                        GenericRawResults<Payment> paymentData = paymentDao.queryRaw("select * from Payment where `_id`="+tuple[0], paymentDao.getRawRowMapper());
-                        for (Payment fullpayment: paymentData){
+                        String tempQuery = "select * from `Payment` where `_id`=" + tuple[0];
+                        GenericRawResults<Payment> paymentData = helper.getPaymentDao().queryRaw(tempQuery, helper.getPaymentDao().getRawRowMapper());
+                        for (Payment fullpayment : paymentData) {
                             Task task = new Task();
                             task.setPid(fullpayment);
                             task.setName(subtask);
                             tasks.add(task);
                         }
-                    }
 
+
+                    }
                 }
             }
         }
@@ -392,13 +480,13 @@ public class RestaurantsFragment extends Fragment {
 
 
 
-    private class CustomListAdapter extends ArrayAdapter<Task> {
+    private class CustomListAdapter extends ArrayAdapter<Process> {
 
         private final Activity context;
-        private final List<Task> itemname;
+        private final List<Process> itemname;
         private final Integer[] imgid;
 
-        public CustomListAdapter(Activity context, List<Task> tasks, Integer[] imgid) {
+        public CustomListAdapter(Activity context, List<Process> tasks, Integer[] imgid) {
             super(context, R.layout.restaurantsview, tasks);
             // TODO Auto-generated constructor stub
 
@@ -418,28 +506,33 @@ public class RestaurantsFragment extends Fragment {
             ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
 
 
-            if (itemname.get(position).getPid() instanceof Email){
-                txtTitle.setText(String.valueOf(((Email)itemname.get(position).getPid()).get_id()));
-                imageView.setImageResource(imgid[0]);
-                if(itemname.get(position).getLocals()!=null) {
-                    for(Locals local : itemname.get(position).getLocals()) {
-                        TextView  localTextView = new TextView(this.getContext());
-                        localTextView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT));
-                        localTextView.setText(getString(R.string.local, local.getW5h_label()+ " : " + local.getValue().toString()));
-                        linearLayout.addView(localTextView);
+                for (Task processTask : itemname.get(position).getTasks()) {
+                System.out.println("SIZE OF TASKS = "+itemname.get(position).getTasks().size());
+                if (processTask.getPid() instanceof Email){
+                    txtTitle.setText(itemname.get(position).getScore()+", "+String.valueOf(((Email)processTask.getPid()).get_id()));
+                    imageView.setImageResource(imgid[0]);
+                    if (itemname.get(position).getLocals() != null) {
+                        for (Locals local : processTask.getLocals()) {
+                            if (!local.getValue().toString().equalsIgnoreCase("[null]") && !local.getValue().toString().equalsIgnoreCase("[]") ) {
+                                TextView localTextView = new TextView(this.getContext());
+                                localTextView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                                        LinearLayout.LayoutParams.WRAP_CONTENT));
+                                localTextView.setText(getString(R.string.local, local.getW5h_label() + " : " + local.getValue().toString()));
+                                linearLayout.addView(localTextView);
+                            }
+                        }
                     }
-                }
 
-            }else if (itemname.get(position).getPid() instanceof Payment) {
-                txtTitle.setText(((Payment)itemname.get(position).getPid()).getName());
-                imageView.setImageResource(imgid[0]);
-                if(itemname.get(position).getLocals()!=null) {
-                    for(Locals local : itemname.get(position).getLocals()) {
+                }else if (processTask.getPid() instanceof Payment) {
+                    txtTitle.setText(itemname.get(position).getScore()+", "+((Payment) processTask.getPid()).getName());
+                    imageView.setImageResource(imgid[0]);
+                    if (itemname.get(position).getLocals() != null) {
+                        for (Locals local : processTask.getLocals()) {
 
-                        TextView  localTextView = new TextView(this.getContext());
-                        localTextView.setText(getString(R.string.local, local.getW5h_label()+ " : " + local.getValue().toString()));
-                        linearLayout.addView(localTextView);
+                            TextView localTextView = new TextView(this.getContext());
+                            localTextView.setText(getString(R.string.local, local.getW5h_label() + " : " + local.getValue().toString()));
+                            linearLayout.addView(localTextView);
+                        }
                     }
                 }
             }

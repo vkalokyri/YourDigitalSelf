@@ -7,21 +7,14 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.google.api.client.util.DateTime;
-import com.j256.ormlite.android.apptools.OrmLiteBaseActivity;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
@@ -34,15 +27,13 @@ import com.plaid.client.response.Account;
 import com.plaid.client.response.AccountsGetResponse;
 import com.plaid.client.response.ItemPublicTokenExchangeResponse;
 import com.plaid.client.response.TransactionsGetResponse;
-import com.rutgers.neemi.model.PaymentCategory;
+import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Payment;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.PaymentHasCategory;
 import com.rutgers.neemi.model.Place;
 
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -55,7 +46,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -336,11 +326,11 @@ public class PlaidActivity extends AppCompatActivity {
 
         private class AsyncGetTransactionsTask extends AsyncTask<String, Void, Integer> {
 
-        final RuntimeExceptionDao<PaymentCategory, String> categoryDao = helper.getCategoryDao();
+        final RuntimeExceptionDao<Category, String> categoryDao = helper.getCategoryDao();
         final RuntimeExceptionDao<Payment, String> paymentDao = helper.getPaymentDao();
         final RuntimeExceptionDao<Person, String> personDao = helper.getPersonDao();
         final RuntimeExceptionDao<Place, String> placeDao = helper.getPlaceDao();
-        final RuntimeExceptionDao<PaymentHasCategory, String> transactionHasCategoriesDao = helper.getTransactionCategoriesDao();
+        final RuntimeExceptionDao<PaymentHasCategory, String> transactionHasCategoriesDao = helper.getPaymentHasCategoryRuntimeDao();
 
         int transactionsRetrieved = 0;
 
@@ -518,11 +508,11 @@ public class PlaidActivity extends AppCompatActivity {
                             paymentDao.create(transaction);
 
                             if (txn.getCategory() != null) {
-                                List<PaymentCategory> categoryList = new ArrayList<>();
+                                List<Category> categoryList = new ArrayList<>();
                                 for (String category : txn.getCategory()) {
-                                    PaymentCategory categoryExists = categoryExists(category);
+                                    Category categoryExists = categoryExists(category);
                                     if (categoryExists == null) {
-                                        PaymentCategory newCategory = new PaymentCategory();
+                                        Category newCategory = new Category();
                                         newCategory.setCategoryName(category);
                                         categoryDao.create(newCategory);
                                         categoryList.add(newCategory);
@@ -531,7 +521,7 @@ public class PlaidActivity extends AppCompatActivity {
                                         transactionHasCategoriesDao.create(trans_categories);
                                     }
                                 }
-                                for (PaymentCategory eachCategory : categoryList) {
+                                for (Category eachCategory : categoryList) {
                                     PaymentHasCategory trans_categories = new PaymentHasCategory(transaction, eachCategory);
                                     transactionHasCategoriesDao.create(trans_categories);
                                 }
@@ -560,16 +550,16 @@ public class PlaidActivity extends AppCompatActivity {
 
         }
 
-        public PaymentCategory categoryExists(String name) {
+        public Category categoryExists(String name) {
 
-            RuntimeExceptionDao<PaymentCategory, String> categoryDao = helper.getCategoryDao();
+            RuntimeExceptionDao<Category, String> categoryDao = helper.getCategoryDao();
 
-            QueryBuilder<PaymentCategory, String> queryBuilder =
+            QueryBuilder<Category, String> queryBuilder =
                     categoryDao.queryBuilder();
-            Where<PaymentCategory, String> where = queryBuilder.where();
+            Where<Category, String> where = queryBuilder.where();
             try {
-                where.eq(PaymentCategory.CATEGORY, name);
-                List<PaymentCategory> results = queryBuilder.query();
+                where.eq(Category.CATEGORY, name);
+                List<Category> results = queryBuilder.query();
                 if (results.size() != 0) {
                     return results.get(0);
                 } else

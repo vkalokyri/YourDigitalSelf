@@ -1,47 +1,41 @@
 package com.rutgers.neemi;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
-import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
-import com.facebook.login.widget.LoginButton;
 import com.google.api.client.util.DateTime;
-import com.j256.ormlite.android.apptools.OrmLiteBaseActivity;
-import com.j256.ormlite.dao.ForeignCollection;
+import com.google.maps.GeoApiContext;
+import com.google.maps.PlacesApi;
+import com.google.maps.errors.ApiException;
+import com.google.maps.model.LatLng;
+import com.google.maps.model.PlacesSearchResponse;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
-import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.stmt.Where;
 import com.rutgers.neemi.model.Album;
+import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Event;
+import com.rutgers.neemi.model.PaymentHasCategory;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.PhotoTags;
 import com.rutgers.neemi.model.Place;
+import com.rutgers.neemi.model.PlaceHasCategory;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,13 +46,9 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-import com.facebook.messenger.MessengerUtils;
-import com.facebook.messenger.MessengerThreadParams;
-import com.facebook.messenger.ShareToMessengerParams;
 
 public class FacebookActivity extends AppCompatActivity {
 
@@ -129,6 +119,7 @@ public class FacebookActivity extends AppCompatActivity {
                         final RuntimeExceptionDao<Event, String> eventDao = helper.getEventDao();
                         final RuntimeExceptionDao<PhotoTags, String> photoTagsDao = helper.getPhotoTagsDao();
 
+
                         Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
                         cal.add(Calendar.MONTH, -6); // substract 6 months
                         DateTime since=new DateTime(cal.getTimeInMillis());
@@ -168,6 +159,13 @@ public class FacebookActivity extends AppCompatActivity {
                         GraphRequest.Callback graphCallback = new GraphRequest.Callback(){
                             @Override
                             public void onCompleted(GraphResponse response) {
+
+                                GeoApiContext context = new GeoApiContext.Builder()
+                                        .apiKey("AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE")
+                                        .build();
+                                LatLng latLng= new LatLng();
+
+
                                 if (response.getError() != null) {
                                     // handle error
                                     System.out.println("ERROR");
@@ -377,8 +375,43 @@ public class FacebookActivity extends AppCompatActivity {
                                                             if (locationJson.has("zip")) {
                                                                 newPlace.setZip((String) locationJson.get("zip"));
                                                             }
+
+
+
                                                             placeDao.create(newPlace);
                                                             photo.setPlace(newPlace);
+
+                                                            LatLng location = new LatLng(newPlace.getLatitude(),newPlace.getLongitude());
+                                                            try {
+                                                                PlacesSearchResponse gmapsResponse = PlacesApi.nearbySearchQuery(context, location)
+                                                                        .radius(100)
+                                                                        .keyword(newPlace.getName())
+                                                                        .name(newPlace.getName())
+                                                                        .await();
+                                                                if (gmapsResponse.results!=null){
+                                                                    for(String placeCategory: gmapsResponse.results[0].types){
+
+                                                                        Category categoryExists = helper.placeCategoryExists(placeCategory);
+                                                                        if (categoryExists == null) {
+                                                                            Category newCategory = new Category();
+                                                                            newCategory.setCategoryName(placeCategory);
+                                                                            helper.getCategoryDao().create(newCategory);
+                                                                            PlaceHasCategory placeHasCategories = new PlaceHasCategory(newPlace, newCategory);
+                                                                            helper.getPlaceHasCategoryRuntimeDao().create(placeHasCategories);
+                                                                        } else {
+                                                                            PlaceHasCategory trans_categories = new PlaceHasCategory(newPlace, categoryExists);
+                                                                            helper.getPlaceHasCategoryRuntimeDao().create(trans_categories);
+                                                                        }
+                                                                    }
+                                                                }
+                                                            } catch (ApiException e) {
+                                                                e.printStackTrace();
+                                                            } catch (InterruptedException e) {
+                                                                e.printStackTrace();
+                                                            } catch (IOException e) {
+                                                                e.printStackTrace();
+                                                            }
+
                                                         }
                                                     } else {
                                                         photo.setPlace(place);

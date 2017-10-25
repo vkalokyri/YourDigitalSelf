@@ -1,5 +1,7 @@
 package com.rutgers.neemi.util;
 
+import android.content.Context;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -11,7 +13,10 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import com.rutgers.neemi.model.Email;
+import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Locals;
+import com.rutgers.neemi.model.Payment;
+import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Process;
 import com.rutgers.neemi.model.Task;
 import com.rutgers.neemi.parser.InitiateScript;
@@ -20,6 +25,8 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import static com.rutgers.neemi.parser.InitiateScript.config;
 
 public class Utilities {
 
@@ -85,18 +92,17 @@ public class Utilities {
 
 
 	
-//	public List<List<Document>> getEmailThreads(LinkedList<Document> scripts){
+//	public List<List<Task>> getEmailThreads(List<Task> tasks){
 //		List<List<String>> threads=new ArrayList<List<String>>();
-//		List<List<Document>> mergedScripts = new ArrayList<List<Document>>();
-//		HashMap<String,Document> map= new HashMap<String,Document>();
+//		List<List<Task>> mergedScripts = new ArrayList<List<Task>>();
+//		HashMap<String,Task> map= new HashMap<String,Task>();
 //
-//		for (Document doc:scripts){
-//			String source = (String) doc.get("source");
-//			List<Document> newInstance = new ArrayList<Document>();
-//			if (source.equals("gmail")){
+//		for (Task task:tasks){
+//			List<Task> newInstance = new ArrayList<Task>();
+//			if (task.getPid() instanceof Email){
 //				List<String> messageIds=new ArrayList<String>();
 //				boolean found_related_emails=false;
-//				Document data = (Document) doc.get("data");
+//				Email data = (Email) task.getPid();
 //		    	ArrayList whatArray = (ArrayList) data.get("what");
 //		    	for (int i=0;i<whatArray.size();i++){
 //		    		Document what = (Document)whatArray.get(i);
@@ -139,7 +145,7 @@ public class Utilities {
 //
 //
 //	}
-//
+
 //	public List<List<String>> removeSubsets(List<List<String>> listOfAll) {
 //
 //		List<List<String>> valuesToRemove=new ArrayList<List<String>>();
@@ -154,7 +160,7 @@ public class Utilities {
 //		listOfAll.removeAll(valuesToRemove);
 //
 //		return listOfAll;
-//
+
 //	}
 //
 ////	public static void main(String[] args) {
@@ -192,42 +198,39 @@ public class Utilities {
 //		}
 //	}
 //
-//	public Process assignScore(Process process){
-//		List<Task> tasks = process.getTasks();
-//		float instanceScore = process.getScore();
-//		for (Task task:tasks){
-//			Object pid = task.getPid();
-//			String source = pid.getClass().toString();
-//			float addedScore=0;
-//			if (source.equals("Payment") ){
-//				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.BANK_WEIGHT));
-//			}else if (source.equals("EMAIL")){
-//				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.EMAIL_WEIGHT));
-//				String from =((Email)pid).getFrom();
-//				if(((String)from).contains("member_services@opentable.com")){
-//					addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.OPENTABLE_WEIGHT));
-//				}
-//		    			//else if(((String)who.get("value")).contains("calendar-notification@google.com")){
-//		    			//	addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.GCAL_WEIGHT));
-//		    			//}
-//
-//
-//			}else if (source.equals("gcal")){
-//				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.GCAL_WEIGHT));
-//			}else if (source.equals("facebook")){
-//				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.FACEBOOK_WEIGHT));
-//			}else if (source.equals("foursquare")){
-//				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.FOURSQUARE_WEIGHT));
-//			}else if (source.equals("twitter")){
-//				addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.TWITTER_WEIGHT));
-//			}
-//			float newScore = scoreFunction(instanceScore, addedScore);
-//			instanceScore=newScore;
-//			process.setScore(newScore);
-//		}
-//		return process;
-//
-//	}
+	public Process assignScore(Process process,  Context context){
+		ConfigReader config = new ConfigReader(context);
+		List<Task> tasks = process.getTasks();
+
+		float instanceScore = process.getScore();
+		for (Task processTask : tasks) {
+			Object pid = processTask.getPid();
+			float addedScore=0;
+			if (pid instanceof Payment ){
+				addedScore = Float.parseFloat(config.getStr(PROPERTIES.BANK_WEIGHT));
+			}else if (pid instanceof Email){
+				addedScore = Float.parseFloat(config.getStr(PROPERTIES.EMAIL_WEIGHT));
+				String from =((Email)pid).getFrom();
+				if(((String)from).contains("member_services@opentable.com")){
+					addedScore = Float.parseFloat(config.getStr(PROPERTIES.OPENTABLE_WEIGHT));
+				}
+		    			//else if(((String)who.get("value")).contains("calendar-notification@google.com")){
+		    			//	addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.GCAL_WEIGHT));
+		    			//}
+
+
+			}else if (pid instanceof Event){
+				addedScore = Float.parseFloat(config.getStr(PROPERTIES.GCAL_WEIGHT));
+			}else if (pid instanceof Photo){
+				addedScore = Float.parseFloat(config.getStr(PROPERTIES.FACEBOOK_WEIGHT));
+			}
+			float newScore = scoreFunction(instanceScore, addedScore);
+			instanceScore=newScore;
+			process.setScore(newScore);
+		}
+		return process;
+
+	}
 	
 	public float scoreFunction(float previousScore,float addedScore){
 		return (1-((1-previousScore)*(1-addedScore)));

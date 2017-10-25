@@ -14,16 +14,17 @@ import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 import com.rutgers.neemi.model.Album;
+import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.EventAttendees;
-import com.rutgers.neemi.model.PaymentCategory;
-import com.rutgers.neemi.model.Payment;
 import com.rutgers.neemi.model.PaymentHasCategory;
+import com.rutgers.neemi.model.Payment;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.PhotoTags;
 import com.rutgers.neemi.model.Place;
+import com.rutgers.neemi.model.PlaceHasCategory;
 
 /**
  * Database helper class used to manage the creation and upgrading of your database. This class also usually provides
@@ -46,8 +47,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private RuntimeExceptionDao<EventAttendees, String> eventAttendeesRuntimeDao = null;
 	private RuntimeExceptionDao<PhotoTags, String> photoTagsRuntimeDao = null;
 	private RuntimeExceptionDao<Payment, String> paymentRuntimeDao = null;
-	private RuntimeExceptionDao<PaymentCategory, String> categoryRuntimeDao = null;
-	private RuntimeExceptionDao<PaymentHasCategory, String> transactionCategoriesRuntimeDao = null;
+	private RuntimeExceptionDao<Category, String> categoryRuntimeDao = null;
+	private RuntimeExceptionDao<PlaceHasCategory, String> placeHasCategoryRuntimeDao = null;
+	private RuntimeExceptionDao<PaymentHasCategory, String> paymentHasCategoryRuntimeDao = null;
+
+
+
 	public static SQLiteDatabase myDB;
 
 
@@ -73,9 +78,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, Place.class);
 			TableUtils.createTable(connectionSource, EventAttendees.class);
 			TableUtils.createTable(connectionSource, PhotoTags.class);
-			TableUtils.createTable(connectionSource, PaymentCategory.class);
+			TableUtils.createTable(connectionSource, Category.class);
 			TableUtils.createTable(connectionSource, Payment.class);
 			TableUtils.createTable(connectionSource, PaymentHasCategory.class);
+			TableUtils.createTable(connectionSource, PlaceHasCategory.class);
+
 			createIndexes();
 		} catch (SQLException e) {
 			Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
@@ -114,9 +121,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, Place.class,true);
 			TableUtils.dropTable(connectionSource, EventAttendees.class,true);
 			TableUtils.dropTable(connectionSource, PhotoTags.class, true);
-			TableUtils.dropTable(connectionSource, PaymentCategory.class, true);
+			TableUtils.dropTable(connectionSource, Category.class, true);
 			TableUtils.dropTable(connectionSource, Payment.class, true);
 			TableUtils.dropTable(connectionSource, PaymentHasCategory.class, true);
+			TableUtils.dropTable(connectionSource, PlaceHasCategory.class, true);
 			// after we drop the old databases, we create the new ones
 			onCreate(db, connectionSource);
 		} catch (SQLException e) {
@@ -210,19 +218,27 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		return paymentRuntimeDao;
 	}
 
-	public RuntimeExceptionDao<PaymentCategory, String> getCategoryDao() {
+	public RuntimeExceptionDao<Category, String> getCategoryDao() {
 		if (categoryRuntimeDao == null) {
-			categoryRuntimeDao = getRuntimeExceptionDao(PaymentCategory.class);
+			categoryRuntimeDao = getRuntimeExceptionDao(Category.class);
 		}
 		return categoryRuntimeDao;
 	}
 
-	public RuntimeExceptionDao<PaymentHasCategory, String> getTransactionCategoriesDao() {
-		if (transactionCategoriesRuntimeDao == null) {
-			transactionCategoriesRuntimeDao = getRuntimeExceptionDao(PaymentHasCategory.class);
+	public RuntimeExceptionDao<PaymentHasCategory, String> getPaymentHasCategoryRuntimeDao() {
+		if (paymentHasCategoryRuntimeDao == null) {
+			paymentHasCategoryRuntimeDao = getRuntimeExceptionDao(PaymentHasCategory.class);
 		}
-		return transactionCategoriesRuntimeDao;
+		return paymentHasCategoryRuntimeDao;
 	}
+
+	public RuntimeExceptionDao<PlaceHasCategory, String> getPlaceHasCategoryRuntimeDao() {
+		if (placeHasCategoryRuntimeDao == null) {
+			placeHasCategoryRuntimeDao = getRuntimeExceptionDao(PlaceHasCategory.class);
+		}
+		return placeHasCategoryRuntimeDao;
+	}
+
 
 	/**
 	 * Close the database connections and clear any cached DAOs.
@@ -238,10 +254,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		photoRuntimeDao =null;
 		photoTagsRuntimeDao=null;
 		eventAttendeesRuntimeDao = null;
-		transactionCategoriesRuntimeDao =null;
+		placeHasCategoryRuntimeDao =null;
+		paymentHasCategoryRuntimeDao =null;
 		categoryRuntimeDao = null;
 		paymentRuntimeDao = null;
-
 	}
 
 
@@ -393,6 +409,26 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		return null;
 	}
 
+
+	public Category placeCategoryExists(String name) {
+
+		RuntimeExceptionDao<Category, String> placeCategoryDao = getCategoryDao();
+
+		QueryBuilder<Category, String> queryBuilder =
+				placeCategoryDao.queryBuilder();
+		Where<Category, String> where = queryBuilder.where();
+		try {
+			where.eq(Category.CATEGORY, name);
+			List<Category> results = queryBuilder.query();
+			if (results.size() != 0) {
+				return results.get(0);
+			} else
+				return null;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 
 }

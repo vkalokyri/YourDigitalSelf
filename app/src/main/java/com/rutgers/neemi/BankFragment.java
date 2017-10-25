@@ -2,7 +2,6 @@ package com.rutgers.neemi;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -17,6 +16,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.maps.GeoApiContext;
+import com.google.maps.PlacesApi;
+import com.google.maps.errors.ApiException;
+import com.google.maps.model.LatLng;
+import com.google.maps.model.PlacesSearchResponse;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
@@ -24,16 +28,16 @@ import com.j256.ormlite.stmt.Where;
 import com.plaid.client.PlaidClient;
 import com.plaid.client.request.TransactionsGetRequest;
 import com.plaid.client.response.TransactionsGetResponse;
-import com.rutgers.neemi.model.Payment;
-import com.rutgers.neemi.model.PaymentCategory;
+import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.PaymentHasCategory;
+import com.rutgers.neemi.model.Payment;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Place;
+import com.rutgers.neemi.model.PlaceHasCategory;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
@@ -206,11 +210,11 @@ public class BankFragment extends Fragment {
 
         private class AsyncGetTransactionsTask extends AsyncTask<String, Void, Integer> {
 
-            final RuntimeExceptionDao<PaymentCategory, String> categoryDao = helper.getCategoryDao();
+            final RuntimeExceptionDao<Category, String> categoryDao = helper.getCategoryDao();
             final RuntimeExceptionDao<Payment, String> paymentDao = helper.getPaymentDao();
             final RuntimeExceptionDao<Person, String> personDao = helper.getPersonDao();
             final RuntimeExceptionDao<Place, String> placeDao = helper.getPlaceDao();
-            final RuntimeExceptionDao<PaymentHasCategory, String> transactionHasCategoriesDao = helper.getTransactionCategoriesDao();
+            final RuntimeExceptionDao<PaymentHasCategory, String> transactionHasCategoriesDao = helper.getPaymentHasCategoryRuntimeDao();
 
             int transactionsRetrieved = 0;
 
@@ -223,6 +227,10 @@ public class BankFragment extends Fragment {
             @Override
             protected Integer doInBackground(String... params) {
                 String accessToken = params[0];
+
+                GeoApiContext context = new GeoApiContext.Builder()
+                        .apiKey("AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE")
+                        .build();
 
                 try {
                     try {
@@ -386,6 +394,44 @@ public class BankFragment extends Fragment {
                                             } else {
                                                 transaction.setPlace(placeExists);
                                             }
+
+
+                                            LatLng gmapslatLong = new LatLng(location.getLat(),location.getLon());
+                                            try {
+                                                PlacesSearchResponse gmapsResponse = PlacesApi.nearbySearchQuery(context, gmapslatLong)
+                                                        .radius(100)
+                                                        .keyword(placeExists.getName())
+                                                        .name(placeExists.getName())
+                                                        .await();
+                                                if (gmapsResponse.results!=null){
+                                                    for(String placeCategory: gmapsResponse.results[0].types){
+
+                                                        Category categoryExists = helper.placeCategoryExists(placeCategory);
+                                                        if (categoryExists == null) {
+                                                            Category newCategory = new Category();
+                                                            newCategory.setCategoryName(placeCategory);
+                                                            helper.getCategoryDao().create(newCategory);
+                                                            PlaceHasCategory placeHasCategories = new PlaceHasCategory(placeExists, newCategory);
+                                                            helper.getPlaceHasCategoryRuntimeDao().create(placeHasCategories);
+                                                        } else {
+                                                            PlaceHasCategory trans_categories = new PlaceHasCategory(placeExists, categoryExists);
+                                                            helper.getPlaceHasCategoryRuntimeDao().create(trans_categories);
+                                                        }
+                                                    }
+                                                }
+                                            } catch (ApiException e) {
+                                                e.printStackTrace();
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
+
+
+
+
+
+
                                         }
                                     }
 
@@ -393,11 +439,11 @@ public class BankFragment extends Fragment {
                                     paymentDao.create(transaction);
 
                                     if (txn.getCategory() != null) {
-                                        List<PaymentCategory> categoryList = new ArrayList<>();
+                                        List<Category> categoryList = new ArrayList<>();
                                         for (String category : txn.getCategory()) {
-                                            PaymentCategory categoryExists = categoryExists(category);
+                                            Category categoryExists = categoryExists(category);
                                             if (categoryExists == null) {
-                                                PaymentCategory newCategory = new PaymentCategory();
+                                                Category newCategory = new Category();
                                                 newCategory.setCategoryName(category);
                                                 categoryDao.create(newCategory);
                                                 categoryList.add(newCategory);
@@ -406,13 +452,15 @@ public class BankFragment extends Fragment {
                                                 transactionHasCategoriesDao.create(trans_categories);
                                             }
                                         }
-                                        for (PaymentCategory eachCategory : categoryList) {
+                                        for (Category eachCategory : categoryList) {
                                             PaymentHasCategory trans_categories = new PaymentHasCategory(transaction, eachCategory);
                                             transactionHasCategoriesDao.create(trans_categories);
                                         }
-
-
                                     }
+
+
+
+
                                     transactionsRetrieved++;
                                 }
                             }
@@ -435,16 +483,16 @@ public class BankFragment extends Fragment {
 
             }
 
-            public PaymentCategory categoryExists(String name) {
+            public Category categoryExists(String name) {
 
-                RuntimeExceptionDao<PaymentCategory, String> categoryDao = helper.getCategoryDao();
+                RuntimeExceptionDao<Category, String> categoryDao = helper.getCategoryDao();
 
-                QueryBuilder<PaymentCategory, String> queryBuilder =
+                QueryBuilder<Category, String> queryBuilder =
                         categoryDao.queryBuilder();
-                Where<PaymentCategory, String> where = queryBuilder.where();
+                Where<Category, String> where = queryBuilder.where();
                 try {
-                    where.eq(PaymentCategory.CATEGORY, name);
-                    List<PaymentCategory> results = queryBuilder.query();
+                    where.eq(Category.CATEGORY, name);
+                    List<Category> results = queryBuilder.query();
                     if (results.size() != 0) {
                         return results.get(0);
                     } else

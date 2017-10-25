@@ -1,5 +1,5 @@
 #
-# generated on 2017/10/12 02:15:04
+# generated on 2017/10/18 05:10:20
 #
 # --table-start--
 dataClass=com.rutgers.neemi.model.Email
@@ -331,6 +331,27 @@ foreign=true
 # --table-end--
 #################################
 # --table-start--
+dataClass=com.rutgers.neemi.model.PlaceHasCategory
+tableName=PlaceHasCategory
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=place
+columnName=place_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=category
+columnName=category_id
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
 dataClass=com.rutgers.neemi.model.Payment
 tableName=Payment
 # --table-fields-start--
@@ -393,8 +414,8 @@ foreign=true
 # --table-end--
 #################################
 # --table-start--
-dataClass=com.rutgers.neemi.model.PaymentCategory
-tableName=PaymentCategory
+dataClass=com.rutgers.neemi.model.Category
+tableName=Category
 # --table-fields-start--
 # --field-start--
 fieldName=_id
