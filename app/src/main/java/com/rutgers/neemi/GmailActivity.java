@@ -39,8 +39,11 @@ import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
 import com.google.api.services.gmail.model.MessagePartHeader;
+import com.j256.ormlite.android.AndroidConnectionSource;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
 import com.rutgers.neemi.model.Email;
 
 import java.io.IOException;
@@ -357,8 +360,12 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 //            } catch (SQLException e) {
 //                e.printStackTrace();
 //            }
-
+//
+//
+//
+//
             RuntimeExceptionDao<Email, String> emailDao = helper.getEmailDao();
+
 
             String user = "me";
             int totalItemsInserted=0;
@@ -447,17 +454,17 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                     try {
                         GenericRawResults<String[]> rawResults = helper.getEmailDao().queryRaw("select * from Email_fts limit 1");
                         if (rawResults.getResults().size()==0){
-                            helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"htmlContent\" from Email");
+                            helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\", \"subject\" from Email");
                         }else{
-                            helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"htmlContent\" from Email order by \"_id\" desc limit "+totalItemsInserted);
+                            helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\",\"subject\" from Email order by \"_id\" desc limit "+totalItemsInserted);
                         }
                         GenericRawResults<String[]> vrResults =helper.getEmailDao().queryRaw("SELECT * FROM Email_fts;");
                         System.err.println("VIRTUAL TABLE ADDED = "+vrResults.getResults().size());
 
-                    }catch (SQLException e){
+                    }catch (Exception e){
                         helper.getEmailDao().queryRaw("DROP TABLE IF EXISTS Email_fts ");
-                        helper.getEmailDao().queryRaw("CREATE VIRTUAL TABLE Email_fts USING fts4 ( \"_id\", \"htmlContent\" )");
-                        helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"htmlContent\" from Email");
+                        helper.getEmailDao().queryRaw("CREATE VIRTUAL TABLE Email_fts USING fts4 ( \"_id\", \"textContent\",\"subject\" )");
+                        helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\",\"subject\" from Email");
                     }
 
 

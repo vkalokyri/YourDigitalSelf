@@ -22,6 +22,8 @@
     <string name="openDrawer">Navigation View Closed</string>
     <color name="white">#FFFFFF</color>
     <string name="local">%1$s</string>
+    <string name="pause">Pause Location Updates</string>
+    <string name="resume">Resume Location Updates</string>
 
 
     <string-array name="Services">

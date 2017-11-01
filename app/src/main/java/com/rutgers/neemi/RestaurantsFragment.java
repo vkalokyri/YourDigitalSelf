@@ -3,6 +3,7 @@ package com.rutgers.neemi;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,9 @@ import android.widget.TextView;
 
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.joestelmach.natty.DateGroup;
+import com.joestelmach.natty.ParseLocation;
+import com.joestelmach.natty.Parser;
 import com.rutgers.neemi.interfaces.Clues;
 import com.rutgers.neemi.interfaces.Triggers;
 import com.rutgers.neemi.interfaces.W5hLocals;
@@ -40,11 +44,15 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.json.JsonString;
 
 import static com.rutgers.neemi.parser.InitiateScript.JsonTriggerFactory;
 import static com.rutgers.neemi.parser.InitiateScript.util;
@@ -52,6 +60,8 @@ import static com.rutgers.neemi.parser.InitiateScript.util;
 
 public class RestaurantsFragment extends Fragment {
 
+
+    private static final String TAG = "RestaurantsFragment";
     View myView;
     String scriptKeywords;
     static Triggers scriptTriggers;
@@ -74,6 +84,34 @@ public class RestaurantsFragment extends Fragment {
         return myView;
     }
 
+
+    private List<List<Date>> extractTime(String text, Date referDate){
+
+
+        Parser parser = new Parser();
+        List<List<Date>> extractedDates = new ArrayList<List<Date>>();
+
+        //Calendar cal = Calendar.getInstance();
+        //cal.setTimeInMillis(0);
+        //cal.set(2017, 10, 10, 12, 49, 34);
+        //Date referDate = cal.getTime();
+        List<DateGroup> groups = parser.parse(text, referDate);
+        for(DateGroup group:groups) {
+            List dates = group.getDates();
+            int line = group.getLine();
+            int column = group.getPosition();
+            String matchingValue = group.getText();
+            String syntaxTree = group.getSyntaxTree().toStringTree();
+            Map<String, List<ParseLocation>> parseMap = group.getParseLocations();
+            boolean isRecurring = group.isRecurring();
+            Date recursUntil = group.getRecursUntil();
+            extractedDates.add(dates);
+        }
+        return extractedDates;
+
+    }
+
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
 
@@ -81,6 +119,8 @@ public class RestaurantsFragment extends Fragment {
 
 
         helper=new DatabaseHelper(getActivity());
+
+
 
         try{
             ConfigReader config = new ConfigReader(getContext());
@@ -124,6 +164,7 @@ public class RestaurantsFragment extends Fragment {
                 Object pid = task.getPid();
                 if (pid instanceof Email){
                     System.err.println("Task = "+ taskName+ ", Email = "+((Email) pid).get_id());
+                   // List<List<Date>> extractedDates = extractTime(((Email) pid).getSubject(),((Email) pid).getDate());
                 }else if (pid instanceof Payment){
                     System.err.println("Task = "+ taskName+ ", Payment = "+((Payment) pid).getName());
                 }
@@ -155,10 +196,6 @@ public class RestaurantsFragment extends Fragment {
             mergeThreads(tasksRunning);
 
 
-//            for (Process p:listOfProcesses){
-//                for(HashMap.Entry<String, Task> processTask : p.getTasks().entrySet())
-//                    System.out.println("processTasks = "+processTask.getValue());
-//            }
 
             CustomListAdapter adapter=new CustomListAdapter(getActivity(), listOfProcesses, imgid);
             ListView list=(ListView) myView.findViewById(R.id.restaurant_list);
@@ -282,6 +319,7 @@ public class RestaurantsFragment extends Fragment {
                                     //System.out.println("From value = " + ((ArrayList) clues.getValue()).get(i));
                                     if (i == 0) {
                                         fromTable = ((ArrayList) clues.getValue()).get(i).toString();
+                                        Log.d(TAG,"fromTable "+ fromTable);
                                         fromClause = fromClause + "`"+((ArrayList) clues.getValue()).get(i)+"`";
                                     } else {
                                         fromClause = fromClause + ",`" + ((ArrayList) clues.getValue()).get(i)+"`";
@@ -299,29 +337,41 @@ public class RestaurantsFragment extends Fragment {
                                         for (HashMap.Entry<Object, Object> valueOfAndOr : valuesOfAndOr.entrySet()) {
                                             String andOrKey = (String) valueOfAndOr.getKey();
                                             Object andOrValue = valueOfAndOr.getValue();
-                                            //System.out.println("clue key = " + andOrKey);
+                                            Log.d(TAG,"clue key "+ andOrKey);
                                             if (andOrValue instanceof ArrayList) {
                                                 for (int i = 0; i < ((ArrayList) andOrValue).size(); i++) {
                                                     String item = ((ArrayList) andOrValue).get(i).toString();
-                                                    //System.out.println("Clue value = " + item);
-                                                    if (item.equals("\"KEYWORDS_FILE\"")){
-                                                        foundKeywordsFile = true;
-                                                        keywordsSearchColumn = andOrKey;
-                                                    }else {
-                                                        //whereClause = whereClause + " ( `" + andOrKey+"`";
-                                                        if (i == 0) {
-                                                            whereClause = whereClause + " ( `" + andOrKey+"`" + " LIKE '%" + item.toString().replace("\"", "") + "%'";
-                                                        } else {
-                                                            whereClause = whereClause + " or `" + andOrKey + "` LIKE '%" + item.toString().replace("\"", "") + "%'";
-                                                        }
+                                                    Log.d(TAG,"Clue value = " + item);
+                                                    //whereClause = whereClause + " ( `" + andOrKey+"`";
+                                                    if (i == 0) {
+                                                        whereClause = whereClause + " ( `" + andOrKey+"`" + " LIKE '%" + item.toString().replace("\"", "") + "%'";
+                                                    } else {
+                                                        whereClause = whereClause + " or `" + andOrKey + "` LIKE '%" + item.toString().replace("\"", "") + "%'";
                                                     }
+
                                                 }
                                                 whereClause = whereClause + " )";
 
                                             } else {
-                                                whereClause = whereClause +" "+ andOrKey;
-                                                //System.out.println("Clue value = " + andOrValue.toString().replace("\"", ""));
-                                                whereClause = whereClause + " = " + andOrValue.toString().replace("\"", "");
+                                                if (((JsonString)andOrValue).getString().equals("KEYWORDS_FILE")) {
+
+                                                    //if (i == 0) {
+                                                    whereClause = whereClause + " `" + andOrKey + "` MATCH '(" + scriptKeywords + ")'";
+                                                    //whereClause = whereClause + " ( `" + andOrKey+"`" + " LIKE '%" + item.toString().replace("\"", "") + "%'";
+                                                    //} else {
+                                                    //    whereClause = whereClause + " or `" + andOrKey + "` MATCH '("+ scriptKeywords+")'";
+                                                    //}
+
+                                                    foundKeywordsFile = true;
+                                                    //keywordsSearchColumn = andOrKey;
+                                                    whereClause = whereClause + " )";
+
+                                                } else {
+                                                    whereClause = whereClause + " " + andOrKey;
+                                                    //System.out.println("Clue value = " + andOrValue.toString().replace("\"", ""));
+                                                    whereClause = whereClause + " = " + andOrValue.toString().replace("\"", "");
+                                                }
+
                                             }
                                             whereClause = whereClause + " " +clueKey ;
                                         }
@@ -344,7 +394,8 @@ public class RestaurantsFragment extends Fragment {
                             }
                         }else{
                             foundKeywordsFile=false;
-                            tasksRunning.addAll(fullTextSearch(keywordsSearchColumn,fromTable, subtask));
+                            whereClause=whereClause.substring(0,whereClause.length()-4) +")";
+                            tasksRunning.addAll(fullTextSearch(whereClause,fromTable, subtask));
                         }
 
                     }
@@ -355,13 +406,16 @@ public class RestaurantsFragment extends Fragment {
         return tasksRunning;
     }
 
-    public List<Task> fullTextSearch(String text_column, String fromTable, String subtask){
+    public List<Task> fullTextSearch(String whereClause, String fromTable, String subtask){
 
         fromTable=fromTable.toString().replace("\"", "");
         List<Task> tasks = new ArrayList<Task>();
 
-        String query = "SELECT * FROM "+ fromTable +" WHERE \"_id\" IN (select \"_id\" from "+ fromTable + "_fts WHERE `"+ text_column +"` MATCH '("+ scriptKeywords+")')";
+        String query = "SELECT * FROM "+ fromTable +" WHERE \"_id\" IN (select \"_id\" from "+ fromTable + "_fts "+ whereClause +";"; //`"+ text_column +"` MATCH '("+ scriptKeywords+")')";
+        query = query.replace(" or "," UNION select \"_id\" from " + fromTable + "_fts where ( " );
         System.out.println("FULLTEXTQUERY = " + query);
+        //query = "SELECT * FROM Email WHERE \"_id\" IN (select \"_id\" from Email_fts  where  `textContent` MATCH '(\"restaurant\" OR \"dinner\" OR \"lunch\" )' UNION select \"_id\" from Email_fts  where `subject` MATCH '(\"restaurant\" OR \"dinner\" OR \"lunch\" )');";
+
         if (fromTable.equals("Email")){
             GenericRawResults<Email> rawResults = helper.getEmailDao().queryRaw(query,helper.getEmailDao().getRawRowMapper());
             for (Email email: rawResults){
@@ -474,8 +528,6 @@ public class RestaurantsFragment extends Fragment {
 		}
 
 	}
-
-
 
 
 

@@ -137,7 +137,7 @@ public class Email implements Serializable{
     }
 
     public void setTextContent(String content) {
-        this.textContent = textContent;
+        this.textContent = content;
     }
 
     public long getTimestamp() {

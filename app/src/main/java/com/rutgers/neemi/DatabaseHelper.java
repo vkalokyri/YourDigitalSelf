@@ -101,7 +101,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	}
 
 	public void createIndexes(){
-		getEmailDao().queryRaw("CREATE VIRTUAL TABLE Email_fts USING fts4 ( \"_id\", \"htmlContent\" )");
+		getEmailDao().queryRaw("CREATE VIRTUAL TABLE Email_fts USING fts4 ( \"_id\", \"textContent\", \"subject\"  )");
 		getEventDao().queryRaw("CREATE VIRTUAL TABLE Event_fts USING fts4 ( \"_id\", \"description\" )");
 	}
 

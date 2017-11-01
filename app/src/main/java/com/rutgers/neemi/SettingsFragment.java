@@ -114,7 +114,10 @@ public class SettingsFragment extends Fragment {
 //                    Intent myIntent = new Intent(getActivity(), PlaidActivity.class);
 //                    startActivity(myIntent);
                 }
-
+                if (Selecteditem.equalsIgnoreCase("Location data")){
+                    Intent myIntent = new Intent(getActivity(), LocationActivity.class);
+                    startActivity(myIntent);
+                }
                 Toast.makeText(getActivity(), Selecteditem, Toast.LENGTH_SHORT).show();
 
             }

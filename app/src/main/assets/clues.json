@@ -5,7 +5,7 @@
 				"from": "Email",
 				"where":{
 					"and": {
-						"from": ["member_services@opentable.com"]
+						"`from`": "member_services@opentable.com"
 					}
 				}
 			}
@@ -44,8 +44,8 @@
 					"from": "Email",
 					"where": {
 						"or": {
-							"htmlContent":	["KEYWORDS_FILE"],
-							"subject": ["KEYWORDS_FILE"]
+							"textContent":	"KEYWORDS_FILE",
+							"subject": "KEYWORDS_FILE"
 						}
 					}
 				}
@@ -60,7 +60,7 @@
 				"from": "Event",
 				"where": {
 					"and": {
-						"description": ["KEYWORDS_FILE"]
+						"description": "KEYWORDS_FILE"
 					}
 				}
 			}
@@ -79,7 +79,7 @@
 					"from": "Email",
 					"where": {
 						"or": {
-							"htmlContent": "KEYWORDS_FILE",
+							"textContent": "KEYWORDS_FILE",
 							"subject": "KEYWORDS_FILE"
 						}
 					}
@@ -118,10 +118,8 @@
 		"restaurant": [
 			{
 				"PostOnFacebook": {
-					"from": [
+					"from":
 						"Photo"
-					]
-
 				}
 		}]
 	}
