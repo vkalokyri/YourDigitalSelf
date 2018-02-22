@@ -45,6 +45,11 @@ public class Email implements Serializable{
         String subject;
         @DatabaseField
         boolean hasAttachments;
+        @DatabaseField
+        Date subjectDate;
+        @DatabaseField
+        Date bodyDate;
+
 
 
 
@@ -162,5 +167,21 @@ public class Email implements Serializable{
 
     public void setSubject(String subject) {
         this.subject = subject;
+    }
+
+    public Date getSubjectDate() {
+        return subjectDate;
+    }
+
+    public void setSubjectDate(Date subjectDate) {
+        this.subjectDate = subjectDate;
+    }
+
+    public Date getBodyDate() {
+        return bodyDate;
+    }
+
+    public void setBodyDate(Date bodyDate) {
+        this.bodyDate = bodyDate;
     }
 }

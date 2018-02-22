@@ -117,7 +117,7 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
         //setContentView(R.layout.activity_gcal);
 
 
-        helper=new DatabaseHelper(this);
+        helper=DatabaseHelper.getHelper(this);
 
 
         //Google widgets

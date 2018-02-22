@@ -71,7 +71,7 @@ public class FacebookActivity extends AppCompatActivity {
         // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
 
-        helper=new DatabaseHelper(this);
+        helper=DatabaseHelper.getHelper(this);
 
         // Initialize layout button
         fbbutton = (Button) findViewById(R.id.login_button);

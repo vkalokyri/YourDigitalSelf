@@ -93,7 +93,7 @@ public class BankFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        helper=new DatabaseHelper(getActivity());
+        helper=DatabaseHelper.getHelper(getActivity()); 
         mProgress = new ProgressDialog(getActivity());
         mProgress.setMessage("Getting your financial transactions. Please wait ...");
 

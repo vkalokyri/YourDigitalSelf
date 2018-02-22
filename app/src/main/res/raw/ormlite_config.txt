@@ -1,5 +1,5 @@
 #
-# generated on 2017/10/18 05:10:20
+# generated on 2018/02/10 09:53:14
 #
 # --table-start--
 dataClass=com.rutgers.neemi.model.Email
@@ -47,6 +47,12 @@ fieldName=subject
 # --field-end--
 # --field-start--
 fieldName=hasAttachments
+# --field-end--
+# --field-start--
+fieldName=subjectDate
+# --field-end--
+# --field-start--
+fieldName=bodyDate
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -424,6 +430,185 @@ generatedId=true
 # --field-start--
 fieldName=categoryName
 columnName=category
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.Task
+tableName=Task
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=name
+# --field-end--
+# --field-start--
+fieldName=oid
+# --field-end--
+# --field-start--
+fieldName=isGateway
+# --field-end--
+# --field-start--
+fieldName=script
+columnName=script_id
+canBeNull=false
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.Script
+tableName=script
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=scriptDefinition
+columnName=script_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=timestamp
+# --field-end--
+# --field-start--
+fieldName=score
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.TaskDefinition
+tableName=taskdefinition
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=name
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.ScriptDefinition
+tableName=ScriptDefinition
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=name
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.LocalProperties
+tableName=LocalProperties
+# --table-fields-start--
+# --field-start--
+fieldName=label_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=w5h_label
+# --field-end--
+# --field-start--
+fieldName=w5h_value
+# --field-end--
+# --field-start--
+fieldName=script
+columnName=script_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=task
+columnName=task_id
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.LocalValues
+tableName=LocalValues
+# --table-fields-start--
+# --field-start--
+fieldName=script
+columnName=s_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=local
+columnName=local_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=task
+columnName=t_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=local_value
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.ScriptHasTasks
+tableName=ScriptHasTasks
+# --table-fields-start--
+# --field-start--
+fieldName=script
+columnName=script_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=task
+columnName=task_id
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.Subscript
+tableName=subscript
+# --table-fields-start--
+# --field-start--
+fieldName=superscript_id
+columnName=superscript_id
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=subscript_id
+columnName=subscript_id
+foreign=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.Transition
+tableName=Transition
+# --table-fields-start--
+# --field-start--
+fieldName=source
+columnName=source
+foreign=true
+# --field-end--
+# --field-start--
+fieldName=target
+columnName=target
+foreign=true
 # --field-end--
 # --table-fields-end--
 # --table-end--

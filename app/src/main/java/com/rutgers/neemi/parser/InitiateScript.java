@@ -9,21 +9,13 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
 import com.rutgers.neemi.interfaces.Clues;
 import com.rutgers.neemi.interfaces.Triggers;
-import com.rutgers.neemi.interfaces.W5hLocals;
-import com.rutgers.neemi.model.Locals;
-import com.rutgers.neemi.model.Process;
+import com.rutgers.neemi.model.Script;
 import com.rutgers.neemi.model.Task;
 import com.rutgers.neemi.util.ConfigReader;
 import com.rutgers.neemi.util.PROPERTIES;
@@ -33,7 +25,7 @@ public class InitiateScript {
 
 	public static HashMap<Object,Object> triggers_Clues = new HashMap<Object,Object>();
 	//public static Map<String, LinkedList<Document>> taskPids = new HashMap<String, LinkedList<Document>>();
-	public static List<Process> listOfProcesses = new ArrayList<Process>();
+	public static List<Script> listOfProcesses = new ArrayList<Script>();
 	public static ScriptParser sp;
 	public static Utilities util = new Utilities();
 	public static ConfigReader config;//ConfigReader.getInstance();
@@ -104,11 +96,11 @@ public class InitiateScript {
 //        	  System.out.println("Task is: "+taskName);
 //        	  Object pid = task.getPid();
 //        	  List<Object> locals = sp.extractLocalsFromProcess(taskName.replace("\"", ""));
-//        	  List<Locals> localValues = new ArrayList<Locals>();
+//        	  List<LocalProperties> localValues = new ArrayList<LocalProperties>();
 //
 //        	  if (locals!=null){
 //	        	  for(Object w5h:locals){
-//	            	  Locals w5hInfo = new Locals();
+//	            	  LocalProperties w5hInfo = new LocalProperties();
 //	        		  if (w5h instanceof Who){
 //	        			  W5hLocals taskLocals = JsonTriggerFactory.getLocals();
 //	        			  List<String> localValue = taskLocals.getLocals(((Who)w5h).getName(), pid);
@@ -207,7 +199,7 @@ public class InitiateScript {
 //            		}
 //
 //        		}
-//        		for (Locals sublocals:task.getLocals()){
+//        		for (LocalProperties sublocals:task.getLocals()){
 //        			if (sublocals.getValue()!=null){
 //	        			sublocals.getValue().toString();
 //        			}else{

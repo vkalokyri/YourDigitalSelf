@@ -1,6 +1,8 @@
 package com.rutgers.neemi;
 
+import java.sql.Array;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -8,6 +10,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
+import com.j256.ormlite.dao.GenericRawResults;
+import com.j256.ormlite.dao.RawRowMapper;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.Where;
@@ -18,6 +22,8 @@ import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.EventAttendees;
+import com.rutgers.neemi.model.LocalProperties;
+import com.rutgers.neemi.model.LocalValues;
 import com.rutgers.neemi.model.PaymentHasCategory;
 import com.rutgers.neemi.model.Payment;
 import com.rutgers.neemi.model.Person;
@@ -25,6 +31,13 @@ import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.PhotoTags;
 import com.rutgers.neemi.model.Place;
 import com.rutgers.neemi.model.PlaceHasCategory;
+import com.rutgers.neemi.model.Script;
+import com.rutgers.neemi.model.ScriptDefinition;
+import com.rutgers.neemi.model.ScriptHasTasks;
+import com.rutgers.neemi.model.Subscript;
+import com.rutgers.neemi.model.Task;
+import com.rutgers.neemi.model.TaskDefinition;
+import com.rutgers.neemi.util.ApplicationManager;
 
 /**
  * Database helper class used to manage the creation and upgrading of your database. This class also usually provides
@@ -32,12 +45,12 @@ import com.rutgers.neemi.model.PlaceHasCategory;
  */
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
-	// name of the database file for your application -- change to something appropriate for your app
+	// name of the database file for the application -- change to something appropriate for your app
 	private static final String DATABASE_NAME = "neemi.db";
 	// any time you make changes to your database objects, you may have to increase the database version
 	private static final int DATABASE_VERSION = 1;
 
-	// the DAO object we use to access the Email table
+	// the DAO objects we use to access our tables
 	private RuntimeExceptionDao<Email, String> emailRuntimeDao = null;
     private RuntimeExceptionDao<Event, String> calEventRuntimeDao = null;
 	private RuntimeExceptionDao<Person, String> personRuntimeDao = null;
@@ -50,15 +63,33 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private RuntimeExceptionDao<Category, String> categoryRuntimeDao = null;
 	private RuntimeExceptionDao<PlaceHasCategory, String> placeHasCategoryRuntimeDao = null;
 	private RuntimeExceptionDao<PaymentHasCategory, String> paymentHasCategoryRuntimeDao = null;
-
+	private RuntimeExceptionDao<Script, String> scriptRuntimeDao = null;
+    private RuntimeExceptionDao<ScriptDefinition, String> scriptDefRuntimeDao = null;
+    private RuntimeExceptionDao<ScriptHasTasks, String> scriptDefHasTaskDefRuntimeDao = null;
+    private RuntimeExceptionDao<Task, String> taskRuntimeDao = null;
+    private RuntimeExceptionDao<TaskDefinition, String> taskDefRuntimeDao = null;
+	private RuntimeExceptionDao<LocalProperties, String> localPropertiesRuntimeDao = null;
+    private RuntimeExceptionDao<LocalValues, String> localsRuntimeDao = null;
+    private RuntimeExceptionDao<Subscript, String> subscriptRuntimeDao = null;
+	Context context;
 
 
 	public static SQLiteDatabase myDB;
 
+	private static DatabaseHelper instance;
+
+	public static synchronized DatabaseHelper getHelper(Context context)
+	{
+		if (instance == null)
+			instance = new DatabaseHelper(context);
+
+		return instance;
+	}
 
 
 	public DatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION, R.raw.ormlite_config);
+		this.context=context;
 	}
 
 	/**
@@ -82,8 +113,17 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, Payment.class);
 			TableUtils.createTable(connectionSource, PaymentHasCategory.class);
 			TableUtils.createTable(connectionSource, PlaceHasCategory.class);
+			TableUtils.createTable(connectionSource, Script.class);
+            TableUtils.createTable(connectionSource, ScriptDefinition.class);
+			TableUtils.createTable(connectionSource, LocalProperties.class);
+            TableUtils.createTable(connectionSource, LocalValues.class);
+            TableUtils.createTable(connectionSource, Task.class);
+            TableUtils.createTable(connectionSource, TaskDefinition.class);
+            TableUtils.createTable(connectionSource, ScriptHasTasks.class);
+            TableUtils.createTable(connectionSource, Subscript.class);
 
 			createIndexes();
+
 		} catch (SQLException e) {
 			Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
 			throw new RuntimeException(e);
@@ -125,6 +165,13 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, Payment.class, true);
 			TableUtils.dropTable(connectionSource, PaymentHasCategory.class, true);
 			TableUtils.dropTable(connectionSource, PlaceHasCategory.class, true);
+			TableUtils.dropTable(connectionSource, Script.class, true);
+            TableUtils.dropTable(connectionSource, ScriptDefinition.class, true);
+            TableUtils.dropTable(connectionSource, ScriptHasTasks.class, true);
+            TableUtils.dropTable(connectionSource, LocalProperties.class, true);
+			TableUtils.dropTable(connectionSource, Task.class, true);
+            TableUtils.dropTable(connectionSource, TaskDefinition.class, true);
+            TableUtils.dropTable(connectionSource, Subscript.class, true);
 			// after we drop the old databases, we create the new ones
 			onCreate(db, connectionSource);
 		} catch (SQLException e) {
@@ -239,6 +286,62 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		return placeHasCategoryRuntimeDao;
 	}
 
+	public RuntimeExceptionDao<Script, String> getScriptDao() {
+		if (scriptRuntimeDao == null) {
+			scriptRuntimeDao = getRuntimeExceptionDao(Script.class);
+		}
+		return scriptRuntimeDao;
+	}
+
+    public RuntimeExceptionDao<Subscript, String> getSubScriptDao() {
+        if (subscriptRuntimeDao == null) {
+            subscriptRuntimeDao = getRuntimeExceptionDao(Subscript.class);
+        }
+        return subscriptRuntimeDao;
+    }
+
+    public RuntimeExceptionDao<ScriptDefinition, String> getScriptDefDao() {
+        if (scriptDefRuntimeDao == null) {
+            scriptDefRuntimeDao = getRuntimeExceptionDao(ScriptDefinition.class);
+        }
+        return scriptDefRuntimeDao;
+    }
+
+	public RuntimeExceptionDao<Task, String> getTaskDao() {
+		if (taskRuntimeDao == null) {
+			taskRuntimeDao = getRuntimeExceptionDao(Task.class);
+		}
+		return taskRuntimeDao;
+	}
+
+    public RuntimeExceptionDao<TaskDefinition, String> getTaskDefinitionDao() {
+        if (taskDefRuntimeDao == null) {
+            taskDefRuntimeDao = getRuntimeExceptionDao(TaskDefinition.class);
+        }
+        return taskDefRuntimeDao;
+    }
+
+    public RuntimeExceptionDao<ScriptHasTasks, String> getScriptHasTasksDao() {
+        if (scriptDefHasTaskDefRuntimeDao == null) {
+            scriptDefHasTaskDefRuntimeDao = getRuntimeExceptionDao(ScriptHasTasks.class);
+        }
+        return scriptDefHasTaskDefRuntimeDao;
+    }
+
+	public RuntimeExceptionDao<LocalProperties, String> getLocalPropertiesDao() {
+		if (localPropertiesRuntimeDao == null) {
+            localPropertiesRuntimeDao = getRuntimeExceptionDao(LocalProperties.class);
+		}
+		return localPropertiesRuntimeDao;
+	}
+
+    public RuntimeExceptionDao<LocalValues, String> getLocalValuesDao() {
+        if ( localsRuntimeDao == null) {
+            localsRuntimeDao = getRuntimeExceptionDao(LocalValues.class);
+        }
+        return  localsRuntimeDao;
+    }
+
 
 	/**
 	 * Close the database connections and clear any cached DAOs.
@@ -258,7 +361,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		paymentHasCategoryRuntimeDao =null;
 		categoryRuntimeDao = null;
 		paymentRuntimeDao = null;
+        subscriptRuntimeDao =null;
 	}
+
 
 
 	public Person personExistsById(String id) {
@@ -428,6 +533,117 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+    public TaskDefinition taskDefinitionExists(String name) {
+
+        RuntimeExceptionDao<TaskDefinition, String> taskDefDao = getTaskDefinitionDao();
+
+        QueryBuilder<TaskDefinition, String> queryBuilder =
+                taskDefDao.queryBuilder();
+        Where<TaskDefinition, String> where = queryBuilder.where();
+        try {
+            where.eq("name", name);
+            List<TaskDefinition> results = queryBuilder.query();
+            if (results.size() != 0) {
+                return results.get(0);
+            } else
+                return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public ScriptDefinition scriptDefinitionExists(String name) {
+
+        RuntimeExceptionDao<ScriptDefinition, String> scriptDefDao = getScriptDefDao();
+
+        QueryBuilder<ScriptDefinition, String> queryBuilder =
+                scriptDefDao.queryBuilder();
+        Where<ScriptDefinition, String> where = queryBuilder.where();
+        try {
+            where.eq("name", name);
+            List<ScriptDefinition> results = queryBuilder.query();
+            if (results.size() != 0) {
+                return results.get(0);
+            } else
+                return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+	public ArrayList<LocalProperties> extractTaskLocals(String taskName) throws SQLException {
+
+		RuntimeExceptionDao<LocalProperties, String> localPropertiesDao = getLocalPropertiesDao();
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT label_id, w5h_label, w5h_value FROM LocalProperties, TaskDefinition where TaskDefinition.name='");
+		sb.append(taskName);
+		sb.append("'and TaskDefinition.id=task_id;");
+
+		GenericRawResults<LocalProperties> rawResults =
+				localPropertiesDao.queryRaw(sb.toString(),
+						new RawRowMapper<LocalProperties>() {
+							public LocalProperties mapRow(String[] columnNames,
+											  String[] resultColumns) {
+								return new LocalProperties(Integer.parseInt(resultColumns[0]),
+										(String)resultColumns[1],(String)resultColumns[2]);
+							}
+						});
+
+		return (ArrayList<LocalProperties>)rawResults.getResults();
+
+	}
+
+	public ArrayList<LocalProperties> getTopLevelScriptLocals(String topLevelScriptName) throws SQLException {
+		RuntimeExceptionDao<LocalProperties, String> localPropertiesDao = getLocalPropertiesDao();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT label_id, w5h_label, w5h_value from LocalProperties, ScriptDefinition where name='");
+		sb.append(topLevelScriptName);
+		sb.append("' and id=script_id;");
+
+		GenericRawResults<LocalProperties> rawResults =
+				localPropertiesDao.queryRaw(sb.toString(),
+						new RawRowMapper<LocalProperties>() {
+							public LocalProperties mapRow(String[] columnNames,
+														  String[] resultColumns) {
+								return new LocalProperties(Integer.parseInt(resultColumns[0]),
+										(String)resultColumns[1],(String)resultColumns[2]);
+							}
+						});
+
+		return (ArrayList<LocalProperties>)rawResults.getResults();
+
+	}
+
+	public ArrayList<ScriptDefinition> getTopScriptByTask(String taskName) throws SQLException {
+		RuntimeExceptionDao<ScriptDefinition, String> scriptDefinitionDao = getScriptDefDao();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("select sd.name, label_id, w5h_label, w5h_value from ScriptDefinition sd, TaskDefinition tf, ScriptHasTasks sht, LocalProperties lp where tf.name='");
+		sb.append(taskName);
+		sb.append("' and sht.task_id=tf.id and sht.script_id=sd.id and lp.script_id=sd.id;");
+
+		GenericRawResults<ScriptDefinition> rawResults =
+				scriptDefinitionDao.queryRaw(sb.toString(),
+						new RawRowMapper<ScriptDefinition>() {
+							public ScriptDefinition mapRow(String[] columnNames,
+														  String[] resultColumns) {
+								ScriptDefinition sd=new ScriptDefinition();
+								sd.setName((String)resultColumns[0]);
+								LocalProperties lp= new LocalProperties(Integer.parseInt(resultColumns[1]),
+										(String)resultColumns[2],(String)resultColumns[3]);
+								sd.addLocalProperties(lp);
+								return sd;
+							}
+						});
+
+		return (ArrayList<ScriptDefinition>)rawResults.getResults();
+
 	}
 
 

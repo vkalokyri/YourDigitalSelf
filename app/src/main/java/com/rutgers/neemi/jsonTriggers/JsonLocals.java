@@ -48,11 +48,11 @@ public class JsonLocals implements W5hLocals{
 
 
 	@Override
-	public List<String> getLocals(String local, Object pid, Context context) throws IOException {
+	public ArrayList<String> getLocals(String local, Object pid, Context context) throws IOException {
 		this.fis = context.getAssets().open(config.getStr(PROPERTIES.LOCALS_FILE));
 		this.jsonReader = Json.createReader(fis);
 		JsonObject jsonObject = jsonReader.readObject();
-		List<String> localValues = new ArrayList<String>();
+		ArrayList<String> localValues = new ArrayList<String>();
 
 		JsonObject localObject = jsonObject.getJsonObject(local);
 		if (localObject!=null){

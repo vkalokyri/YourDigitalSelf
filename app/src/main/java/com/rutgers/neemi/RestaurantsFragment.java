@@ -1,40 +1,45 @@
 package com.rutgers.neemi;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
-import com.joestelmach.natty.DateGroup;
-import com.joestelmach.natty.ParseLocation;
-import com.joestelmach.natty.Parser;
 import com.rutgers.neemi.interfaces.Clues;
 import com.rutgers.neemi.interfaces.Triggers;
 import com.rutgers.neemi.interfaces.W5hLocals;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
-import com.rutgers.neemi.model.Locals;
+import com.rutgers.neemi.model.LocalProperties;
+import com.rutgers.neemi.model.LocalValues;
 import com.rutgers.neemi.model.Payment;
-import com.rutgers.neemi.model.Process;
+import com.rutgers.neemi.model.Script;
+import com.rutgers.neemi.model.ScriptDefinition;
+import com.rutgers.neemi.model.ScriptHasTasks;
+import com.rutgers.neemi.model.Subscript;
 import com.rutgers.neemi.model.Task;
+import com.rutgers.neemi.model.TaskDefinition;
 import com.rutgers.neemi.parser.TriggersFactory;
 import com.rutgers.neemi.parser.ScriptParser;
+import com.rutgers.neemi.util.ApplicationManager;
 import com.rutgers.neemi.util.ConfigReader;
 import com.rutgers.neemi.util.PROPERTIES;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
+import com.rutgers.neemi.util.Utilities;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -42,9 +47,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.sql.Array;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -54,6 +61,7 @@ import java.util.Map;
 
 import javax.json.JsonString;
 
+import static com.facebook.FacebookSdk.getApplicationContext;
 import static com.rutgers.neemi.parser.InitiateScript.JsonTriggerFactory;
 import static com.rutgers.neemi.parser.InitiateScript.util;
 
@@ -69,66 +77,84 @@ public class RestaurantsFragment extends Fragment {
     public static HashMap<Object,Object> triggers_Clues = new HashMap<Object,Object>();
     DatabaseHelper helper;
     List<Task> tasksRunning=new ArrayList<Task>();
-    static Map <String, Object> scriptElements;
-    List<Process> listOfProcesses = new ArrayList<Process>();
+    ArrayList<Script> listOfScripts = new ArrayList<Script>();
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    RuntimeExceptionDao<ScriptDefinition, String> scriptDefDao;
+    RuntimeExceptionDao<Subscript, String> subscriptsDao;
+    RuntimeExceptionDao<TaskDefinition, String> taskDefDao;
+    RuntimeExceptionDao<ScriptHasTasks, String> scriptHasTasksDao;
+    RuntimeExceptionDao<LocalValues, String> localValuesDao;
+
+
 
     Integer[] imgid={
             R.drawable.restaurant
     };
 
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//        if (!prefs.getBoolean("firstTime", false)) {
+//            // <---- run your one time code here
+//            findScriptInstances();
+//
+//            // mark first time has runned.
+//            SharedPreferences.Editor editor = prefs.edit();
+//            editor.putBoolean("firstTime", true);
+//            editor.commit();
+//        }
+
         myView = inflater.inflate(R.layout.fragment_restaurants, container, false);
+        ListView list1 =  (ListView) myView.findViewById(R.id.restaurant_list);
+
+        list1.setOnItemClickListener(
+                new AdapterView.OnItemClickListener()
+                {
+                    @Override
+                    public void onItemClick(AdapterView<?> arg0, View view,
+                                            int position, long id) {
+                        ScriptFragment scriptFragment = new ScriptFragment();
+                        Bundle arguments = new Bundle();
+                        arguments.putSerializable("processes", listOfScripts);
+                        scriptFragment.setArguments(arguments);
+
+                        android.support.v4.app.FragmentTransaction scriptfragmentTrans = getFragmentManager().beginTransaction();
+                        scriptfragmentTrans.replace(R.id.frame,scriptFragment);
+                        scriptfragmentTrans.commit();
+                        Toast.makeText(getContext(), "Pressed!", Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+
         return myView;
     }
 
 
-    private List<List<Date>> extractTime(String text, Date referDate){
+    public void findScriptInstances(){
 
+        helper=DatabaseHelper.getHelper(getActivity());
+        scriptDefDao = helper.getScriptDefDao();
+        subscriptsDao = helper.getSubScriptDao();
+        taskDefDao = helper.getTaskDefinitionDao();
+        scriptHasTasksDao = helper.getScriptHasTasksDao();
+        localValuesDao = helper.getLocalValuesDao();
 
-        Parser parser = new Parser();
-        List<List<Date>> extractedDates = new ArrayList<List<Date>>();
-
-        //Calendar cal = Calendar.getInstance();
-        //cal.setTimeInMillis(0);
-        //cal.set(2017, 10, 10, 12, 49, 34);
-        //Date referDate = cal.getTime();
-        List<DateGroup> groups = parser.parse(text, referDate);
-        for(DateGroup group:groups) {
-            List dates = group.getDates();
-            int line = group.getLine();
-            int column = group.getPosition();
-            String matchingValue = group.getText();
-            String syntaxTree = group.getSyntaxTree().toStringTree();
-            Map<String, List<ParseLocation>> parseMap = group.getParseLocations();
-            boolean isRecurring = group.isRecurring();
-            Date recursUntil = group.getRecursUntil();
-            extractedDates.add(dates);
-        }
-        return extractedDates;
-
-    }
-
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-
-        super.onActivityCreated(savedInstanceState);
-
-
-        helper=new DatabaseHelper(getActivity());
-
+        scriptDefDao.queryRaw("delete from LocalValues;");
 
 
         try{
             ConfigReader config = new ConfigReader(getContext());
-            String filename = config.getStr(PROPERTIES.SCRIPT_FILE);
-            System.out.println(filename);
-            this.scriptElements=new HashMap<String, Object>();
-            this.scriptElements = new ScriptParser().start(filename,null,getContext());
+//            String filename = config.getStr(PROPERTIES.SCRIPT_FILE);
+//            Log.d(TAG, "Read script file: "+ filename);
+//            this.scriptElements=new HashMap<String, Object>();
+//
+//            /*parse the script and get the script definitions*/
+//            this.scriptElements = new ScriptParser().start(filename,null,getContext());
+//            storeScriptDefinition(this.scriptElements);
 
+            /*get the keywords to search in the documents*/
             InputStream fis = getContext().getAssets().open(config.getStr(PROPERTIES.KEYWORDS_FILE));
             InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
             BufferedReader br = new BufferedReader(isr);
@@ -137,7 +163,6 @@ public class RestaurantsFragment extends Fragment {
             while ((line = br.readLine()) != null) {
                 keywords=keywords+"\""+line+"\""+" OR ";
             }
-            System.err.println(keywords);
             this.scriptKeywords=keywords.substring(0, keywords.length()-4);
 
             //Get the strong triggers and clues for triggers of the script
@@ -157,82 +182,263 @@ public class RestaurantsFragment extends Fragment {
                 //printTriggersAndClues(triggers_Clues);
             }
 
+            /*find the initial tasks that are running*/
             List <Task> tasksrunning= findTaskInstancesInDatabase(triggers_Clues);
+
+            /*extract all the local properties from the tasks*/
             for (Task task:tasksrunning) {
                 String taskName = task.getName();
                 System.out.println("Task is: " + taskName);
                 Object pid = task.getPid();
-                if (pid instanceof Email){
-                    System.err.println("Task = "+ taskName+ ", Email = "+((Email) pid).get_id());
-                   // List<List<Date>> extractedDates = extractTime(((Email) pid).getSubject(),((Email) pid).getDate());
-                }else if (pid instanceof Payment){
-                    System.err.println("Task = "+ taskName+ ", Payment = "+((Payment) pid).getName());
+                if (pid instanceof Event) {
+                    System.err.println("Task = " + taskName + ", Event = " + ((Event) pid).get_id());
+                } else if (pid instanceof Email) {
+                    System.err.println("Task = " + taskName + ", Email = " + ((Email) pid).get_id());
+
+
+                } else if (pid instanceof Payment) {
+                    System.err.println("Task = " + taskName + ", Payment = " + ((Payment) pid).getName());
                 }
-                List<Locals> taskLocals = extractTaskLocals(taskName);
-                List<Locals> localValues = new ArrayList<Locals>();
+
+                ArrayList<LocalProperties> taskLocals = null;
+                taskLocals = helper.extractTaskLocals(taskName);
+
 
                 if (taskLocals!=null){
-                    for(Locals w5h:taskLocals){
-                        Locals w5hInfo = new Locals();
-                        for (String w5hValue: w5h.getValue() ){
-                            W5hLocals locals = JsonTriggerFactory.getLocals(getContext());
-                            List<String> localValue = locals.getLocals(w5hValue, pid, getContext());
-                            w5hInfo.setW5h_label(w5hValue);
-                            w5hInfo.setValue(localValue);
-                            System.err.println(w5h.getW5h_label());
-                            if (localValue!=null){
-                                for (String v:localValue)
-                                    System.err.println(v);
+                    for(LocalProperties w5h:taskLocals){
+                        W5hLocals locals = JsonTriggerFactory.getLocals(getContext());
+                        ArrayList<String> localValue = locals.getLocals(w5h.getW5h_value(), pid, getContext());
+                        if (localValue.size()>0) {
+                            for (String lValue:localValue) {
+
+                                LocalValues w5hInfo = new LocalValues();
+                                w5hInfo.setLocalProperties(w5h);
+                                w5hInfo.setValue(lValue);
+                                w5hInfo.setTask(task);
+                                localValuesDao.create(w5hInfo);
+                                task.addLocalValue(w5hInfo);
+
+//                                System.err.println("EDW= "+w5h.getW5h_label());
+//                                if (localValue!=null){
+//                                    for (String v:localValue)
+//                                        System.err.println(v);
+//                                }
+
+                                //task.setLocals(w5hInfo);
                             }
                         }
-                        localValues.add(w5hInfo);
+                        //localValues.add(w5hInfo);
                     }
 
                 }
-                task.setLocals(localValues);
+                //task.getLocals().add(localValues);
             }
 
 
             mergeThreads(tasksRunning);
+            ArrayList<Script> listOfScripts = createScriptPerTask(tasksRunning);
+//           mergeScriptsByEventDate(listOfScripts);
 
 
 
-            CustomListAdapter adapter=new CustomListAdapter(getActivity(), listOfProcesses, imgid);
-            ListView list=(ListView) myView.findViewById(R.id.restaurant_list);
+            CustomListAdapter adapter=new CustomListAdapter(getActivity(), listOfScripts, imgid);
+            ListView list= myView.findViewById(R.id.restaurant_list);
             list.setAdapter(adapter);
-            } catch (FileNotFoundException e1) {
-                e1.printStackTrace();
-            }catch (IOException e) {
-                e.printStackTrace();
-            }
+        } catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+        }catch (IOException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+
+        super.onActivityCreated(savedInstanceState);
+        findScriptInstances();
 
 
-    //	public static void mergeProcessesByEventDate(List<Process> listOfProcesses){
-//		LinkedList<String> strongTriggers = scriptTriggers.getStrongTriggers();
-//		for (Process process:listOfProcesses){
-//        	for (Task task:process.getTasks()){
-//        		String taskName = task.getName();
-//        		if (strongTriggers.contains(taskName)){
-//        			System.err.println("It's a strong trigger task");
-//            		String source = task.getPid().getString("source");
-//            		if (source.equals("gcal")){
+    }
+
+    public ArrayList<Script> createScriptPerTask(List<Task> tasksRunning) throws SQLException {
+
+        ArrayList<Script> scripts = new ArrayList<Script>();
+        for(Task task:tasksRunning){
+            HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
+            Script script = new Script();
+            script.setScriptDefinition(new ScriptDefinition());
+            script.addTask(task);
+            for(LocalValues taskLocalValues:task.getLocalValues()){
+                String w5hLabel = taskLocalValues.getLocalProperties().getW5h_label();
+                if(map.containsKey(w5hLabel)){
+                    ArrayList<String> values = map.get(w5hLabel);
+                    values.add(taskLocalValues.getValue());
+                    map.put(w5hLabel,values );
+                }else{
+                    if (w5hLabel!=null) {
+                        ArrayList<String> values = new ArrayList<String>();
+                        values.add(taskLocalValues.getValue());
+                        map.put(w5hLabel, values);
+                    }
+                }
+            }
+            script.getScriptDefinition().setLocalProperties(helper.getTopLevelScriptLocals("eatingOut"));
+            for (LocalProperties localProp:script.getScriptDefinition().getLocalProperties()){
+                ArrayList<String> values = map.get(localProp.getW5h_label());
+                if(values!=null) {
+                    for (String value : values) {
+                        LocalValues scriptLocalValues = new LocalValues();
+                        scriptLocalValues.setLocalProperties(localProp);
+                        scriptLocalValues.setTask(task);
+                        scriptLocalValues.setValue(value);
+                        script.addLocalValue(scriptLocalValues);
+                    }
+                }
+
+            }
+            script.assignScore(getContext());
+            scripts.add(script);
+        }
+
+        return scripts;
+    }
+
+//    public void storeScriptDefinition(Map<String, Object> scriptElements){
+//        for (String key: scriptElements.keySet()) {
+//            if (key != null){
+//                ScriptDefinition scriptDefinition = (ScriptDefinition)scriptElements.get(key);
+//                ScriptDefinition scriptDef = helper.scriptDefinitionExists(scriptDefinition.getName());
+//                if (scriptDef == null) {
+//                    scriptDefDao.create(scriptDefinition);
+//                    scriptDef = scriptDefinition;
+//                }
 //
-//            		}
 //
-//        		}
-//        		for (Locals sublocals:task.getLocals()){
-//        			if (sublocals.getValue()!=null){
-//	        			sublocals.getValue().toString();
-//        			}else{
-//        			}
+//                for (String taskName : scriptDef.getTaskMap().keySet()) {
+//                    if (taskName != null) {
+//                        TaskDefinition taskDef = helper.taskDefinitionExists(taskName);
+//                        if (taskDef == null) {
+//                            taskDef = scriptDef.getTaskMap().get(taskName);
+//                            taskDefDao.create(taskDef);
+//                        }
+//                        ScriptHasTasks scriptTasks = new ScriptHasTasks();
+//                        scriptTasks.setTask(taskDef);
+//                        scriptTasks.setScript(scriptDef);
+//                        scriptHasTasksDao.create(scriptTasks);
+//                    }
+//                }
 //
-//        		}
-//
-//        	}
+//                //readSubscripts
+//                ScriptDefinition superScript = (ScriptDefinition) scriptElements.get(key);
+//                for (ScriptDefinition subscript : superScript.getSubscripts()) {
+//                    storeScriptDefinition(subscript,superScript);
+//                }
+//            }
 //        }
-//	}
+//    }
+//
+//    public void storeScriptDefinition(ScriptDefinition subscript, ScriptDefinition superScript){
+//        if (subscript != null) {
+//
+//            ScriptDefinition scriptDef = helper.scriptDefinitionExists(subscript.getName());
+//            if (scriptDef == null) {
+//                scriptDefDao.create(subscript);
+//            }else{
+//                subscript = scriptDef;
+//            }
+//
+//            Subscript subscript1 = new Subscript();
+//            subscript1.setSuperscript_id(superScript);
+//            subscript1.setSubscript_id(subscript);
+//            subscriptsDao.create(subscript1);
+//
+//            for (String taskName : subscript.getTaskMap().keySet()) {
+//                if (taskName != null) {
+//                    TaskDefinition taskDef = helper.taskDefinitionExists(taskName);
+//                    if (taskDef == null) {
+//                        taskDef = subscript.getTaskMap().get(taskName);
+//                        taskDefDao.create(taskDef);
+//                    }
+//                    ScriptHasTasks scriptTasks = new ScriptHasTasks();
+//                    scriptTasks.setTask(taskDef);
+//                    scriptTasks.setScript(subscript);
+//                    scriptHasTasksDao.create(scriptTasks);
+//                }
+//            }
+//
+//
+//            for (ScriptDefinition script : subscript.getSubscripts()) {
+//                storeScriptDefinition(script,subscript);
+//            }
+//
+//
+//
+//        }
+//
+//
+//    }
+
+    public void mergeScriptsByEventDate(List<Script> listOfScripts){
+        Log.d(TAG,"SIZE OF PROCESSES: " +listOfScripts.size());
+        HashMap<Date, List<Task>> hashMap = new HashMap<Date, List<Task>>();
+        List<Script> mergedScripts = new ArrayList<Script>();
+		for (Script process:listOfScripts){
+        	for (Task task:process.getTasks()){
+                Date extractedDate=null;
+                if (task.getPid() instanceof Payment){
+                    try {
+                        extractedDate = sdf.parse(sdf.format(((Payment) task.getPid()).getDate()));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                }else if (task.getPid() instanceof Email){
+                    if (((Email) task.getPid()).getSubjectDate()!=null) {
+                        try {
+                            extractedDate = sdf.parse(sdf.format(((Email) task.getPid()).getSubjectDate()));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }else{
+
+                    }
+                }else if (task.getPid() instanceof Event){
+                    try {
+                        extractedDate = sdf.parse(sdf.format(((Event) task.getPid()).getStartTime()));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if(extractedDate!=null) {
+                    if (!hashMap.containsKey(extractedDate)) {
+                        List<Task> list = new ArrayList<Task>();
+                        list.add(task);
+                        hashMap.put(extractedDate, list);
+                    } else {
+                        hashMap.get(extractedDate).add(task);
+                    }
+                }
+        	}
+        }
+
+        Log.d(TAG,"SIZE OF PROCESSES after: " +hashMap.size());
+        for (Map.Entry entry : hashMap.entrySet()) {
+            Log.d(TAG,"Date: " +entry.getKey());
+            for (Task t:(List<Task>)entry.getValue()){
+                if (t.getPid() instanceof Event) {
+                    Log.d(TAG,"Event = " + ((Event) t.getPid()).getDescription());
+                }else if (t.getPid() instanceof Email){
+                    Log.d(TAG, "Email = "+((Email) t.getPid()).getSubject());
+                }else if (t.getPid() instanceof Payment){
+                    Log.d(TAG,"Payment = "+((Payment) t.getPid()).getName());
+                }
+            }
+        }
+
+    }
 
 
 	public void mergeThreads(List<Task> tasks){
@@ -249,30 +455,31 @@ public class RestaurantsFragment extends Fragment {
                 }
                 list.add(task);
             }else {
-                Process process = new Process();
-                process.addTask(task);
-                process.setLocals(task.getLocals());
-                Process newProcess = util.assignScore(process, getContext());
-                listOfProcesses.add(newProcess);
+                Script script = new Script();
+                script.addTask(task);
+
+               // script.setLocals(task.getLocals());
+                script.assignScore(getContext());
+                listOfScripts.add(script);
             }
         }
 
         for (HashMap.Entry<String, List<Task>>  mergedThreads: mergeTasksByThread.entrySet()) {
             List<Task> mergedtasks = mergedThreads.getValue();
-            Process process = new Process();
+            Script process = new Script();
             for (Task task:mergedtasks){
                 process.addTask(task);
             }
-            Process newProcess = util.assignScore(process, getContext());
-            listOfProcesses.add(newProcess);
+            process.assignScore(getContext());
+            listOfScripts.add(process);
         }
 
 
 
-		System.err.println("Total processes running after threading ="+listOfProcesses.size());
+		System.err.println("Total processes running after threading ="+listOfScripts.size());
 
-		Collections.sort(listOfProcesses, new Comparator<Process>() {
-	        @Override public int compare(Process p1, Process p2) {
+		Collections.sort(listOfScripts, new Comparator<Script>() {
+	        @Override public int compare(Script p1, Script p2) {
 	            return Float.compare(p2.getScore(),p1.getScore()); // Ascending
 	        }
 
@@ -280,16 +487,16 @@ public class RestaurantsFragment extends Fragment {
 	}
 
 
-    public List<Locals> extractTaskLocals(String taskName){
-        for (HashMap.Entry<String, Object> entry : scriptElements.entrySet()) {
-            String key = entry.getKey();
-            Process p = (Process) entry.getValue();
-            if  (p.getTaskMap().get(taskName)!=null){
-                return p.getTaskMap().get(taskName).getLocals();
-            }
-        }
-        return null;
-    }
+//    public ArrayList<LocalProperties> extractTaskLocals(String taskName){
+//        for (HashMap.Entry<String, Object> entry : scriptElements.entrySet()) {
+//            String key = entry.getKey();
+//            ScriptDefinition p = (ScriptDefinition) entry.getValue();
+//            if  (p.getTaskMap().get(taskName)!=null){
+//                return p.getTaskMap().get(taskName).getLocals();
+//            }
+//        }
+//        return null;
+//    }
 
 
     public List<Task> findTaskInstancesInDatabase(HashMap<Object, Object> triggers_Clues){
@@ -369,7 +576,7 @@ public class RestaurantsFragment extends Fragment {
                                                 } else {
                                                     whereClause = whereClause + " " + andOrKey;
                                                     //System.out.println("Clue value = " + andOrValue.toString().replace("\"", ""));
-                                                    whereClause = whereClause + " = " + andOrValue.toString().replace("\"", "");
+                                                    whereClause = whereClause + " = '" + andOrValue.toString().replace("\"", "")+"'";
                                                 }
 
                                             }
@@ -429,6 +636,7 @@ public class RestaurantsFragment extends Fragment {
             GenericRawResults<Payment> rawResults = helper.getPaymentDao().queryRaw(query,helper.getPaymentDao().getRawRowMapper());
             for (Payment payment: rawResults){
                 Task task = new Task();
+                task.setOid(payment.getId());
                 task.setPid(payment);
                 task.setName(subtask);
                 tasks.add(task);
@@ -438,6 +646,7 @@ public class RestaurantsFragment extends Fragment {
             GenericRawResults<Event> rawResults = helper.getEventDao().queryRaw(query,helper.getEventDao().getRawRowMapper());
             for (Event event: rawResults){
                 Task task = new Task();
+                task.setOid(event.getId());
                 task.setPid(event);
                 task.setName(subtask);
                 tasks.add(task);
@@ -470,6 +679,7 @@ public class RestaurantsFragment extends Fragment {
                         GenericRawResults<Payment> paymentData = helper.getPaymentDao().queryRaw(tempQuery, helper.getPaymentDao().getRawRowMapper());
                         for (Payment fullpayment : paymentData) {
                             Task task = new Task();
+                            task.setOid(fullpayment.getId());
                             task.setPid(fullpayment);
                             task.setName(subtask);
                             tasks.add(task);
@@ -482,6 +692,8 @@ public class RestaurantsFragment extends Fragment {
         }
         return tasks;
     }
+
+
 
 
 
@@ -531,67 +743,156 @@ public class RestaurantsFragment extends Fragment {
 
 
 
-
-    private class CustomListAdapter extends ArrayAdapter<Process> {
+    private class CustomListAdapter extends ArrayAdapter<Script> {
 
         private final Activity context;
-        private final List<Process> itemname;
+        private final List<Script> itemname;
         private final Integer[] imgid;
 
-        public CustomListAdapter(Activity context, List<Process> tasks, Integer[] imgid) {
-            super(context, R.layout.restaurantsview, tasks);
+        public CustomListAdapter(Activity context, List<Script> scripts, Integer[] imgid) {
+            super(context, R.layout.restaurantsview, scripts);
             // TODO Auto-generated constructor stub
-
             this.context=context;
-            this.itemname=tasks;
+            this.itemname=scripts;
             this.imgid=imgid;
         }
 
         public View getView(int position,View view,ViewGroup parent) {
+
+
             LayoutInflater inflater=context.getLayoutInflater();
             View rowView=inflater.inflate(R.layout.restaurantsview, null,true);
             LinearLayout linearLayout = (LinearLayout) rowView.findViewById(R.id.linearLayout);
 
-
-
-            TextView txtTitle = (TextView) rowView.findViewById(R.id.item);
+           // TextView txtTitle = (TextView) rowView.findViewById(R.id.item);
             ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
 
 
-                for (Task processTask : itemname.get(position).getTasks()) {
-                System.out.println("SIZE OF TASKS = "+itemname.get(position).getTasks().size());
-                if (processTask.getPid() instanceof Email){
-                    txtTitle.setText(itemname.get(position).getScore()+", "+String.valueOf(((Email)processTask.getPid()).get_id()));
-                    imageView.setImageResource(imgid[0]);
-                    if (itemname.get(position).getLocals() != null) {
-                        for (Locals local : processTask.getLocals()) {
-                            if (!local.getValue().toString().equalsIgnoreCase("[null]") && !local.getValue().toString().equalsIgnoreCase("[]") ) {
-                                TextView localTextView = new TextView(this.getContext());
-                                localTextView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                                        LinearLayout.LayoutParams.WRAP_CONTENT));
-                                localTextView.setText(getString(R.string.local, local.getW5h_label() + " : " + local.getValue().toString()));
-                                linearLayout.addView(localTextView);
+            Script script = itemname.get(position);//.getScriptDefinition();
+            HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
+                    //txtTitle.setText(itemname.get(position).getScore()+", "+String.valueOf(((Email)processTask.getPid()).get_id()));
+            imageView.setImageResource(imgid[0]);
+            ArrayList<LocalValues> localValues = script.getLocalValues();
+            if (localValues != null) {
+                for (LocalValues localValue : localValues) {
+                    if (localValue != null) {
+                        LocalProperties lp = localValue.getLocalProperties();
+                        if (lp != null) {
+                            String w5h_value = lp.getW5h_value();
+                            if (map.containsKey(w5h_value)) {
+                                ArrayList<String> values = map.get(w5h_value);
+                                values.add(localValue.getValue());
+                                map.put(w5h_value, values);
+                            } else {
+                                if (w5h_value != null) {
+                                    ArrayList<String> values = new ArrayList<String>();
+                                    values.add(localValue.getValue());
+                                    map.put(w5h_value, values);
+                                }
                             }
-                        }
-                    }
-
-                }else if (processTask.getPid() instanceof Payment) {
-                    txtTitle.setText(itemname.get(position).getScore()+", "+((Payment) processTask.getPid()).getName());
-                    imageView.setImageResource(imgid[0]);
-                    if (itemname.get(position).getLocals() != null) {
-                        for (Locals local : processTask.getLocals()) {
-
-                            TextView localTextView = new TextView(this.getContext());
-                            localTextView.setText(getString(R.string.local, local.getW5h_label() + " : " + local.getValue().toString()));
-                            linearLayout.addView(localTextView);
                         }
                     }
                 }
             }
 
+            for (String localLabel:map.keySet()) {
+                StringBuilder sb = new StringBuilder();
+                for (String localValue:map.get(localLabel)) {
+                    sb.append(localValue);
+                    sb.append(", ");
+                }
+                sb.delete(sb.length()-2,sb.length()-1);
 
+                LinearLayout textLayout = new LinearLayout(context);
+                textLayout.setOrientation(LinearLayout.HORIZONTAL);
+                LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                llp.setMargins(10, 5, 5, 0);
+                textLayout.setLayoutParams(llp);
+
+                TextView localTextView = new TextView(this.getContext());
+                localTextView.setTextColor(Color.parseColor("#99CCFF"));
+                localTextView.setText(getString(R.string.local, localLabel + " : "));
+
+                TextView localValueTextView = new TextView(this.getContext());
+                localValueTextView.setTextColor(Color.parseColor("#FFFFFF"));
+                localValueTextView.setText(getString(R.string.local, sb.toString()));
+
+                textLayout.addView(localTextView);
+                textLayout.addView(localValueTextView);
+                linearLayout.addView(textLayout);
+
+
+
+            }
+
+
+
+//                for (Task processTask : itemname.get(position).getTasks()) {
+//                System.out.println("SIZE OF TASKS = "+itemname.get(position).getTasks().size());
+//                if (processTask.getPid() instanceof Email){
+//                    //txtTitle.setText(itemname.get(position).getScore()+", "+String.valueOf(((Email)processTask.getPid()).get_id()));
+//                    imageView.setImageResource(imgid[0]);
+//                    if (processTask.getLocalValues() != null) {
+//                        for (LocalValues local : processTask.getLocalValues()) {
+//                            if (local.getValue()!=null) {
+//                                if (!local.getValue().toString().equalsIgnoreCase("[null]") && !local.getValue().toString().equalsIgnoreCase("[]")) {
+//
+//                                    LinearLayout textLayout = new LinearLayout(context);
+//                                    textLayout.setOrientation(LinearLayout.HORIZONTAL);
+//                                    LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+//                                    llp.setMargins(10, 5, 5, 0);
+//                                    textLayout.setLayoutParams(llp);
+//
+//                                    TextView localTextView = new TextView(this.getContext());
+//                                    localTextView.setTextColor(Color.parseColor("#99CCFF"));
+//                                    localTextView.setText(getString(R.string.local, local.getLocalProperties().getW5h_value() + " : "));
+//
+//                                    TextView localValueTextView = new TextView(this.getContext());
+//                                    localValueTextView.setTextColor(Color.parseColor("#FFFFFF"));
+//                                    localValueTextView.setText(getString(R.string.local, local.getValue().toString()));
+//
+//                                    textLayout.addView(localTextView);
+//                                    textLayout.addView(localValueTextView);
+//                                    linearLayout.addView(textLayout);
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                }else if (processTask.getPid() instanceof Payment) {
+//                    //txtTitle.setText(itemname.get(position).getScore()+", "+((Payment) processTask.getPid()).getName());
+//                    imageView.setImageResource(imgid[0]);
+//                    if (processTask.getLocalValues() != null) {
+//                        for (LocalValues local : processTask.getLocalValues()) {
+//                            LinearLayout textLayout = new LinearLayout(context);
+//                            textLayout.setOrientation(LinearLayout.HORIZONTAL);
+//                            LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+//                            llp.setMargins(10, 5, 5, 0);
+//                            textLayout.setLayoutParams(llp);
+//
+//                            TextView localTextView = new TextView(this.getContext());
+//                            localTextView.setTextColor(Color.parseColor("#99CCFF"));
+//                            localTextView.setText(getString(R.string.local, local.getLocalProperties().getW5h_value() + " : "));
+//
+//                            TextView localValueTextView = new TextView(this.getContext());
+//                            localValueTextView.setTextColor(Color.parseColor("#FFFFFF"));
+//                            localValueTextView.setText(getString(R.string.local, local.getLocalProperties().getW5h_value().toString()));
+//
+//                            textLayout.addView(localTextView);
+//                            textLayout.addView(localValueTextView);
+//                            linearLayout.addView(textLayout);
+//
+//                            localTextView = new TextView(this.getContext());
+//                            llp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+//                            llp.setMargins(5, 5, 5, 5);
+//                            localTextView.setLayoutParams(llp);
+//                            localTextView.setText(getString(R.string.local, local.getLocalProperties().getW5h_label() + " : " + local.getValue().toString()));
+//                            linearLayout.addView(localTextView);
+//                        }
+//                    }
+//                }
+//            }
             return rowView;
-
         };
     }
 

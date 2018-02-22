@@ -81,7 +81,7 @@ public class PlaidActivity extends AppCompatActivity {
         // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
 
-        helper=new DatabaseHelper(this);
+        helper=DatabaseHelper.getHelper(this);
 
         mProgress = new ProgressDialog(this);
         mProgress.setMessage("Getting your financial transactions. Please wait ...");

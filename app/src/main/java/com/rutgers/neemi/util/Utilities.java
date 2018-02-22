@@ -2,31 +2,14 @@ package com.rutgers.neemi.util;
 
 import android.content.Context;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
-import com.rutgers.neemi.model.Locals;
 import com.rutgers.neemi.model.Payment;
 import com.rutgers.neemi.model.Photo;
-import com.rutgers.neemi.model.Process;
+import com.rutgers.neemi.model.Script;
 import com.rutgers.neemi.model.Task;
-import com.rutgers.neemi.parser.InitiateScript;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import static com.rutgers.neemi.parser.InitiateScript.config;
 
 public class Utilities {
 
@@ -55,7 +38,7 @@ public class Utilities {
 //    		Cell cell = row.createCell(cellnum++);
 //    		cell.setCellValue("Score");
 //        	for (Task task:process.getTasks()){
-//        		for (Locals sublocals:task.getLocals()){
+//        		for (LocalProperties sublocals:task.getLocals()){
 //        			cell = row.createCell(cellnum++);
 //            		cell.setCellValue(sublocals.getW5h_label());
 //        		}
@@ -63,7 +46,7 @@ public class Utilities {
 //	    		cellnum = 0;
 //	    		cell = row.createCell(cellnum++);
 //	    		cell.setCellValue(process.getScore());
-//        		for (Locals sublocals:task.getLocals()){
+//        		for (LocalProperties sublocals:task.getLocals()){
 //        			if (sublocals.getValue()!=null){
 //	        			cell = row.createCell(cellnum++);
 //	            		cell.setCellValue(sublocals.getValue().toString());
@@ -198,42 +181,6 @@ public class Utilities {
 //		}
 //	}
 //
-	public Process assignScore(Process process,  Context context){
-		ConfigReader config = new ConfigReader(context);
-		List<Task> tasks = process.getTasks();
 
-		float instanceScore = process.getScore();
-		for (Task processTask : tasks) {
-			Object pid = processTask.getPid();
-			float addedScore=0;
-			if (pid instanceof Payment ){
-				addedScore = Float.parseFloat(config.getStr(PROPERTIES.BANK_WEIGHT));
-			}else if (pid instanceof Email){
-				addedScore = Float.parseFloat(config.getStr(PROPERTIES.EMAIL_WEIGHT));
-				String from =((Email)pid).getFrom();
-				if(((String)from).contains("member_services@opentable.com")){
-					addedScore = Float.parseFloat(config.getStr(PROPERTIES.OPENTABLE_WEIGHT));
-				}
-		    			//else if(((String)who.get("value")).contains("calendar-notification@google.com")){
-		    			//	addedScore = Float.parseFloat(InitiateScript.config.getStr(PROPERTIES.GCAL_WEIGHT));
-		    			//}
-
-
-			}else if (pid instanceof Event){
-				addedScore = Float.parseFloat(config.getStr(PROPERTIES.GCAL_WEIGHT));
-			}else if (pid instanceof Photo){
-				addedScore = Float.parseFloat(config.getStr(PROPERTIES.FACEBOOK_WEIGHT));
-			}
-			float newScore = scoreFunction(instanceScore, addedScore);
-			instanceScore=newScore;
-			process.setScore(newScore);
-		}
-		return process;
-
-	}
-	
-	public float scoreFunction(float previousScore,float addedScore){
-		return (1-((1-previousScore)*(1-addedScore)));
-	}
 	
 }

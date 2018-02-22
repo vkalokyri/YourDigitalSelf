@@ -74,14 +74,14 @@ public class GcalFragment extends Fragment implements EasyPermissions.Permission
 
 
 
-    public void deleteDB(){
-
-        getActivity().deleteDatabase("neemi.db"); // specified in DatabaseHelper class in the DATABASE_NAME field
-        OpenHelperManager.releaseHelper();
-        OpenHelperManager.setHelper(new DatabaseHelper(getActivity()));
-
-
-    }
+//    public void deleteDB(){
+//
+//        getActivity().deleteDatabase("neemi.db"); // specified in DatabaseHelper class in the DATABASE_NAME field
+//        OpenHelperManager.releaseHelper();
+//        OpenHelperManager.setHelper(new DatabaseHelper(getActivity()));
+//
+//
+//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -90,11 +90,11 @@ public class GcalFragment extends Fragment implements EasyPermissions.Permission
         view = inflater.inflate(R.layout.activity_gcal,container,false);
 
 
-        deleteDB();
+        //deleteDB();
         //setContentView(R.layout.activity_gcal);
 
 
-        helper=new DatabaseHelper(getActivity());
+        helper=DatabaseHelper.getHelper(getActivity());
 
 
         //Google widgets

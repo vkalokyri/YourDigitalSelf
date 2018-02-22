@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -17,6 +18,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,14 +27,20 @@ import android.widget.TextView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.BooleanResult;
 import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.batch.BatchRequest;
+import com.google.api.client.googleapis.batch.json.JsonBatchCallback;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.googleapis.json.GoogleJsonError;
+import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.Base64;
+import com.google.api.client.util.Data;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.ListMessagesResponse;
@@ -42,16 +50,23 @@ import com.google.api.services.gmail.model.MessagePartHeader;
 import com.j256.ormlite.android.AndroidConnectionSource;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
+import com.joestelmach.natty.DateGroup;
+import com.joestelmach.natty.ParseLocation;
+import com.joestelmach.natty.Parser;
 import com.rutgers.neemi.model.Email;
+import com.rutgers.neemi.model.TaskDefinition;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -64,15 +79,15 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
     GoogleAccountCredential mCredential;
     private SignInButton gmailButton;
     ProgressDialog mProgress;
+    private static final String TAG = "GmailActivity";
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
-
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String[] SCOPES = {GmailScopes.GMAIL_READONLY};
-    DatabaseHelper helper;
+    DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +102,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         ab.setDisplayHomeAsUpEnabled(true);
 
 
-        helper=new DatabaseHelper(this);
+        dbHelper=DatabaseHelper.getHelper(this);
 
         //Google widgets
         gmailButton = (SignInButton) findViewById(R.id.gmailApiButton);
@@ -104,6 +119,9 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
         mProgress = new ProgressDialog(this);
         mProgress.setMessage("Getting your emails ...");
+        mProgress.setIndeterminate(false);
+        mProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        mProgress.setCanceledOnTouchOutside(false);
 
         mCredential = GoogleAccountCredential.usingOAuth2(
                 this, Arrays.asList(SCOPES))
@@ -308,6 +326,80 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
     }
 
 
+    private class ExtractTimeTask extends AsyncTask<Void, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+                return extractEmailTime();
+            } catch (Exception e) {
+                return false;
+
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean output) {
+
+            if (output) {
+                Log.d(TAG,"All dates have been extracted");
+            } else {
+                Log.e(TAG,"There was an error while extracting email dates");
+            }
+        }
+
+
+        private boolean extractEmailTime() {
+
+            RuntimeExceptionDao<Email, String> emailDao = dbHelper.getEmailDao();
+            List<Email> results;
+
+            QueryBuilder<Email, String> queryBuilder = emailDao.queryBuilder();
+            try {
+                results = queryBuilder.query();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            }
+
+            for (Email email : results) {
+                Date extractedDate = extractTime(email.getTextContent(), email.getDate());
+                if (extractedDate != null) {
+                    email.setBodyDate(extractedDate);
+                }
+
+                extractedDate = extractTime(email.getSubject(), email.getDate());
+                if (extractedDate != null) {
+                    email.setSubjectDate(extractedDate);
+                }
+                emailDao.update(email);
+            }
+            return true;
+        }
+
+        private Date extractTime(String text, Date referDate) {
+
+            Parser parser = new Parser();
+            Date extractedDate = null;
+
+            List<DateGroup> groups = parser.parse(text, referDate);
+            for (DateGroup group : groups) {
+                List dates = group.getDates();
+//                int line = group.getLine();
+//                int column = group.getPosition();
+//                String matchingValue = group.getText();
+//                String syntaxTree = group.getSyntaxTree().toStringTree();
+//                Map<String, List<ParseLocation>> parseMap = group.getParseLocations();
+//                boolean isRecurring = group.isRecurring();
+//                Date recursUntil = group.getRecursUntil();
+                extractedDate = (Date) dates.get(0);
+                break;
+            }
+            return extractedDate;
+
+        }
+    }
+
     /**
      * An asynchronous task that handles the Google Calendar API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
@@ -345,66 +437,112 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
 
         /**
-         * Fetch a list of the next 10 events from the primary calendar.
-         *
-         * @return List of Strings describing returned events.
+         * @return List of Strings describing returned emails.
          * @throws IOException
          */
         private int getDataFromApi() throws IOException {
             // List the next 10 events from the primary calendar.
-//            DatabaseHelper dbHelper = new DatabaseHelper(getApplicationContext());
-//            ConnectionSource connectionSource = new AndroidConnectionSource(dbHelper);
-//            try {
-//                TableUtils.dropTable(connectionSource, Email.class,false);
-//                TableUtils.createTable(connectionSource, Email.class);
-//            } catch (SQLException e) {
-//                e.printStackTrace();
-//            }
+            RuntimeExceptionDao<Email, String> emailDao = dbHelper.getEmailDao();
+            final SQLiteDatabase db = dbHelper.getWritableDatabase();
+            ConnectionSource connectionSource = new AndroidConnectionSource(dbHelper);
+//            emailDao.queryRaw("delete from  Email;");
+//            emailDao.queryRaw("delete from  Email_fts;");
+//                try {
+//                    //TableUtils.clearTable(connectionSource, Email.class,false);
+//                    TableUtils.clearTable(connectionSource, Email.class);
 //
 //
-//
-//
-            RuntimeExceptionDao<Email, String> emailDao = helper.getEmailDao();
+//                } catch (SQLException e) {
+//                    e.printStackTrace();
+//                }
+            //RuntimeExceptionDao<Email, String> emailDao = helper.getEmailDao();
+//            helper.getEmailDao().queryRaw("CREATE VIRTUAL TABLE Email_fts USING fts4 ( \"_id\", \"textContent\",\"subject\" )");
+//            helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\",\"subject\" from Email");
+//            helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\",\"subject\" from Email order by \"_id\" desc");
+
+                String user = "me";
+                int totalItemsInserted = 0;
+                String pageToken = null;
+                Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+                cal.add(Calendar.MONTH, -6); // substract 6 months
+                Long since = cal.getTimeInMillis() / 1000;
+                System.out.println("since = " + since);
+                String timestamp = null;
+
+                GenericRawResults<String[]> rawResults = emailDao.queryRaw("select max(timestamp) from Email;");
+                List<String[]> results = null;
+                try {
+                    results = rawResults.getResults();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                if (results != null) {
+                    String[] resultArray = results.get(0);
+                    System.out.println("timestamp= " + resultArray[0]);
+                    timestamp = resultArray[0];
+                }
 
 
-            String user = "me";
-            int totalItemsInserted=0;
-            String pageToken = null;
-            Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-            cal.add(Calendar.MONTH, -6); // substract 6 months
-            Long since=cal.getTimeInMillis()/1000;
-            System.out.println("since = "+since);
-            String timestamp = null;
+                if (timestamp != null) {
+                    cal.setTimeInMillis(Long.parseLong(timestamp));
+                    since = cal.getTimeInMillis();
+                }
 
-            GenericRawResults<String[]> rawResults = emailDao.queryRaw("select max(timestamp) from Email;");
-            List<String[]> results = null;
-            try {
-                results = rawResults.getResults();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            if (results!=null){
-                String[] resultArray = results.get(0);
-                System.out.println("timestamp= " + resultArray[0]);
-                timestamp=resultArray[0];
-            }
+                System.out.println("Since=" + since);
 
 
-            if (timestamp!=null) {
-                cal.setTimeInMillis(Long.parseLong(timestamp));
-                since = cal.getTimeInMillis();
-            }
-
-            System.out.println("Since="+since);
-
-            do {
                 ListMessagesResponse response = gmailService.users().messages().list(user)
                         .setPageToken(pageToken)
-                        .setQ("after:"+ since)
+                        .setQ("after:" + since)
                         .execute();
 
-                List<Message> messages = response.getMessages();
-                pageToken = response.getNextPageToken();
+                //pageToken = response.getNextPageToken();
+
+                List<Message> messages = new ArrayList<Message>();
+                while (response.getMessages() != null) {
+                    messages.addAll(response.getMessages());
+                    if (response.getNextPageToken() != null) {
+                        pageToken = response.getNextPageToken();
+                        response = gmailService.users().messages().list(user)
+                                .setPageToken(pageToken)
+                                .setQ("after:" + since)
+                                .execute();
+                    } else {
+                        break;
+                    }
+                }
+
+                mProgress.setMax(messages.size());
+
+
+//                final List<Message> messageslist = new ArrayList<Message>();
+//
+//                JsonBatchCallback<Message> callback = new JsonBatchCallback<Message>() {
+//                    public void onSuccess(Message message, HttpHeaders responseHeaders) {
+//                        System.out.println("MessageThreadID:"+ message.getThreadId());
+//                        System.out.println("MessageID:"+ message.getId());
+//                        synchronized (messageslist) {
+//                            messageslist.add(message);
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onFailure(GoogleJsonError e, HttpHeaders responseHeaders)
+//                            throws IOException {
+//                    }
+//                };
+
+
+//                BatchRequest batch  = gmailService.batch();
+//                if (messages!=null) {
+//                    for (int i = 0; i < messages.size(); i++) {
+//                        gmailService.users().messages().get(user, messages.get(i).get("id").toString()).queue(batch, callback);
+//                    }
+//                }
+
+                //batch.execute();
+
+                System.out.println("Getting EMAILS!!!");
 
                 if (messages!=null){
                     for (int i = 0; i < messages.size(); i++) {
@@ -419,6 +557,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                             //email.setLabelIds(msg.getLabelIds());
                             email.setHistoryId(msg.getHistoryId());
                             email.setDate(new Date(msg.getInternalDate()));
+
                             for (MessagePartHeader header : headers) {
                                 String name = header.getName();
                                 if (name.equalsIgnoreCase("From")) {
@@ -433,38 +572,45 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                                     email.setSubject(header.getValue());
                                 }
                             }
+
                             emailDao.create(email);
                             totalItemsInserted++;
-                            System.out.println("EmailsInserted = " + totalItemsInserted);
+                            mProgress.setProgress(totalItemsInserted);
                         } catch (Exception e) {
-                            System.out.println(e.getMessage());
+                            System.out.println("Exception :" + e.getMessage());
                         }
                     }
                 }
-            }while(pageToken != null);
-            System.out.println("EmailsInserted = " + totalItemsInserted);
-            loadEmailIndex(totalItemsInserted);
-            return totalItemsInserted;
+                System.out.println("EmailsInserted Final = " + totalItemsInserted);
+
+                loadEmailIndex(totalItemsInserted);
+                //db.setTransactionSuccessful();
+                //db.endTransaction();
+                return totalItemsInserted;
+
         }
+
+
+
 
 
         private void loadEmailIndex(final int totalItemsInserted) {
             new Thread(new Runnable() {
                 public void run() {
                     try {
-                        GenericRawResults<String[]> rawResults = helper.getEmailDao().queryRaw("select * from Email_fts limit 1");
+                        GenericRawResults<String[]> rawResults = dbHelper.getEmailDao().queryRaw("select * from Email_fts limit 1");
                         if (rawResults.getResults().size()==0){
-                            helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\", \"subject\" from Email");
+                            dbHelper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\", \"subject\" from Email");
                         }else{
-                            helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\",\"subject\" from Email order by \"_id\" desc limit "+totalItemsInserted);
+                            dbHelper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\",\"subject\" from Email order by \"_id\" desc limit "+totalItemsInserted);
                         }
-                        GenericRawResults<String[]> vrResults =helper.getEmailDao().queryRaw("SELECT * FROM Email_fts;");
+                        GenericRawResults<String[]> vrResults =dbHelper.getEmailDao().queryRaw("SELECT * FROM Email_fts;");
                         System.err.println("VIRTUAL TABLE ADDED = "+vrResults.getResults().size());
 
                     }catch (Exception e){
-                        helper.getEmailDao().queryRaw("DROP TABLE IF EXISTS Email_fts ");
-                        helper.getEmailDao().queryRaw("CREATE VIRTUAL TABLE Email_fts USING fts4 ( \"_id\", \"textContent\",\"subject\" )");
-                        helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\",\"subject\" from Email");
+                        dbHelper.getEmailDao().queryRaw("DROP TABLE IF EXISTS Email_fts ");
+                        dbHelper.getEmailDao().queryRaw("CREATE VIRTUAL TABLE Email_fts USING fts4 ( \"_id\", \"textContent\",\"subject\" )");
+                        dbHelper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\",\"subject\" from Email");
                     }
 
 
@@ -511,23 +657,27 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         @Override
         protected void onPostExecute(Integer output) {
             mProgress.hide();
+            new ExtractTimeTask().execute();
 
             Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
             myIntent.putExtra("key", "gmail");
             myIntent.putExtra("items", output);
             startActivity(myIntent);
 
-//            if (output == 0) {
-//                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_SHORT ).show();
-//            } else {
-//                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), output+" emails fetched.", Snackbar.LENGTH_SHORT ).show();
-//            }
+            if (output == 0) {
+                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_LONG ).show();
+            } else {
+                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), output+" emails fetched.", Snackbar.LENGTH_LONG ).show();
+            }
+
+
         }
 
         @Override
         protected void onCancelled() {
             mProgress.hide();
             if (mLastError != null) {
+                Log.d(TAG, "ERROR "+mLastError);
                 if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
                     showGooglePlayServicesAvailabilityErrorDialog(
                             ((GooglePlayServicesAvailabilityIOException) mLastError)
@@ -537,12 +687,12 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             GcalFragment.REQUEST_AUTHORIZATION);
                 } else {
-                    Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "The following error occurred:\n"
-                            + mLastError.getMessage(), Snackbar.LENGTH_SHORT ).show();
+                    mLastError.printStackTrace();
+                    Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "Something went wrong.. ", Snackbar.LENGTH_LONG ).show();
                 }
             } else {
                 Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "Request cancelled"
-                        + mLastError.getMessage(), Snackbar.LENGTH_SHORT ).show();
+                        + mLastError.getMessage(), Snackbar.LENGTH_LONG ).show();
             }
         }
 

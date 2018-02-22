@@ -1,24 +1,40 @@
 package com.rutgers.neemi.model;
 
+import com.j256.ormlite.dao.ForeignCollection;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.field.ForeignCollectionField;
+import com.j256.ormlite.table.DatabaseTable;
+
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
-public class Task {
+@DatabaseTable(tableName = "Task")
+public class Task implements Serializable{
 
-	String id;
+	@DatabaseField(generatedId = true)
+	int id;
+	@DatabaseField
 	String name;
+	@DatabaseField
+	String oid;
+	@DatabaseField(canBeNull = true)
+	boolean isGateway;
+	@DatabaseField(canBeNull = false, foreign = true, columnName = "script_id")
+	Script script;
+
 	Object pid;
-	List<Locals> locals;
-	
+	ArrayList<LocalValues> localValues;
+
+
 	public Task(){
-		this.locals=new ArrayList<Locals>();
+		this.localValues=new ArrayList<LocalValues>();
 	}
 
-	public String getId() {
+	public int getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
@@ -38,15 +54,21 @@ public class Task {
 		this.pid = pid;
 	}
 
-	public List<Locals> getLocals() {
-		return locals;
+	public ArrayList<LocalValues> getLocalValues() {
+		return localValues;
 	}
-	public void setLocals(List<Locals> locals) {
-		this.locals = locals;
+	public void setLocalValues(ArrayList<LocalValues> locals) {
+		this.localValues = locals;
 	}
-	public void addSubLocal(Locals sublocal) {
-		this.locals.add(sublocal);
+	public void addLocalValue(LocalValues sublocal) {
+		this.localValues.add(sublocal);
 	}
-		
-	
+
+	public String getOid() {
+		return oid;
+	}
+
+	public void setOid(String oid) {
+		this.oid = oid;
+	}
 }

@@ -9,8 +9,25 @@
             android:title="Restaurants" />
 
         <item android:id="@+id/trips"
-            android:icon="@drawable/travel"
+            android:icon="@drawable/trips"
             android:title="Trips" />
+
+        <item android:id="@+id/concerts"
+            android:icon="@drawable/music"
+            android:title="Concerts/Shows" />
+
+        <item android:id="@+id/health"
+            android:icon="@drawable/health"
+            android:title="Medical Appointments" />
+
+        <item android:id="@+id/school"
+            android:icon="@drawable/education"
+            android:title="School" />
+
+        <item android:id="@+id/sports"
+            android:icon="@drawable/sports"
+            android:title="Sports" />
+
     </group>
 
     <group android:id="@+id/grp2" android:checkableBehavior="single">
