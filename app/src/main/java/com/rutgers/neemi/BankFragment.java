@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -74,11 +75,11 @@ public class BankFragment extends Fragment {
 
 
     Integer[] imgid={
-            R.drawable.fb_logo,
-            R.drawable.google_calendar,
-            R.drawable.gmail_icon,
             R.drawable.bank,
-            R.drawable.location
+            R.drawable.bank,
+            R.drawable.bank,
+            R.drawable.bank,
+            R.drawable.bank
     };
 
 
@@ -109,6 +110,15 @@ public class BankFragment extends Fragment {
         ListView list=(ListView) myView.findViewById(R.id.list);
         list.setAdapter(adapter);
 
+        Button addBank = (Button) myView.findViewById(R.id.addAnotherBankBtn);
+
+        addBank.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View arg0) {
+                Intent myIntent = new Intent(getActivity(), PlaidActivity.class);
+                startActivity(myIntent);
+            }
+        });
+
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -138,37 +148,14 @@ public class BankFragment extends Fragment {
                     new AsyncGetTransactionsTask().execute(accessToken);
                 }
 
-//                 if (Selecteditem.equalsIgnoreCase("Facebook")) {
-//                     Intent myIntent = new Intent(getActivity(), FacebookActivity.class);
-//                     startActivity(myIntent);
-//                 }
-//                if (Selecteditem.equalsIgnoreCase("Gmail")){
-//                    Intent myIntent = new Intent(getActivity(), GmailActivity.class);
-//                    startActivity(myIntent);
-//                }
-//                if (Selecteditem.equalsIgnoreCase("Bank data")){
-//
-//                }
-
                 Toast.makeText(getActivity(), SelectedItem, Toast.LENGTH_SHORT).show();
 
             }
         });
 
-
-//        ArrayAdapter adapter = ArrayAdapter.createFromResource(getActivity(), R.array.Services, android.R.layout.simple_list_item_1);
-//        setListAdapter(adapter);
-//        getListView().setOnItemClickListener(this);
     }
 
-//    @Override
-//    public void onItemClick(AdapterView<?> parent, View view, int position,long id) {
 
-//
-//
-////
-//
-//    }
 
 
     private class CustomListAdapter extends ArrayAdapter<String> {

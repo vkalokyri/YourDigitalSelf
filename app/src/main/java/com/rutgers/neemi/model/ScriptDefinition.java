@@ -13,9 +13,7 @@ public class ScriptDefinition{
 	int id;
 	@DatabaseField
 	String name;
-
 	ArrayList<LocalProperties> localProperties;
-
 
 	ArrayList<ScriptDefinition> subscripts;
 	HashMap<String, TaskDefinition> tasksMap;
@@ -64,5 +62,13 @@ public class ScriptDefinition{
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 }

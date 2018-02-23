@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -118,6 +119,9 @@ public class RestaurantsFragment extends Fragment {
                         ScriptFragment scriptFragment = new ScriptFragment();
                         Bundle arguments = new Bundle();
                         arguments.putSerializable("processes", listOfScripts);
+                        arguments.putSerializable("position",position);
+                        arguments.putSerializable("id",id);
+
                         scriptFragment.setArguments(arguments);
 
                         android.support.v4.app.FragmentTransaction scriptfragmentTrans = getFragmentManager().beginTransaction();
@@ -236,7 +240,7 @@ public class RestaurantsFragment extends Fragment {
 
 
             mergeThreads(tasksRunning);
-            ArrayList<Script> listOfScripts = createScriptPerTask(tasksRunning);
+            listOfScripts = createScriptPerTask(tasksRunning);
 //           mergeScriptsByEventDate(listOfScripts);
 
 
@@ -267,10 +271,8 @@ public class RestaurantsFragment extends Fragment {
 
         ArrayList<Script> scripts = new ArrayList<Script>();
         for(Task task:tasksRunning){
+            //put all tasks local values under the abstract who, what, where dimensions
             HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
-            Script script = new Script();
-            script.setScriptDefinition(new ScriptDefinition());
-            script.addTask(task);
             for(LocalValues taskLocalValues:task.getLocalValues()){
                 String w5hLabel = taskLocalValues.getLocalProperties().getW5h_label();
                 if(map.containsKey(w5hLabel)){
@@ -285,10 +287,15 @@ public class RestaurantsFragment extends Fragment {
                     }
                 }
             }
-            script.getScriptDefinition().setLocalProperties(helper.getTopLevelScriptLocals("eatingOut"));
-            for (LocalProperties localProp:script.getScriptDefinition().getLocalProperties()){
+
+            Script script = new Script();
+            script.setScriptDefinition( helper.getTopScriptsByTask(task.getName()));
+            script.addTask(task);
+
+
+            for (LocalProperties localProp:script.getScriptDefinition().getLocalProperties()) {
                 ArrayList<String> values = map.get(localProp.getW5h_label());
-                if(values!=null) {
+                if (values != null) {
                     for (String value : values) {
                         LocalValues scriptLocalValues = new LocalValues();
                         scriptLocalValues.setLocalProperties(localProp);
@@ -297,8 +304,47 @@ public class RestaurantsFragment extends Fragment {
                         script.addLocalValue(scriptLocalValues);
                     }
                 }
-
             }
+
+            //add local values in the definitions
+
+            ArrayList<ScriptDefinition> scriptDefinitionList =script.getScriptDefinition().getSubscripts();
+            for (ScriptDefinition subscriptDef:scriptDefinitionList ){
+                Script subscript = new Script();
+                subscript.setScriptDefinition(subscriptDef);
+                for (LocalProperties localProp:subscriptDef.getLocalProperties()) {
+                    ArrayList<String> values = map.get(localProp.getW5h_label());
+                    if (values != null) {
+                        for (String value : values) {
+                            LocalValues scriptLocalValues = new LocalValues();
+                            scriptLocalValues.setLocalProperties(localProp);
+                            scriptLocalValues.setTask(task);
+                            scriptLocalValues.setValue(value);
+                            subscript.addLocalValue(scriptLocalValues);
+                        }
+                    }
+                }
+                script.addSubscript(subscript);
+            }
+
+
+
+
+
+//            for (LocalProperties localProp:script.getScriptDefinition().getLocalProperties()){
+//                ArrayList<String> values = map.get(localProp.getW5h_label());
+//                if(values!=null) {
+//                    for (String value : values) {
+//                        LocalValues scriptLocalValues = new LocalValues();
+//                        scriptLocalValues.setLocalProperties(localProp);
+//                        scriptLocalValues.setTask(task);
+//                        scriptLocalValues.setValue(value);
+//                        script.addLocalValue(scriptLocalValues);
+//                    }
+//                }
+//
+//            }
+
             script.assignScore(getContext());
             scripts.add(script);
         }

@@ -620,13 +620,15 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	}
 
-	public ArrayList<ScriptDefinition> getTopScriptByTask(String taskName) throws SQLException {
+	public ScriptDefinition getTopScriptsByTask(String taskName) throws SQLException {
 		RuntimeExceptionDao<ScriptDefinition, String> scriptDefinitionDao = getScriptDefDao();
 
+
+		//Get one level above scripts that have this Task
 		StringBuilder sb = new StringBuilder();
-		sb.append("select sd.name, label_id, w5h_label, w5h_value from ScriptDefinition sd, TaskDefinition tf, ScriptHasTasks sht, LocalProperties lp where tf.name='");
+		sb.append("select distinct sd.id, sd.name from ScriptDefinition sd, TaskDefinition tf, ScriptHasTasks sht where tf.name='");
 		sb.append(taskName);
-		sb.append("' and sht.task_id=tf.id and sht.script_id=sd.id and lp.script_id=sd.id;");
+		sb.append("' and sht.task_id=tf.id and sht.script_id=sd.id;");
 
 		GenericRawResults<ScriptDefinition> rawResults =
 				scriptDefinitionDao.queryRaw(sb.toString(),
@@ -634,15 +636,78 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 							public ScriptDefinition mapRow(String[] columnNames,
 														  String[] resultColumns) {
 								ScriptDefinition sd=new ScriptDefinition();
-								sd.setName((String)resultColumns[0]);
-								LocalProperties lp= new LocalProperties(Integer.parseInt(resultColumns[1]),
-										(String)resultColumns[2],(String)resultColumns[3]);
-								sd.addLocalProperties(lp);
+								sd.setId(Integer.parseInt(resultColumns[0]));
+								sd.setName((String)resultColumns[1]);
 								return sd;
 							}
 						});
 
-		return (ArrayList<ScriptDefinition>)rawResults.getResults();
+
+		for (ScriptDefinition superscriptDownLevel :(ArrayList<ScriptDefinition>)rawResults.getResults()) {
+			//get the Local Properties for this one level up scripts
+			sb=new StringBuilder();
+			sb.append("select label_id, w5h_label, w5h_value from LocalProperties lp where lp.script_id=");
+			sb.append(superscriptDownLevel.getId());
+
+			GenericRawResults<LocalProperties> localPropertiesOneLevelUpScripts =
+					scriptDefinitionDao.queryRaw(sb.toString(),
+							new RawRowMapper<LocalProperties>() {
+								public LocalProperties mapRow(String[] columnNames,
+															   String[] resultColumns) {
+									LocalProperties lp = new LocalProperties(Integer.parseInt(resultColumns[0]),
+											(String) resultColumns[1], (String) resultColumns[2]);
+									return lp;
+								}
+							});
+
+			superscriptDownLevel.setLocalProperties((ArrayList<LocalProperties>) localPropertiesOneLevelUpScripts.getResults());
+			sb = new StringBuilder();
+			sb.append("select distinct superscript_id,name  from subscript, ScriptDefinition s where s.id=superscript_id and  subscript_id=");
+			sb.append(superscriptDownLevel.getId());
+
+
+			GenericRawResults<ScriptDefinition> topLevelSuperscripts =
+					scriptDefinitionDao.queryRaw(sb.toString(),
+							new RawRowMapper<ScriptDefinition>() {
+								public ScriptDefinition mapRow(String[] columnNames,
+															   String[] resultColumns) {
+									ScriptDefinition sd = new ScriptDefinition();
+									sd.setId(Integer.parseInt(resultColumns[0]));
+									sd.setName((String) resultColumns[1]);
+									return sd;
+								}
+							});
+
+			for(ScriptDefinition topLevel :topLevelSuperscripts){
+				sb = new StringBuilder();
+				sb.append("select label_id, w5h_label, w5h_value from LocalProperties where script_id=");
+				sb.append(topLevel.getId());
+
+
+				GenericRawResults<LocalProperties> TopLevelLocalDefinitions =
+						scriptDefinitionDao.queryRaw(sb.toString(),
+								new RawRowMapper<LocalProperties>() {
+									public LocalProperties mapRow(String[] columnNames,
+																   String[] resultColumns) {
+										LocalProperties lp = new LocalProperties(Integer.parseInt(resultColumns[0]),
+												(String) resultColumns[1], (String) resultColumns[2]);
+										return lp;
+									}
+								});
+
+				topLevel.setLocalProperties((ArrayList<LocalProperties>) TopLevelLocalDefinitions.getResults());
+				topLevel.addSubscript(superscriptDownLevel);
+				return topLevel;
+			}
+
+
+
+		}
+
+		return null;
+
+
+		//return (ArrayList<ScriptDefinition>)rawResults.getResults();
 
 	}
 

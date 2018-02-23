@@ -26,6 +26,8 @@ public class Script {
 	ArrayList<LocalValues> localValues;
 	HashMap<String, Task> tasksMap;
 	List<Task> tasks;
+	ArrayList<Script> subscripts;
+
 
 
 
@@ -33,6 +35,7 @@ public class Script {
 		this.tasksMap=new HashMap<String, Task>();
 		this.tasks = new ArrayList<Task>();
 		this.localValues=new ArrayList<LocalValues>();
+		this.subscripts=new ArrayList<Script>();
 	}
 
 	public ArrayList<LocalValues> getLocalValues() {
@@ -87,7 +90,20 @@ public class Script {
 		this.id = id;
 	}
 
-//	public String getName() {
+	public ArrayList<Script> getSubscripts() {
+		return subscripts;
+	}
+
+	public void setSubscripts(ArrayList<Script> subscripts) {
+		this.subscripts = subscripts;
+	}
+
+	public void addSubscript(Script subscript) {
+		this.subscripts.add(subscript);
+	}
+
+
+	//	public String getName() {
 //		return name;
 //	}
 //
