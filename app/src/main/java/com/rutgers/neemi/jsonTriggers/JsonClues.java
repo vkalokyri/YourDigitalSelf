@@ -63,6 +63,8 @@ public class JsonClues implements Clues{
 
 			JsonObject taskObject = jsonObject.getJsonObject(task); //makeAPayment
 
+
+
 			JsonArray jsonArray = taskObject.getJsonArray(onObject); //restaurant
 
 			List<HashMap<Object, Object>> finalMap = new ArrayList<HashMap<Object, Object>>();

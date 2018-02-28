@@ -495,6 +495,7 @@ public class FacebookActivity extends AppCompatActivity {
                                     Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
                                     myIntent.putExtra("key", "facebook");
                                     myIntent.putExtra("items", totalItemsInserted);
+                                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                     startActivity(myIntent);
 
 //                                    if (totalItemsInserted == 0) {

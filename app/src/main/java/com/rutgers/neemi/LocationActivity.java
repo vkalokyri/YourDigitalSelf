@@ -71,8 +71,10 @@ public class LocationActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location);
+        Intent myIntent = new Intent(this, LocationService.class);
+        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startService(myIntent);
 
-        startService(new Intent(this, LocationService.class));
 
 //        dialog = new AlertDialog.Builder(this);
 //

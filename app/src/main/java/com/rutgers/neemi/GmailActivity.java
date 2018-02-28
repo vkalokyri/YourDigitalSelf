@@ -328,6 +328,9 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
     private class ExtractTimeTask extends AsyncTask<Void, Void, Boolean> {
 
+        Parser parser = new Parser();
+
+
         @Override
         protected Boolean doInBackground(Void... params) {
             try {
@@ -352,39 +355,51 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         private boolean extractEmailTime() {
 
             RuntimeExceptionDao<Email, String> emailDao = dbHelper.getEmailDao();
-            List<Email> results;
+            List<Email> results = null;
 
             QueryBuilder<Email, String> queryBuilder = emailDao.queryBuilder();
             try {
                 results = queryBuilder.query();
             } catch (SQLException e) {
                 e.printStackTrace();
-                return false;
+                //return false;
             }
-
-            for (Email email : results) {
-                Date extractedDate = extractTime(email.getTextContent(), email.getDate());
-                if (extractedDate != null) {
-                    email.setBodyDate(extractedDate);
+            int count=0;
+            try {
+                for (Email email : results) {
+                    Date extractedDate;
+                    count++;
+                    if(count>475) {
+                        Log.e(TAG, String.valueOf(count));
+                        if (email.getTextContent() != null) {
+                            extractedDate = extractTime(email.getTextContent(), email.getDate());
+                            if (extractedDate != null) {
+                                email.setBodyDate(extractedDate);
+                            }
+                        }
+                        if (email.getSubject() != null) {
+                            extractedDate = extractTime(email.getSubject(), email.getDate());
+                            if (extractedDate != null) {
+                                email.setSubjectDate(extractedDate);
+                            }
+                        }
+                        emailDao.update(email);
+                    }
                 }
-
-                extractedDate = extractTime(email.getSubject(), email.getDate());
-                if (extractedDate != null) {
-                    email.setSubjectDate(extractedDate);
-                }
-                emailDao.update(email);
+            }catch (Exception e){
+                e.printStackTrace();
             }
             return true;
         }
 
         private Date extractTime(String text, Date referDate) {
 
-            Parser parser = new Parser();
             Date extractedDate = null;
 
-            List<DateGroup> groups = parser.parse(text, referDate);
-            for (DateGroup group : groups) {
-                List dates = group.getDates();
+            try {
+                List<DateGroup> groups = parser.parse(text, referDate);
+                for (DateGroup group : groups) {
+                    List dates = group.getDates();
 //                int line = group.getLine();
 //                int column = group.getPosition();
 //                String matchingValue = group.getText();
@@ -392,9 +407,15 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 //                Map<String, List<ParseLocation>> parseMap = group.getParseLocations();
 //                boolean isRecurring = group.isRecurring();
 //                Date recursUntil = group.getRecursUntil();
-                extractedDate = (Date) dates.get(0);
-                break;
+                    if (dates!=null && dates.size()>0) {
+                        extractedDate = (Date) dates.get(0);
+                        break;
+                    }
+                }
+            }catch(Exception e){
+                return null;
             }
+
             return extractedDate;
 
         }
@@ -443,10 +464,10 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         private int getDataFromApi() throws IOException {
             // List the next 10 events from the primary calendar.
             RuntimeExceptionDao<Email, String> emailDao = dbHelper.getEmailDao();
-            final SQLiteDatabase db = dbHelper.getWritableDatabase();
+            //final SQLiteDatabase db = dbHelper.getWritableDatabase();
             ConnectionSource connectionSource = new AndroidConnectionSource(dbHelper);
-//            emailDao.queryRaw("delete from  Email;");
-//            emailDao.queryRaw("delete from  Email_fts;");
+            emailDao.queryRaw("delete from  Email;");
+            emailDao.queryRaw("delete from  Email_fts;");
 //                try {
 //                    //TableUtils.clearTable(connectionSource, Email.class,false);
 //                    TableUtils.clearTable(connectionSource, Email.class);
@@ -662,6 +683,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
             Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
             myIntent.putExtra("key", "gmail");
             myIntent.putExtra("items", output);
+            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(myIntent);
 
             if (output == 0) {

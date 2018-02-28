@@ -26,11 +26,11 @@ public class ScriptParser {
 		scriptElements=new HashMap<String, Object>();
 	}
 
-	public Map<String, Object> start(String filename, ScriptDefinition parentProcess, Context context) throws IOException {
+	public Map<String, Object> start(String filename, ScriptDefinition parentProcess, String argument, Context context) throws IOException {
 
 		InputStream fis = context.getAssets().open(filename);
 		try {
-			topLevelScript=parse(fis, parentProcess, context);
+			topLevelScript=parse(fis, parentProcess, argument, context);
 		} catch (XmlPullParserException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -41,13 +41,13 @@ public class ScriptParser {
 
 	private static final String ns = null;
 
-	public ScriptDefinition parse(InputStream in, ScriptDefinition parentProcess, Context context) throws XmlPullParserException, IOException {
+	public ScriptDefinition parse(InputStream in, ScriptDefinition parentProcess, String argument, Context context) throws XmlPullParserException, IOException {
 		try {
 			XmlPullParser parser = Xml.newPullParser();
 			parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
 			parser.setInput(in, null);
 			parser.nextTag();
-			return extractXml(parser,parser.getName(),parentProcess,context);
+			return extractXml(parser,parser.getName(),argument, parentProcess,context);
 
 		} finally {
 			in.close();
@@ -55,7 +55,7 @@ public class ScriptParser {
 	}
 
 
-	private ScriptDefinition extractXml(XmlPullParser parser, String element, ScriptDefinition parentProcess, Context context) throws XmlPullParserException, IOException {
+	private ScriptDefinition extractXml(XmlPullParser parser, String element, String argument, ScriptDefinition parentProcess, Context context) throws XmlPullParserException, IOException {
 
 
 		parser.require(XmlPullParser.START_TAG, ns, element);
@@ -70,10 +70,16 @@ public class ScriptParser {
 				//System.err.println("I found process = "+id);
 				process = new ScriptDefinition();
 				process.setName(id);
+				process.setArgument(argument);
+				StringBuilder sb=new StringBuilder();
+				sb.append(id);
+				sb.append("<");
+				sb.append(argument);
+				sb.append(">");
 				if (parentProcess!=null)
 					parentProcess.addSubscript(process);
 				if (parentProcess==null)
-					scriptElements.put(id, process);
+					scriptElements.put(sb.toString(), process);
 				//extractXml(parser, name);
 			}else if (name.equals("task")) {
 				//System.err.println("I found task");
@@ -82,18 +88,31 @@ public class ScriptParser {
 				//System.out.println("Task = "+task.getName());
 				process.addTaskMap(task.getName(), task);
 				//scriptElements.put(task.getName(),task);
-				if (parentProcess==null)
-					scriptElements.put(process.getName(),process);
+				if (parentProcess==null) {
+					StringBuilder sb=new StringBuilder();
+					sb.append(process.getName());
+					sb.append("<");
+					sb.append(argument);
+					sb.append(">");
+					scriptElements.put(sb.toString(), process);
+				}
 				// eventType = parser.nextTag();
 			}else if(name.equals("locals")){
 				//System.err.println("I found process locals");
 				process = readProcessLocals(parser,process);
-				if (parentProcess==null)
-					scriptElements.put(process.getName(), process);
+				if (parentProcess==null) {
+					StringBuilder sb = new StringBuilder();
+					sb.append(process.getName());
+					sb.append("<");
+					sb.append(argument);
+					sb.append(">");
+					scriptElements.put(sb.toString(), process);
+				}
 			}else if(name.equals("callActivity")){
+				argument = parser.getAttributeValue(null,"t");
 				//System.err.println("I found callActivity");
 				String activityName = parser.getAttributeValue(null,"calledElement");
-				start(activityName+".xml", process, context);
+				start(activityName+".xml", process, argument, context);
 				skip(parser);
 			}
 			eventType = parser.nextTag();

@@ -578,6 +578,7 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
             Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
             myIntent.putExtra("key", "gcal");
             myIntent.putExtra("items", output);
+            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(myIntent);
 
 //            if (output == 0) {

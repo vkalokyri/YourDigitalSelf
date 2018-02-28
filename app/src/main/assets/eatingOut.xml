@@ -12,7 +12,7 @@
 <why name="purpose"/>
 </locals>
 <startEvent name="" id="StartProcess"/>
-<callActivity calledElement="initiateDiscussion" name="initiateGoingOut" id="subProcessInitiateGoingOut"/>
+<callActivity calledElement="initiateDiscussion" name="initiateGoingOutDiscussion" t="restaurant" id="subProcessInitiateGoingOut"/>
 <parallelGateway gatewayDirection="Diverging" name="" id="EstablishW4"/>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="EstablishWhenEat" id="EstablishWhenEat"/>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="EstablishWhereEat" id="EstablishWhereEat"/>
@@ -32,29 +32,29 @@
 </locals>
 </task>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="OptionalReservation"/>
-<callActivity calledElement="makeReservation" name="makeReservation" T="restaurant" id="SubProcessMakeReservation" />
+<callActivity calledElement="makeReservation" name="makeRestaurantReservation" t="restaurant" id="SubProcessMakeReservation" />
 <task binding="Task" completionQuantity="1" startQuantity="1" name="ChangePlans" id="ChangePlans"/>
 <endEvent name="" id="EndProcess"/>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="CancelORchangePlans"/>
 <exclusiveGateway gatewayDirection="Converging" name="" id="AfterOptionalReservation"/>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="ChangePlansORremindEatingOut"/>
-<callActivity calledElement="remindEatingOut" name="remindEatingOut" id="SubProcessRemindEatingOut"/>
+<callActivity calledElement="reminder" name="remindEatingOut" t="restaurant" id="SubProcessRemindEatingOut"/>
 <exclusiveGateway gatewayDirection="Converging" name="" id="AfterOptionalRemindEatingOut"/>
 <inclusiveGateway gatewayDirection="Diverging" name="" id="CheckingWeatherAndHowToGo"/>
 <task name="EstablishHowToGo" id="EstablishHowToGo"/>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="CheckTheWeather" id="CheckTheWeather"/>
 <parallelGateway gatewayDirection="Converging" name="" id="AfterCheckingWeatherAndHowToGo"/>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="BeforeGoingToThePlace"/>
-<callActivity calledElement="goToAPlace" name="GoToTheRestaurant" id="SubProcessGoToTheRestaurant"/>
+<callActivity calledElement="goToAPlace" name="goToRestaurant" t="restaurant" id="SubProcessGoToTheRestaurant"/>
 <callActivity calledElement="attendEatingOutEvent" name="AttendEatingOutEvent" id="SubProcessAttendEatingOutEvent" minDuration="30m" maxDuration="3h"/>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="GoHomeORgoElsewhere"/>
-<callActivity calledElement="goToAPlace" name="GoHome" id="SubProcessGoHome" minDuration="10m" maxDuration="2h"/>
+<callActivity calledElement="goToAPlace" name="goHome" t="home" id="SubProcessGoHome" minDuration="10m" maxDuration="2h"/>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="GoElsewhere" id="GoElsewhere"/>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="OptionalAfterEatingDiscussion"/>
-<callActivity calledElement="initiateDiscussion" name="AfterEating" id="SubProcessAfterEating"/>
+<callActivity calledElement="initiateDiscussion" name="afterEatingDiscussion" t="restaurant" id="SubProcessAfterEating"/>
 <exclusiveGateway gatewayDirection="Converging" name="" id="AfterEatingDiscussionConverge"/>
-<sequenceFlow sourceRef="StartProcess" targetRef="InitiateGoingOut" name="" id=""/>
-<sequenceFlow sourceRef="InitiateGoingOut" targetRef="EstablishW4" name="" id=""/>
+<sequenceFlow sourceRef="StartProcess" targetRef="subProcessInitiateGoingOut" name="" id=""/>
+<sequenceFlow sourceRef="subProcessInitiateGoingOut" targetRef="EstablishW4" name="" id=""/>
 <sequenceFlow sourceRef="EstablishW4" targetRef="EstablishWhatEat" name="" id=""/>
 <sequenceFlow sourceRef="EstablishW4" targetRef="EstablishWhenEat" name="" id=""/>
 <sequenceFlow sourceRef="EstablishW4" targetRef="EstablishWhereEat" name="" id=""/>

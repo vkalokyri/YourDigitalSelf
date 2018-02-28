@@ -13,6 +13,9 @@ public class ScriptDefinition{
 	int id;
 	@DatabaseField
 	String name;
+	@DatabaseField
+	String argument;
+
 	ArrayList<LocalProperties> localProperties;
 
 	ArrayList<ScriptDefinition> subscripts;
@@ -70,5 +73,13 @@ public class ScriptDefinition{
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public String getArgument() {
+		return argument;
+	}
+
+	public void setArgument(String argument) {
+		this.argument = argument;
 	}
 }

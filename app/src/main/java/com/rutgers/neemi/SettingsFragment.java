@@ -71,14 +71,17 @@ public class SettingsFragment extends Fragment {
 
                 if (Selecteditem.equalsIgnoreCase("Google Calendar")){
                     Intent myIntent = new Intent(getActivity(), GcalActivity.class);
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(myIntent);
                 }
                  if (Selecteditem.equalsIgnoreCase("Facebook")) {
                      Intent myIntent = new Intent(getActivity(), FacebookActivity.class);
+                     myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                      startActivity(myIntent);
                  }
                 if (Selecteditem.equalsIgnoreCase("Gmail")){
                     Intent myIntent = new Intent(getActivity(), GmailActivity.class);
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(myIntent);
                 }
                 if (Selecteditem.equalsIgnoreCase("Bank data")){
@@ -100,6 +103,7 @@ public class SettingsFragment extends Fragment {
 
                     if (accountNames.size()==0) {
                         Intent myIntent = new Intent(getActivity(), PlaidActivity.class);
+                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(myIntent);
                     }else{
                         BankFragment bankfragment = new BankFragment();
@@ -108,14 +112,14 @@ public class SettingsFragment extends Fragment {
                         bankfragment.setArguments(args);
                         android.support.v4.app.FragmentTransaction setfragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
                         setfragmentTransaction.replace(R.id.frame,bankfragment);
+                        setfragmentTransaction.addToBackStack(null);
                         setfragmentTransaction.commit();
                     }
 
-//                    Intent myIntent = new Intent(getActivity(), PlaidActivity.class);
-//                    startActivity(myIntent);
                 }
                 if (Selecteditem.equalsIgnoreCase("Location data")){
                     Intent myIntent = new Intent(getActivity(), LocationActivity.class);
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(myIntent);
                 }
                 Toast.makeText(getActivity(), Selecteditem, Toast.LENGTH_SHORT).show();
@@ -124,19 +128,7 @@ public class SettingsFragment extends Fragment {
         });
 
 
-//        ArrayAdapter adapter = ArrayAdapter.createFromResource(getActivity(), R.array.Services, android.R.layout.simple_list_item_1);
-//        setListAdapter(adapter);
-//        getListView().setOnItemClickListener(this);
     }
-
-//    @Override
-//    public void onItemClick(AdapterView<?> parent, View view, int position,long id) {
-
-//
-//
-////
-//
-//    }
 
 
     private class CustomListAdapter extends ArrayAdapter<String> {

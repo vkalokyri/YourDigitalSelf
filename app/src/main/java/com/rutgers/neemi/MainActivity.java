@@ -16,7 +16,18 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.google.api.client.util.Data;
+import com.j256.ormlite.android.AndroidConnectionSource;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
+import com.rutgers.neemi.model.Email;
+import com.rutgers.neemi.model.ScriptDefinition;
+import com.rutgers.neemi.model.ScriptHasTasks;
+import com.rutgers.neemi.model.Subscript;
+import com.rutgers.neemi.model.TaskDefinition;
 import com.rutgers.neemi.util.ApplicationManager;
+
+import java.sql.SQLException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,12 +42,44 @@ public class MainActivity extends AppCompatActivity {
 
         DatabaseHelper helper= DatabaseHelper.getHelper(this);
 
+        ConnectionSource connectionSource = new AndroidConnectionSource(helper);
+
+//        RuntimeExceptionDao<Subscript, String> subScriptDao = helper.getSubScriptDao();
+//        subScriptDao.queryRaw("delete from  Subscript;");
+//        subScriptDao.queryRaw("delete from LocalProperties;");
+//        subScriptDao.queryRaw("delete from  ScriptHasTasks;");
+//        subScriptDao.queryRaw("delete from  ScriptDefinition;");
+//        subScriptDao.queryRaw("delete from  TaskDefinition;");
+
+//
+//                try {
+//                    //TableUtils.clearTable(connectionSource, Email.class,false);
+//                    TableUtils.dropTable(connectionSource, Subscript.class,true);
+//                    TableUtils.createTable(connectionSource, Subscript.class);
+//                    TableUtils.dropTable(connectionSource, ScriptHasTasks.class,true);
+//                    TableUtils.createTable(connectionSource, ScriptHasTasks.class);
+//                    TableUtils.dropTable(connectionSource, ScriptDefinition.class,true);
+//                    TableUtils.createTable(connectionSource, ScriptDefinition.class);
+//                    TableUtils.dropTable(connectionSource, TaskDefinition.class,true);
+//                    TableUtils.createTable(connectionSource, TaskDefinition.class);
+//
+//
+//
+//                } catch (SQLException e) {
+//                    e.printStackTrace();
+//                }
+
+
+
+//        ApplicationManager appManager = new ApplicationManager();
+//        appManager.initScript(helper,getApplicationContext());
+
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (!prefs.getBoolean("firstTime", false)) {
             // <---- run your one time code here
-            ApplicationManager appManager = new ApplicationManager();
-            appManager.initScript(helper,getApplicationContext());
+//            ApplicationManager appManager = new ApplicationManager();
+//            appManager.initScript(helper,getApplicationContext());
 
             // mark first time has runned.
             SharedPreferences.Editor editor = prefs.edit();
@@ -54,7 +97,8 @@ public class MainActivity extends AppCompatActivity {
             if (key.equalsIgnoreCase("facebook")) {
                 SettingsFragment settingsfragment = new SettingsFragment();
                 android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                setfragmentTransaction.replace(R.id.frame, settingsfragment);
+                setfragmentTransaction.add(R.id.frame, settingsfragment);
+                setfragmentTransaction.addToBackStack(null);
                 setfragmentTransaction.commit();
                 if (items == 0) {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No facebook photos fetched.", Snackbar.LENGTH_LONG).show();
@@ -66,7 +110,8 @@ public class MainActivity extends AppCompatActivity {
             if (key.equalsIgnoreCase("gcal")) {
                 SettingsFragment settingsfragment = new SettingsFragment();
                 android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                setfragmentTransaction.replace(R.id.frame, settingsfragment);
+                setfragmentTransaction.add(R.id.frame, settingsfragment);
+                setfragmentTransaction.addToBackStack(null);
                 setfragmentTransaction.commit();
                 if (items == 0) {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No calendar events fetched.", Snackbar.LENGTH_LONG ).show();
@@ -78,7 +123,8 @@ public class MainActivity extends AppCompatActivity {
             if (key.equalsIgnoreCase("gmail")) {
                 SettingsFragment settingsfragment = new SettingsFragment();
                 android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                setfragmentTransaction.replace(R.id.frame, settingsfragment);
+                setfragmentTransaction.add(R.id.frame, settingsfragment);
+                setfragmentTransaction.addToBackStack(null);
                 setfragmentTransaction.commit();
                 if (items == 0) {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_LONG ).show();
@@ -90,7 +136,8 @@ public class MainActivity extends AppCompatActivity {
             if (key.equalsIgnoreCase("bank")) {
                 SettingsFragment settingsfragment = new SettingsFragment();
                 android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                setfragmentTransaction.replace(R.id.frame, settingsfragment);
+                setfragmentTransaction.add(R.id.frame, settingsfragment);
+                setfragmentTransaction.addToBackStack(null);
                 setfragmentTransaction.commit();
                 if (items == 0) {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No financial transactions fetched.", Snackbar.LENGTH_LONG).show();
@@ -134,19 +181,22 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.action_settings:
                         SettingsFragment settingsfragment = new SettingsFragment();
                         android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                        setfragmentTransaction.replace(R.id.frame,settingsfragment);
+                        setfragmentTransaction.add(R.id.frame,settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
                         setfragmentTransaction.commit();
                         return true;
                     case R.id.trips:
                         ContentFragment fragment = new ContentFragment();
                         android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                        fragmentTransaction.replace(R.id.frame,fragment);
+                        fragmentTransaction.add(R.id.frame,fragment);
+                        fragmentTransaction.addToBackStack(null);
                         fragmentTransaction.commit();
                         return true;
                     case R.id.restaurants:
                         RestaurantsFragment restFragment = new RestaurantsFragment();
                         android.support.v4.app.FragmentTransaction restaurantsfragmentTrans = getSupportFragmentManager().beginTransaction();
-                        restaurantsfragmentTrans.replace(R.id.frame,restFragment);
+                        restaurantsfragmentTrans.add(R.id.frame,restFragment);
+                        restaurantsfragmentTrans.addToBackStack(null);
                         restaurantsfragmentTrans.commit();
                         return true;
 

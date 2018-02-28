@@ -5,7 +5,7 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 
 
 
-<process binding="Process" isExecutable="true" id="remindEatingOut">
+<process binding="Process" isExecutable="true" id="reminder">
 <locals>
 <who name="whoRemindedYou "/>
 <when name="whenWasTheReminder "/>

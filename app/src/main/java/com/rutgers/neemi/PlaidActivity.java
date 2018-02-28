@@ -546,6 +546,7 @@ public class PlaidActivity extends AppCompatActivity {
             Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
             myIntent.putExtra("key", "bank");
             myIntent.putExtra("items", output);
+            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(myIntent);
 
         }

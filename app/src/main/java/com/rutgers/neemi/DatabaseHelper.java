@@ -555,7 +555,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         return null;
     }
 
-    public ScriptDefinition scriptDefinitionExists(String name) {
+    public ScriptDefinition scriptDefinitionExists(String name, String arg) {
 
         RuntimeExceptionDao<ScriptDefinition, String> scriptDefDao = getScriptDefDao();
 
@@ -564,9 +564,14 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         Where<ScriptDefinition, String> where = queryBuilder.where();
         try {
             where.eq("name", name);
-            List<ScriptDefinition> results = queryBuilder.query();
+			where.eq("argument", arg);
+			where.and(2);
+			List<ScriptDefinition> results = queryBuilder.query();
             if (results.size() != 0) {
-                return results.get(0);
+				ArrayList<LocalProperties> localProps =  getScriptLocals(name);
+				ScriptDefinition scriptDef = results.get(0);
+				scriptDef.setLocalProperties(localProps);
+                return scriptDef;
             } else
                 return null;
         } catch (SQLException e) {
@@ -598,12 +603,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	}
 
-	public ArrayList<LocalProperties> getTopLevelScriptLocals(String topLevelScriptName) throws SQLException {
+	public ArrayList<LocalProperties> getScriptLocals(String scriptName) throws SQLException {
 		RuntimeExceptionDao<LocalProperties, String> localPropertiesDao = getLocalPropertiesDao();
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT label_id, w5h_label, w5h_value from LocalProperties, ScriptDefinition where name='");
-		sb.append(topLevelScriptName);
+		sb.append(scriptName);
 		sb.append("' and id=script_id;");
 
 		GenericRawResults<LocalProperties> rawResults =
@@ -619,6 +624,102 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		return (ArrayList<LocalProperties>)rawResults.getResults();
 
 	}
+
+
+	public ScriptDefinition getTopScripts(String scriptName, String ofType) throws SQLException {
+		RuntimeExceptionDao<ScriptDefinition, String> scriptDefinitionDao = getScriptDefDao();
+
+
+		//Get one level above scripts that have this Task
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct sd.id, sd.name from ScriptDefinition sd where name='");
+		sb.append(scriptName);
+		sb.append("' and argument='");
+		sb.append(ofType);
+		sb.append("';");
+
+		GenericRawResults<ScriptDefinition> rawResults =
+				scriptDefinitionDao.queryRaw(sb.toString(),
+						new RawRowMapper<ScriptDefinition>() {
+							public ScriptDefinition mapRow(String[] columnNames,
+														   String[] resultColumns) {
+								ScriptDefinition sd=new ScriptDefinition();
+								sd.setId(Integer.parseInt(resultColumns[0]));
+								sd.setName((String)resultColumns[1]);
+								return sd;
+							}
+						});
+
+
+		for (ScriptDefinition superscriptDownLevel :(ArrayList<ScriptDefinition>)rawResults.getResults()) {
+			//get the Local Properties for this one level up scripts
+			sb=new StringBuilder();
+			sb.append("select label_id, w5h_label, w5h_value from LocalProperties lp where lp.script_id=");
+			sb.append(superscriptDownLevel.getId());
+
+			GenericRawResults<LocalProperties> localPropertiesOneLevelUpScripts =
+					scriptDefinitionDao.queryRaw(sb.toString(),
+							new RawRowMapper<LocalProperties>() {
+								public LocalProperties mapRow(String[] columnNames,
+															  String[] resultColumns) {
+									LocalProperties lp = new LocalProperties(Integer.parseInt(resultColumns[0]),
+											(String) resultColumns[1], (String) resultColumns[2]);
+									return lp;
+								}
+							});
+
+			superscriptDownLevel.setLocalProperties((ArrayList<LocalProperties>) localPropertiesOneLevelUpScripts.getResults());
+			sb = new StringBuilder();
+			sb.append("select distinct superscript_id,name from subscript, ScriptDefinition s where s.id=superscript_id and subscript_id=");
+			sb.append(superscriptDownLevel.getId());
+
+
+			GenericRawResults<ScriptDefinition> topLevelSuperscripts =
+					scriptDefinitionDao.queryRaw(sb.toString(),
+							new RawRowMapper<ScriptDefinition>() {
+								public ScriptDefinition mapRow(String[] columnNames,
+															   String[] resultColumns) {
+									ScriptDefinition sd = new ScriptDefinition();
+									sd.setId(Integer.parseInt(resultColumns[0]));
+									sd.setName((String) resultColumns[1]);
+									return sd;
+								}
+							});
+
+			for(ScriptDefinition topLevel :topLevelSuperscripts){
+				sb = new StringBuilder();
+				sb.append("select label_id, w5h_label, w5h_value from LocalProperties where script_id=");
+				sb.append(topLevel.getId());
+
+
+				GenericRawResults<LocalProperties> TopLevelLocalDefinitions =
+						scriptDefinitionDao.queryRaw(sb.toString(),
+								new RawRowMapper<LocalProperties>() {
+									public LocalProperties mapRow(String[] columnNames,
+																  String[] resultColumns) {
+										LocalProperties lp = new LocalProperties(Integer.parseInt(resultColumns[0]),
+												(String) resultColumns[1], (String) resultColumns[2]);
+										return lp;
+									}
+								});
+
+				topLevel.setLocalProperties((ArrayList<LocalProperties>) TopLevelLocalDefinitions.getResults());
+				topLevel.addSubscript(superscriptDownLevel);
+				return topLevel;
+			}
+
+
+
+		}
+
+		return null;
+
+
+		//return (ArrayList<ScriptDefinition>)rawResults.getResults();
+
+	}
+
+
 
 	public ScriptDefinition getTopScriptsByTask(String taskName) throws SQLException {
 		RuntimeExceptionDao<ScriptDefinition, String> scriptDefinitionDao = getScriptDefDao();

@@ -23,7 +23,7 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="AccessTrainWebsite" id="AccessTrainWebsite"/>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="GetItFromTrainStation" id="GetItFromTrainStation"/>
 <inclusiveGateway gatewayDirection="Converging" name="" id="AfterDecidingTicket"/>
-<callActivity calledElement="makeAPayment" name="SubProcessPay" id="SubProcessPay"/>
+<callActivity calledElement="makeAPayment" name="makeAPayment" t="transportation" id="SubProcessPay"/>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="OptionalGetTicketReceiptEmail"/>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="GetTicketReceiptEmail" id="GetTicketReceiptEmail"/>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="GetGasOrNot"/>

@@ -125,7 +125,8 @@ public class RestaurantsFragment extends Fragment {
                         scriptFragment.setArguments(arguments);
 
                         android.support.v4.app.FragmentTransaction scriptfragmentTrans = getFragmentManager().beginTransaction();
-                        scriptfragmentTrans.replace(R.id.frame,scriptFragment);
+                        scriptfragmentTrans.add(R.id.frame,scriptFragment);
+                        scriptfragmentTrans.addToBackStack(null);
                         scriptfragmentTrans.commit();
                         Toast.makeText(getContext(), "Pressed!", Toast.LENGTH_LONG).show();
                     }
@@ -176,13 +177,15 @@ public class RestaurantsFragment extends Fragment {
 
             for (int i=0;i<scriptTriggers.getStrongTriggers().size();i++){
                 String strongTrigger = scriptTriggers.getStrongTriggers().get(i);
-                triggers_Clues.put(strongTrigger, clues.getClues(strongTrigger.substring(1,strongTrigger.length()-1), "restaurant",getContext()));
+                String [] strongArray = strongTrigger.split("<");
+                triggers_Clues.put(strongTrigger, clues.getClues(strongArray[0].substring(1), strongArray[1].substring(0,strongArray[1].length()-2),getContext()));
                 //printTriggersAndClues(triggers_Clues);
             }
 
             for (int i=0;i<scriptTriggers.getWeakTriggers().size();i++){
                 String weakTrigger = scriptTriggers.getWeakTriggers().get(i);
-                triggers_Clues.put(weakTrigger, clues.getClues(weakTrigger.substring(1,weakTrigger.length()-1), "restaurant",getContext()));
+                String [] weakArray = weakTrigger.split("<");
+                triggers_Clues.put(weakTrigger, clues.getClues(weakArray[0].substring(1), weakArray[1].substring(0,weakArray[1].length()-2),getContext()));
                 //printTriggersAndClues(triggers_Clues);
             }
 
@@ -195,7 +198,8 @@ public class RestaurantsFragment extends Fragment {
                 System.out.println("Task is: " + taskName);
                 Object pid = task.getPid();
                 if (pid instanceof Event) {
-                    System.err.println("Task = " + taskName + ", Event = " + ((Event) pid).get_id());
+                    System.err.println("Task = " + taskName + ", Event = " + ((Event) pid).get_id()+" Script = ");
+
                 } else if (pid instanceof Email) {
                     System.err.println("Task = " + taskName + ", Email = " + ((Email) pid).get_id());
 
@@ -204,8 +208,7 @@ public class RestaurantsFragment extends Fragment {
                     System.err.println("Task = " + taskName + ", Payment = " + ((Payment) pid).getName());
                 }
 
-                ArrayList<LocalProperties> taskLocals = null;
-                taskLocals = helper.extractTaskLocals(taskName);
+                ArrayList<LocalProperties> taskLocals = helper.extractTaskLocals(taskName);
 
 
                 if (taskLocals!=null){
@@ -221,21 +224,10 @@ public class RestaurantsFragment extends Fragment {
                                 w5hInfo.setTask(task);
                                 localValuesDao.create(w5hInfo);
                                 task.addLocalValue(w5hInfo);
-
-//                                System.err.println("EDW= "+w5h.getW5h_label());
-//                                if (localValue!=null){
-//                                    for (String v:localValue)
-//                                        System.err.println(v);
-//                                }
-
-                                //task.setLocals(w5hInfo);
                             }
                         }
-                        //localValues.add(w5hInfo);
                     }
-
                 }
-                //task.getLocals().add(localValues);
             }
 
 
@@ -289,7 +281,9 @@ public class RestaurantsFragment extends Fragment {
             }
 
             Script script = new Script();
-            script.setScriptDefinition( helper.getTopScriptsByTask(task.getName()));
+            String scriptName = task.getScript().getName();
+            String ofType = task.getScript().getOfType();
+            script.setScriptDefinition( helper.getTopScripts(scriptName, ofType));
             script.addTask(task);
 
 
@@ -352,80 +346,6 @@ public class RestaurantsFragment extends Fragment {
         return scripts;
     }
 
-//    public void storeScriptDefinition(Map<String, Object> scriptElements){
-//        for (String key: scriptElements.keySet()) {
-//            if (key != null){
-//                ScriptDefinition scriptDefinition = (ScriptDefinition)scriptElements.get(key);
-//                ScriptDefinition scriptDef = helper.scriptDefinitionExists(scriptDefinition.getName());
-//                if (scriptDef == null) {
-//                    scriptDefDao.create(scriptDefinition);
-//                    scriptDef = scriptDefinition;
-//                }
-//
-//
-//                for (String taskName : scriptDef.getTaskMap().keySet()) {
-//                    if (taskName != null) {
-//                        TaskDefinition taskDef = helper.taskDefinitionExists(taskName);
-//                        if (taskDef == null) {
-//                            taskDef = scriptDef.getTaskMap().get(taskName);
-//                            taskDefDao.create(taskDef);
-//                        }
-//                        ScriptHasTasks scriptTasks = new ScriptHasTasks();
-//                        scriptTasks.setTask(taskDef);
-//                        scriptTasks.setScript(scriptDef);
-//                        scriptHasTasksDao.create(scriptTasks);
-//                    }
-//                }
-//
-//                //readSubscripts
-//                ScriptDefinition superScript = (ScriptDefinition) scriptElements.get(key);
-//                for (ScriptDefinition subscript : superScript.getSubscripts()) {
-//                    storeScriptDefinition(subscript,superScript);
-//                }
-//            }
-//        }
-//    }
-//
-//    public void storeScriptDefinition(ScriptDefinition subscript, ScriptDefinition superScript){
-//        if (subscript != null) {
-//
-//            ScriptDefinition scriptDef = helper.scriptDefinitionExists(subscript.getName());
-//            if (scriptDef == null) {
-//                scriptDefDao.create(subscript);
-//            }else{
-//                subscript = scriptDef;
-//            }
-//
-//            Subscript subscript1 = new Subscript();
-//            subscript1.setSuperscript_id(superScript);
-//            subscript1.setSubscript_id(subscript);
-//            subscriptsDao.create(subscript1);
-//
-//            for (String taskName : subscript.getTaskMap().keySet()) {
-//                if (taskName != null) {
-//                    TaskDefinition taskDef = helper.taskDefinitionExists(taskName);
-//                    if (taskDef == null) {
-//                        taskDef = subscript.getTaskMap().get(taskName);
-//                        taskDefDao.create(taskDef);
-//                    }
-//                    ScriptHasTasks scriptTasks = new ScriptHasTasks();
-//                    scriptTasks.setTask(taskDef);
-//                    scriptTasks.setScript(subscript);
-//                    scriptHasTasksDao.create(scriptTasks);
-//                }
-//            }
-//
-//
-//            for (ScriptDefinition script : subscript.getSubscripts()) {
-//                storeScriptDefinition(script,subscript);
-//            }
-//
-//
-//
-//        }
-//
-//
-//    }
 
     public void mergeScriptsByEventDate(List<Script> listOfScripts){
         Log.d(TAG,"SIZE OF PROCESSES: " +listOfScripts.size());
@@ -533,29 +453,29 @@ public class RestaurantsFragment extends Fragment {
 	}
 
 
-//    public ArrayList<LocalProperties> extractTaskLocals(String taskName){
-//        for (HashMap.Entry<String, Object> entry : scriptElements.entrySet()) {
-//            String key = entry.getKey();
-//            ScriptDefinition p = (ScriptDefinition) entry.getValue();
-//            if  (p.getTaskMap().get(taskName)!=null){
-//                return p.getTaskMap().get(taskName).getLocals();
-//            }
-//        }
-//        return null;
-//    }
-
-
-    public List<Task> findTaskInstancesInDatabase(HashMap<Object, Object> triggers_Clues){
+    public List<Task> findTaskInstancesInDatabase(HashMap<Object, Object> triggers_Clues) throws SQLException{
 
         for (HashMap.Entry<Object, Object> entry : triggers_Clues.entrySet()) {
-            String key = (String)entry.getKey();
-            System.err.println("Task = "+key);
+            String scriptType = ((String)entry.getKey()).replace("\"", "");;
+            System.err.println("Script = "+scriptType);
+            String[] scriptArray = scriptType.split("<");
+            String scriptName=null;
+            String typeOf=null;
+            if (scriptArray!=null){
+                scriptName = scriptArray[0];
+                typeOf = scriptArray[1].substring(0,scriptArray[1].length()-1);
+            }else{
+                scriptName=scriptType;
+            }
+            Script script = new Script();
+            script.setName(scriptName);
+            script.setOfType(typeOf);
             List<HashMap<Object, Object>> values = (List<HashMap<Object, Object>>) entry.getValue();
             if (values!=null) {
                 for (HashMap<Object, Object> value : values) {
                     for (HashMap.Entry<Object, Object> subtasks : value.entrySet()) {
                         String subtask = (String)subtasks.getKey();
-                        // System.out.println("Subtask = " +subtask);
+                        //System.out.println("Subtask = " +subtask);
                         String query="select * ";
                         String fromClause=" from ";
                         String whereClause=" where ";
@@ -621,8 +541,12 @@ public class RestaurantsFragment extends Fragment {
 
                                                 } else {
                                                     whereClause = whereClause + " " + andOrKey;
-                                                    //System.out.println("Clue value = " + andOrValue.toString().replace("\"", ""));
-                                                    whereClause = whereClause + " = '" + andOrValue.toString().replace("\"", "")+"'";
+                                                    if (andOrKey.contains("Payment") || andOrKey.contains("Category")){
+                                                        whereClause = whereClause + " = " + andOrValue.toString().replace("\"", "");
+                                                    }else {
+                                                        //System.out.println("Clue value = " + andOrValue.toString().replace("\"", ""));
+                                                        whereClause = whereClause + " = '" + andOrValue.toString().replace("\"", "") + "'";
+                                                    }
                                                 }
 
                                             }
@@ -641,14 +565,14 @@ public class RestaurantsFragment extends Fragment {
                             query=query.substring(0,query.length()-4) +");";
                             System.out.println("QUERY = " + query);
                             try {
-                                tasksRunning.addAll(queryDatabase(query,fromClause,subtask));
+                                tasksRunning.addAll(queryDatabase(query,fromClause,subtask,script));
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
                         }else{
                             foundKeywordsFile=false;
                             whereClause=whereClause.substring(0,whereClause.length()-4) +")";
-                            tasksRunning.addAll(fullTextSearch(whereClause,fromTable, subtask));
+                            tasksRunning.addAll(fullTextSearch(whereClause,fromTable, subtask, script));
                         }
 
                     }
@@ -659,7 +583,7 @@ public class RestaurantsFragment extends Fragment {
         return tasksRunning;
     }
 
-    public List<Task> fullTextSearch(String whereClause, String fromTable, String subtask){
+    public List<Task> fullTextSearch(String whereClause, String fromTable, String subtask, Script script) throws SQLException {
 
         fromTable=fromTable.toString().replace("\"", "");
         List<Task> tasks = new ArrayList<Task>();
@@ -671,70 +595,81 @@ public class RestaurantsFragment extends Fragment {
 
         if (fromTable.equals("Email")){
             GenericRawResults<Email> rawResults = helper.getEmailDao().queryRaw(query,helper.getEmailDao().getRawRowMapper());
-            for (Email email: rawResults){
-                Task task = new Task();
-                task.setPid(email);
-                task.setName(subtask);
-                tasks.add(task);
+            if (rawResults!=null) {
+                for (Email email : rawResults.getResults()) {
+                    Task task = new Task();
+                    task.setPid(email);
+                    task.setName(subtask);
+                    task.setScript(script);
+                    tasks.add(task);
+                }
             }
         }
         if (fromTable.equals("Payment")){
             GenericRawResults<Payment> rawResults = helper.getPaymentDao().queryRaw(query,helper.getPaymentDao().getRawRowMapper());
-            for (Payment payment: rawResults){
+            for (Payment payment: rawResults.getResults()){
                 Task task = new Task();
                 task.setOid(payment.getId());
                 task.setPid(payment);
                 task.setName(subtask);
+                task.setScript(script);
                 tasks.add(task);
             }
         }
         if (fromTable.equals("Event")){
             GenericRawResults<Event> rawResults = helper.getEventDao().queryRaw(query,helper.getEventDao().getRawRowMapper());
-            for (Event event: rawResults){
+            for (Event event: rawResults.getResults()){
                 Task task = new Task();
                 task.setOid(event.getId());
                 task.setPid(event);
                 task.setName(subtask);
+                task.setScript(script);
                 tasks.add(task);
+
             }
         }
 
         return tasks;
     }
 
-    public List<Task> queryDatabase(String query, String fromTable, String subtask){
+    public List<Task> queryDatabase(String query, String fromTable, String subtask, Script script) throws SQLException {
         List<Task> tasks = new ArrayList<Task>();
 
 
         GenericRawResults<String[]> rawResults = helper.getPaymentDao().queryRaw(query);
-        List<String[]> results = null;
-        try {
-            results = rawResults.getResults();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        if (results!=null){
-            if (results.size()>0){
+       // List<String[]> results = null;
+        if (rawResults!=null){
+           // if (rawResults.getResults().size()>0){
                 if (fromTable.contains("Payment")){
-                    for (String[] tuple:results) {
+                    for (String[] tuple:rawResults.getResults()) {
                         Payment payment = new Payment();
                         payment.setId(tuple[0]);
                         payment.setName(tuple[1]);
 
                         String tempQuery = "select * from `Payment` where `_id`=" + tuple[0];
                         GenericRawResults<Payment> paymentData = helper.getPaymentDao().queryRaw(tempQuery, helper.getPaymentDao().getRawRowMapper());
-                        for (Payment fullpayment : paymentData) {
-                            Task task = new Task();
-                            task.setOid(fullpayment.getId());
-                            task.setPid(fullpayment);
-                            task.setName(subtask);
-                            tasks.add(task);
+//                        try {
+//                            System.err.println("PAYMENTSFOUND = " + paymentData.getResults().size());
+//                        } catch (SQLException e) {
+//                            e.printStackTrace();
+//                        }
+                        try {
+                            for (Payment fullpayment : paymentData.getResults()) {
+                                Task task = new Task();
+                                task.setOid(fullpayment.getId());
+                                task.setPid(fullpayment);
+                                task.setName(subtask);
+                                task.setScript(script);
+                                tasks.add(task);
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
                         }
 
 
                     }
                 }
-            }
+          //  }
         }
         return tasks;
     }

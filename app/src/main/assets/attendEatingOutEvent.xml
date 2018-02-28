@@ -5,6 +5,12 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 
 
 <process binding="Process" isExecutable="true" id="attendEatingOutEvent">
+<locals>
+    <who name="whoAttended"/>
+    <when name="whenEatingOccured"/>
+    <where name="whereEatingOccured"/>
+    <what name="whatWasEaten"/>
+</locals>
 <startEvent name="" id="SubProcessStart"/>
 <endEvent name="" id="SubProcessEnd"/>
 <parallelGateway gatewayDirection="Diverging" name="" id="whileInVenue"/>
@@ -22,7 +28,7 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="EstablishWhoPays" id="EstablishWhoPays"/>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="EstablishWhatEveryonePays" id="EstablishWhatEveryonePays"/>
 <parallelGateway gatewayDirection="Converging" name="" id="AfterEstablishingWhatWhoPays"/>
-<callActivity calledElement="makeAPayment" name="makeAPayment" id="SubProcessPayMeal"/>
+<callActivity calledElement="makeAPayment" name="makeAPayment" t="restaurant" id="SubProcessPayMeal"/>
 <parallelGateway gatewayDirection="Converging" name="" id="afterFinishingWithEvent"/>
 <sequenceFlow sourceRef="SubProcessStart" targetRef="whileInVenue" name="" id=""/>
 <sequenceFlow sourceRef="whileInVenue" targetRef="TakePictures" name="" id=""/>

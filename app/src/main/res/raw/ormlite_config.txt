@@ -507,6 +507,9 @@ generatedId=true
 # --field-start--
 fieldName=name
 # --field-end--
+# --field-start--
+fieldName=argument
+# --field-end--
 # --table-fields-end--
 # --table-end--
 #################################

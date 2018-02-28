@@ -43,6 +43,7 @@ public class ApplicationManager {
 
     public void initScript(DatabaseHelper helper, Context context){
         this.helper=helper;
+
         ConfigReader config = new ConfigReader(context);
         String filename = config.getStr(PROPERTIES.SCRIPT_FILE);
         Log.d(TAG, "Read script file: "+ filename);
@@ -52,7 +53,7 @@ public class ApplicationManager {
 
             /*parse the script and get the script definitions*/
         try {
-            this.scriptElements = new ScriptParser().start(filename,null,context);
+            this.scriptElements = new ScriptParser().start(filename,null,"restaurant",context);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -71,14 +72,15 @@ public class ApplicationManager {
         for (String key: scriptElements.keySet()) {
             if (key != null){
                 ScriptDefinition scriptDefinition = (ScriptDefinition)scriptElements.get(key);
-                ScriptDefinition scriptDef = helper.scriptDefinitionExists(scriptDefinition.getName());
+                ScriptDefinition scriptDef = helper.scriptDefinitionExists(scriptDefinition.getName(),scriptDefinition.getArgument());
                 if (scriptDef == null) {
                     scriptDefDao.create(scriptDefinition);
                     ArrayList<LocalProperties> locals = scriptDefinition.getLocalProperties();
-                    for (LocalProperties local: locals) {
+                    for (LocalProperties local : locals) {
                         localPropertiesDao.create(local);
                     }
-                    //scriptDef = scriptDefinition;
+                }else{
+                    scriptDef = scriptDefinition;
                 }
 
 
@@ -107,17 +109,16 @@ public class ApplicationManager {
 
     public void storeScriptDefinition(ScriptDefinition subscript, ScriptDefinition superScript){
         if (subscript != null) {
-
-            ScriptDefinition scriptDef = helper.scriptDefinitionExists(subscript.getName());
+            ScriptDefinition scriptDef = helper.scriptDefinitionExists(subscript.getName(),subscript.getArgument());
             if (scriptDef == null) {
-                scriptDefDao.create(subscript);
+                scriptDefDao.create(subscript); //edw nomizw
                 ArrayList<LocalProperties> locals = subscript.getLocalProperties();
                 for (LocalProperties local: locals) {
                     localPropertiesDao.create(local);
                 }
-            }//else{
-            //    subscript = scriptDef;
-            //}
+            }else{
+                subscript.setId(scriptDef.getId());
+            }
 
             Subscript subscript1 = new Subscript();
             subscript1.setSuperscript_id(superScript);

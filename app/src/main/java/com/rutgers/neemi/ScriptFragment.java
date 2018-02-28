@@ -200,9 +200,9 @@ public class ScriptFragment extends Fragment {
                 txtListHeader.setText(((Email) childTask.getPid()).getSubject());
                 txtListHeaderBody.setText(((Email) childTask.getPid()).getFrom());
             }else if(childTask.getPid() instanceof Payment){
-                imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.fb_logo));
+                imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.bank));
                 txtListHeader.setText(((Payment) childTask.getPid()).getName());
-                txtListHeaderBody.setText((int) ((Payment) childTask.getPid()).getDate());
+                txtListHeaderBody.setText("");
             }else if(childTask.getPid() instanceof Calendar){
                 imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.google_calendar));
                 txtListHeader.setText(((Event) childTask.getPid()).getTitle());

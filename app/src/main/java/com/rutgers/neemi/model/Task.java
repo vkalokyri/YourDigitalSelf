@@ -71,4 +71,12 @@ public class Task implements Serializable{
 	public void setOid(String oid) {
 		this.oid = oid;
 	}
+
+	public Script getScript() {
+		return script;
+	}
+
+	public void setScript(Script script) {
+		this.script = script;
+	}
 }

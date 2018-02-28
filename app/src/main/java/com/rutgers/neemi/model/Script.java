@@ -22,14 +22,13 @@ public class Script {
 	String timestamp;
 	@DatabaseField
 	float score=0;
+	String name;
+	String ofType;
 
 	ArrayList<LocalValues> localValues;
 	HashMap<String, Task> tasksMap;
 	List<Task> tasks;
 	ArrayList<Script> subscripts;
-
-
-
 
 	public Script(){
 		this.tasksMap=new HashMap<String, Task>();
@@ -102,14 +101,21 @@ public class Script {
 		this.subscripts.add(subscript);
 	}
 
+	public String getOfType() {
+		return ofType;
+	}
 
-	//	public String getName() {
-//		return name;
-//	}
-//
-//	public void setName(String name) {
-//		this.name = name;
-//	}\
+	public void setOfType(String ofType) {
+		this.ofType = ofType;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 
 	public Script assignScore(Context context){

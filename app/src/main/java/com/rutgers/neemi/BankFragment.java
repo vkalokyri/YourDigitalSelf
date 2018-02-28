@@ -115,6 +115,7 @@ public class BankFragment extends Fragment {
         addBank.setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
                 Intent myIntent = new Intent(getActivity(), PlaidActivity.class);
+                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(myIntent);
             }
         });
@@ -466,6 +467,7 @@ public class BankFragment extends Fragment {
                 Intent myIntent = new Intent(getActivity(), MainActivity.class);
                 myIntent.putExtra("key", "bank");
                 myIntent.putExtra("items", output);
+                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(myIntent);
 
             }

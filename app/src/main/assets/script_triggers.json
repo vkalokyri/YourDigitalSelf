@@ -1,7 +1,7 @@
 {
   "Eating_Out":{
-    "strongTriggers":["makeAPayment","makeReservation","writeInCalendar"],
-    "weakTriggers":["initiateDiscussion"]
+    "strongTriggers":["makeAPayment<restaurant>","makeReservation<restaurant>","writeInCalendar<restaurant>"],
+    "weakTriggers":["initiateDiscussion<restaurant>"]
     }
 }
 //"momentCapturing","ChangePlans"
