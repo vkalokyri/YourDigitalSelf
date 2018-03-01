@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.rutgers.neemi.interfaces.Clues;
@@ -40,13 +43,17 @@ import com.rutgers.neemi.parser.ScriptParser;
 import com.rutgers.neemi.util.ApplicationManager;
 import com.rutgers.neemi.util.ConfigReader;
 import com.rutgers.neemi.util.PROPERTIES;
+import com.rutgers.neemi.util.TinyDB;
 import com.rutgers.neemi.util.Utilities;
+
+import org.apache.poi.hssf.record.SCLRecord;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.sql.Array;
 import java.sql.SQLException;
@@ -57,6 +64,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -96,19 +104,47 @@ public class RestaurantsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
+        myView = inflater.inflate(R.layout.fragment_restaurants, container, false);
+        ListView list1 =  (ListView) myView.findViewById(R.id.restaurant_list);
+
 //        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-//        if (!prefs.getBoolean("firstTime", false)) {
+//        SharedPreferences.Editor editor = prefs.edit();
+//        TinyDB tinydb = new TinyDB(getContext());
+//        editor.putBoolean("restaurantFirstTime", false);
+//
+//        if (!prefs.getBoolean("restaurantFirstTime", false)) {
 //            // <---- run your one time code here
 //            findScriptInstances();
 //
-//            // mark first time has runned.
-//            SharedPreferences.Editor editor = prefs.edit();
-//            editor.putBoolean("firstTime", true);
-//            editor.commit();
+//            ArrayList<Object> scriptObjects = new ArrayList<Object>();
+//
+//            for(Script s : listOfScripts){
+//                scriptObjects.add((Object)s);
+//                break;
+//            }
+//
+//            tinydb.putListObject("restaurantScripts", scriptObjects);
+//
+////            // mark first time has runned.
+//            editor.putBoolean("restaurantFirstTime", true);
+////
+////            Gson gson = new Gson();
+////            ArrayList<String> objStrings = new ArrayList<String>();
+////            for(Script obj : listOfScripts){
+////                objStrings.add(gson.toJson(obj));
+////            }
+////            String[] myStringList = objStrings.toArray(new String[objStrings.size()]);
+////            editor.putString("restaurantScripts", TextUtils.join("‚‗‚", myStringList)).apply();
+////            editor.commit();
+//        }else{
+//            ArrayList<Object> scriptObjects = tinydb.getListObject("restaurantScripts", Script.class);
+//
+//            for(Object objs : scriptObjects){
+//                listOfScripts.add((Script) objs);
+//            }
 //        }
 
-        myView = inflater.inflate(R.layout.fragment_restaurants, container, false);
-        ListView list1 =  (ListView) myView.findViewById(R.id.restaurant_list);
+
 
         list1.setOnItemClickListener(
                 new AdapterView.OnItemClickListener()
@@ -151,13 +187,6 @@ public class RestaurantsFragment extends Fragment {
 
         try{
             ConfigReader config = new ConfigReader(getContext());
-//            String filename = config.getStr(PROPERTIES.SCRIPT_FILE);
-//            Log.d(TAG, "Read script file: "+ filename);
-//            this.scriptElements=new HashMap<String, Object>();
-//
-//            /*parse the script and get the script definitions*/
-//            this.scriptElements = new ScriptParser().start(filename,null,getContext());
-//            storeScriptDefinition(this.scriptElements);
 
             /*get the keywords to search in the documents*/
             InputStream fis = getContext().getAssets().open(config.getStr(PROPERTIES.KEYWORDS_FILE));
@@ -231,9 +260,10 @@ public class RestaurantsFragment extends Fragment {
             }
 
 
-            mergeThreads(tasksRunning);
-            listOfScripts = createScriptPerTask(tasksRunning);
-//           mergeScriptsByEventDate(listOfScripts);
+
+            ArrayList<ArrayList<Task>> tasks = mergeTasksByEventDate(tasksRunning);
+            ArrayList<ArrayList<Task>> tasksThreads = mergeThreads(tasks);
+            listOfScripts = createScriptPerTask(tasksThreads);
 
 
 
@@ -256,44 +286,69 @@ public class RestaurantsFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         findScriptInstances();
 
-
     }
 
-    public ArrayList<Script> createScriptPerTask(List<Task> tasksRunning) throws SQLException {
+    public ArrayList<Script> createScriptPerTask(ArrayList<ArrayList<Task>> taskThreads) throws SQLException {
 
         ArrayList<Script> scripts = new ArrayList<Script>();
-        for(Task task:tasksRunning){
+        for(ArrayList<Task> tasksRunning:taskThreads) {
             //put all tasks local values under the abstract who, what, where dimensions
-            HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
-            for(LocalValues taskLocalValues:task.getLocalValues()){
-                String w5hLabel = taskLocalValues.getLocalProperties().getW5h_label();
-                if(map.containsKey(w5hLabel)){
-                    ArrayList<String> values = map.get(w5hLabel);
-                    values.add(taskLocalValues.getValue());
-                    map.put(w5hLabel,values );
-                }else{
-                    if (w5hLabel!=null) {
-                        ArrayList<String> values = new ArrayList<String>();
-                        values.add(taskLocalValues.getValue());
-                        map.put(w5hLabel, values);
+            HashMap<String, HashSet<String>> map = new HashMap<String, HashSet<String>>();
+
+            Script script = new Script();
+            String scriptName = null;
+            String ofType =null;
+            for (Task task : tasksRunning) {
+                scriptName = task.getScript().getName();
+                ofType = task.getScript().getOfType();
+                HashSet<String> values=null;
+                for (LocalValues taskLocalValues : task.getLocalValues()) {
+                    String w5hLabel = taskLocalValues.getLocalProperties().getW5h_label();
+                    if (map.containsKey(w5hLabel)) {
+                        values = map.get(w5hLabel);
+                    }else{
+                        if (w5hLabel != null) {
+                            values = new HashSet<>();
+                        }
                     }
+
+                    if (taskLocalValues.getValue()!=null) {
+                        //HashSet<String> values = map.get(w5hLabel);
+                        if (w5hLabel.equalsIgnoreCase("who")) {
+                            String whoValue = taskLocalValues.getValue();
+                            String[] whoNames = whoValue.split("<");
+                            if (whoNames.length > 1) {
+                                if(whoNames[0].contains("\"")){
+                                    values.add(whoNames[0].substring(1,whoNames[0].length()-2));
+                                }else{
+                                    values.add(whoNames[0]);
+                                }
+                                map.put(w5hLabel, values);
+                            } else {
+                                values.add(whoValue);
+                                map.put(w5hLabel, values);
+                            }
+                        } else {
+                            values.add(taskLocalValues.getValue());
+                            map.put(w5hLabel, values);
+                        }
+                    }
+
                 }
             }
 
-            Script script = new Script();
-            String scriptName = task.getScript().getName();
-            String ofType = task.getScript().getOfType();
-            script.setScriptDefinition( helper.getTopScripts(scriptName, ofType));
-            script.addTask(task);
+
+            script.setScriptDefinition(helper.getTopScripts(scriptName, ofType));
+            script.setTasks(tasksRunning);
 
 
-            for (LocalProperties localProp:script.getScriptDefinition().getLocalProperties()) {
-                ArrayList<String> values = map.get(localProp.getW5h_label());
+            for (LocalProperties localProp : script.getScriptDefinition().getLocalProperties()) {
+                HashSet<String> values = map.get(localProp.getW5h_label());
                 if (values != null) {
                     for (String value : values) {
                         LocalValues scriptLocalValues = new LocalValues();
                         scriptLocalValues.setLocalProperties(localProp);
-                        scriptLocalValues.setTask(task);
+                        //scriptLocalValues.setTask(task);
                         scriptLocalValues.setValue(value);
                         script.addLocalValue(scriptLocalValues);
                     }
@@ -302,17 +357,19 @@ public class RestaurantsFragment extends Fragment {
 
             //add local values in the definitions
 
-            ArrayList<ScriptDefinition> scriptDefinitionList =script.getScriptDefinition().getSubscripts();
-            for (ScriptDefinition subscriptDef:scriptDefinitionList ){
+            ArrayList<ScriptDefinition> scriptDefinitionList = script.getScriptDefinition().getSubscripts();
+            for (ScriptDefinition subscriptDef : scriptDefinitionList) {
                 Script subscript = new Script();
                 subscript.setScriptDefinition(subscriptDef);
-                for (LocalProperties localProp:subscriptDef.getLocalProperties()) {
-                    ArrayList<String> values = map.get(localProp.getW5h_label());
+
+
+                for (LocalProperties localProp : subscriptDef.getLocalProperties()) {
+                    HashSet<String> values = map.get(localProp.getW5h_label());
                     if (values != null) {
                         for (String value : values) {
                             LocalValues scriptLocalValues = new LocalValues();
                             scriptLocalValues.setLocalProperties(localProp);
-                            scriptLocalValues.setTask(task);
+                            //scriptLocalValues.setTask(task);
                             scriptLocalValues.setValue(value);
                             subscript.addLocalValue(scriptLocalValues);
                         }
@@ -322,35 +379,91 @@ public class RestaurantsFragment extends Fragment {
             }
 
 
-
-
-
-//            for (LocalProperties localProp:script.getScriptDefinition().getLocalProperties()){
-//                ArrayList<String> values = map.get(localProp.getW5h_label());
-//                if(values!=null) {
-//                    for (String value : values) {
-//                        LocalValues scriptLocalValues = new LocalValues();
-//                        scriptLocalValues.setLocalProperties(localProp);
-//                        scriptLocalValues.setTask(task);
-//                        scriptLocalValues.setValue(value);
-//                        script.addLocalValue(scriptLocalValues);
-//                    }
-//                }
-//
-//            }
-
             script.assignScore(getContext());
             scripts.add(script);
+
         }
 
         return scripts;
     }
 
 
+    public ArrayList<ArrayList<Task>> mergeTasksByEventDate(List<Task> tasks){
+        Log.d(TAG,"SIZE OF PROCESSES: " +tasks.size());
+        ArrayList<ArrayList<Task>> listofMergedTasks = new ArrayList<ArrayList<Task>>();
+        HashMap<Date, ArrayList<Task>> hashMap = new HashMap<Date, ArrayList<Task>>();
+
+        for (Task task:tasks){
+            Date extractedDate=null;
+            if (task.getPid() instanceof Payment){
+                try {
+                    extractedDate = sdf.parse(sdf.format(((Payment) task.getPid()).getDate()));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }else if (task.getPid() instanceof Email){
+                if (((Email) task.getPid()).getSubjectDate()!=null) {
+                    try {
+                        extractedDate = sdf.parse(sdf.format(((Email) task.getPid()).getSubjectDate()));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                }else{
+
+                }
+            }else if (task.getPid() instanceof Event){
+                try {
+                    extractedDate = sdf.parse(sdf.format(((Event) task.getPid()).getStartTime()));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if(extractedDate!=null) {
+                if (!hashMap.containsKey(extractedDate)) {
+                    ArrayList<Task> list = new ArrayList<Task>();
+                    list.add(task);
+                    hashMap.put(extractedDate, list);
+                } else {
+                    hashMap.get(extractedDate).add(task);
+                }
+            }else{
+                ArrayList<Task> notMergedTask = new ArrayList<Task>();
+                notMergedTask.add(task);
+                listofMergedTasks.add(notMergedTask);
+            }
+
+        }
+
+
+        for (Date date: hashMap.keySet()){
+            listofMergedTasks.add(hashMap.get(date));
+        }
+
+        return listofMergedTasks;
+
+
+//        Log.d(TAG,"SIZE OF PROCESSES after: " +hashMap.size());
+//        for (Map.Entry entry : hashMap.entrySet()) {
+//            Log.d(TAG,"Date: " +entry.getKey());
+//            for (Task t:(List<Task>)entry.getValue()){
+//                if (t.getPid() instanceof Event) {
+//                    Log.d(TAG,"Event = " + ((Event) t.getPid()).getDescription());
+//                }else if (t.getPid() instanceof Email){
+//                    Log.d(TAG, "Email = "+((Email) t.getPid()).getSubject());
+//                }else if (t.getPid() instanceof Payment){
+//                    Log.d(TAG,"Payment = "+((Payment) t.getPid()).getName());
+//                }
+//            }
+//        }
+
+    }
+
+
     public void mergeScriptsByEventDate(List<Script> listOfScripts){
         Log.d(TAG,"SIZE OF PROCESSES: " +listOfScripts.size());
-        HashMap<Date, List<Task>> hashMap = new HashMap<Date, List<Task>>();
-        List<Script> mergedScripts = new ArrayList<Script>();
+        HashMap<Date, List<Script>> hashMap = new HashMap<Date, List<Script>>();
+
 		for (Script process:listOfScripts){
         	for (Task task:process.getTasks()){
                 Date extractedDate=null;
@@ -380,76 +493,99 @@ public class RestaurantsFragment extends Fragment {
 
                 if(extractedDate!=null) {
                     if (!hashMap.containsKey(extractedDate)) {
-                        List<Task> list = new ArrayList<Task>();
-                        list.add(task);
+                        List<Script> list = new ArrayList<Script>();
+                        list.add(process);
                         hashMap.put(extractedDate, list);
                     } else {
-                        hashMap.get(extractedDate).add(task);
+                        hashMap.get(extractedDate).add(process);
                     }
                 }
         	}
         }
 
-        Log.d(TAG,"SIZE OF PROCESSES after: " +hashMap.size());
-        for (Map.Entry entry : hashMap.entrySet()) {
-            Log.d(TAG,"Date: " +entry.getKey());
-            for (Task t:(List<Task>)entry.getValue()){
-                if (t.getPid() instanceof Event) {
-                    Log.d(TAG,"Event = " + ((Event) t.getPid()).getDescription());
-                }else if (t.getPid() instanceof Email){
-                    Log.d(TAG, "Email = "+((Email) t.getPid()).getSubject());
-                }else if (t.getPid() instanceof Payment){
-                    Log.d(TAG,"Payment = "+((Payment) t.getPid()).getName());
-                }
-            }
+        for (Date date: hashMap.keySet()){
+            List<Script> mergedScripts = hashMap.get(date);
         }
+
+
+//        Log.d(TAG,"SIZE OF PROCESSES after: " +hashMap.size());
+//        for (Map.Entry entry : hashMap.entrySet()) {
+//            Log.d(TAG,"Date: " +entry.getKey());
+//            for (Task t:(List<Task>)entry.getValue()){
+//                if (t.getPid() instanceof Event) {
+//                    Log.d(TAG,"Event = " + ((Event) t.getPid()).getDescription());
+//                }else if (t.getPid() instanceof Email){
+//                    Log.d(TAG, "Email = "+((Email) t.getPid()).getSubject());
+//                }else if (t.getPid() instanceof Payment){
+//                    Log.d(TAG,"Payment = "+((Payment) t.getPid()).getName());
+//                }
+//            }
+//        }
 
     }
 
 
-	public void mergeThreads(List<Task> tasks){
+	public ArrayList<ArrayList<Task>> mergeThreads(ArrayList<ArrayList<Task>> tasks){
+
+        System.err.println("Total processes running before threading ="+tasks.size());
+
+        ArrayList<ArrayList<Task>> listofMergedTasks = new ArrayList<ArrayList<Task>>();
 
 		//hashmap of key:threadId and value:task
-        HashMap<String,List<Task>> mergeTasksByThread = new HashMap();
-        for (Task task:tasks) {
-            if (task.getPid() instanceof Email) {
-                String key = ((Email) task.getPid()).getThreadId();
-                List<Task> list = mergeTasksByThread.get(key);
-                if (list == null) {
-                    list = new ArrayList<Task>();
-                    mergeTasksByThread.put(key, list);
+        HashMap<String,ArrayList<Task>> mergeTasksByThread = new HashMap();
+
+        for (ArrayList<Task> tasksInAScript: tasks){
+            String previous_thread_id=null;
+            ArrayList<Task> tasklist = null;
+            for (Task task:tasksInAScript) {
+                if (task.getPid() instanceof Email) {
+                    String key = ((Email) task.getPid()).getThreadId();
+                    previous_thread_id=key;
+                    ArrayList<Task> list = mergeTasksByThread.get(key);
+                    if (list == null) {
+                        list = new ArrayList<Task>();
+                        list.add(task);
+                        mergeTasksByThread.put(key, list);
+                    }else{
+                        list.add(task);
+                    }
+                }else {
+                    if(previous_thread_id!=null){
+                        ArrayList<Task> list = mergeTasksByThread.get(previous_thread_id);
+                        list.add(task);
+                        mergeTasksByThread.put(previous_thread_id, list);
+                    }else{
+                        if (tasklist==null){
+                            tasklist = new ArrayList<>();
+                            tasklist.add(task);
+                        }else{
+                            tasklist.add(task);
+                        }
+
+                    }
                 }
-                list.add(task);
-            }else {
-                Script script = new Script();
-                script.addTask(task);
-
-               // script.setLocals(task.getLocals());
-                script.assignScore(getContext());
-                listOfScripts.add(script);
+            }
+            if(tasklist!=null) {
+                listofMergedTasks.add(tasklist);
             }
         }
 
-        for (HashMap.Entry<String, List<Task>>  mergedThreads: mergeTasksByThread.entrySet()) {
-            List<Task> mergedtasks = mergedThreads.getValue();
-            Script process = new Script();
-            for (Task task:mergedtasks){
-                process.addTask(task);
-            }
-            process.assignScore(getContext());
-            listOfScripts.add(process);
+
+        for (String thread_id: mergeTasksByThread.keySet()) {
+            ArrayList<Task> mergedtasks = mergeTasksByThread.get(thread_id);
+            listofMergedTasks.add(mergedtasks);
         }
 
+		System.err.println("Total processes running after threading ="+listofMergedTasks.size());
 
+//		Collections.sort(listOfScripts, new Comparator<Script>() {
+//	        @Override public int compare(Script p1, Script p2) {
+//	            return Float.compare(p2.getScore(),p1.getScore()); // Ascending
+//	        }
+//
+//	    });
 
-		System.err.println("Total processes running after threading ="+listOfScripts.size());
-
-		Collections.sort(listOfScripts, new Comparator<Script>() {
-	        @Override public int compare(Script p1, Script p2) {
-	            return Float.compare(p2.getScore(),p1.getScore()); // Ascending
-	        }
-
-	    });
+        return listofMergedTasks;
 	}
 
 
@@ -742,7 +878,7 @@ public class RestaurantsFragment extends Fragment {
 
 
             LayoutInflater inflater=context.getLayoutInflater();
-            View rowView=inflater.inflate(R.layout.restaurantsview, null,true);
+            View rowView=inflater.inflate(R.layout.restaurantsview, null,false);
             LinearLayout linearLayout = (LinearLayout) rowView.findViewById(R.id.linearLayout);
 
            // TextView txtTitle = (TextView) rowView.findViewById(R.id.item);
