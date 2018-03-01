@@ -28,8 +28,11 @@ import com.rutgers.neemi.model.ScriptDefinition;
 import com.rutgers.neemi.model.Task;
 
 import java.lang.reflect.Array;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -282,11 +285,16 @@ public class ScriptFragment extends Fragment {
             if(childTask.getPid() instanceof Email){
                 imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.gmail_icon));
                 txtListHeader.setText(((Email) childTask.getPid()).getSubject());
-                txtListHeaderBody.setText(((Email) childTask.getPid()).getFrom());
+                String text = "whoSent: "+((Email) childTask.getPid()).getFrom()+" \n whoReceived: "+ ((Email) childTask.getPid()).getTo()+" \n whenSent: "+ ((Email) childTask.getPid()).getDate();
+                txtListHeaderBody.setText(text);
             }else if(childTask.getPid() instanceof Payment){
                 imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.bank));
                 txtListHeader.setText(((Payment) childTask.getPid()).getName());
-                txtListHeaderBody.setText("");
+                Date extractedDate = new Date(((Payment) childTask.getPid()).getDate());
+                Format format = new SimpleDateFormat("yyyy-MM-dd");
+                String parsedDate = format.format(extractedDate);
+                String text = "whenPaid: "+parsedDate+" \n howMuchWasPaid: $"+((Payment) childTask.getPid()).getAmount() ;
+                txtListHeaderBody.setText(text);
             }else if(childTask.getPid() instanceof Calendar){
                 imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.google_calendar));
                 txtListHeader.setText(((Event) childTask.getPid()).getTitle());
