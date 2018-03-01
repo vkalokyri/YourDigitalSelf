@@ -31,6 +31,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -64,6 +65,65 @@ public class ScriptFragment extends Fragment {
         ArrayList listOfProcesses = (ArrayList) getArguments().getSerializable("processes");
         int position = (int) getArguments().getSerializable("position");
         long id  = (long) getArguments().getSerializable("id");
+
+        LinearLayout linearLayout = (LinearLayout) myView.findViewById(R.id.linearLayout);
+        // TextView txtTitle = (TextView) rowView.findViewById(R.id.item);
+        ImageView imageView = (ImageView) myView.findViewById(R.id.icon);
+
+
+        Script script = (Script)listOfProcesses.get(position);//.getScriptDefinition();
+        HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
+        imageView.setImageResource(imgid[0]);
+        ArrayList<LocalValues> localValues = script.getLocalValues();
+        if (localValues != null) {
+            for (LocalValues localValue : localValues) {
+                if (localValue != null) {
+                    LocalProperties lp = localValue.getLocalProperties();
+                    if (lp != null) {
+                        String w5h_value = lp.getW5h_value();
+                        if (map.containsKey(w5h_value)) {
+                            ArrayList<String> values = map.get(w5h_value);
+                            values.add(localValue.getValue());
+                            map.put(w5h_value, values);
+                        } else {
+                            if (w5h_value != null) {
+                                ArrayList<String> values = new ArrayList<String>();
+                                values.add(localValue.getValue());
+                                map.put(w5h_value, values);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (String localLabel:map.keySet()) {
+            StringBuilder sb = new StringBuilder();
+            for (String localValue : map.get(localLabel)) {
+                sb.append(localValue);
+                sb.append(", ");
+            }
+            sb.delete(sb.length() - 2, sb.length() - 1);
+
+            LinearLayout textLayout = new LinearLayout(getContext());
+            textLayout.setOrientation(LinearLayout.HORIZONTAL);
+            LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            llp.setMargins(10, 5, 5, 0);
+            textLayout.setLayoutParams(llp);
+
+            TextView localTextView = new TextView(this.getContext());
+            localTextView.setTextColor(Color.parseColor("#996666"));
+            localTextView.setText(getString(R.string.local, localLabel + " : "));
+
+            TextView localValueTextView = new TextView(this.getContext());
+            localValueTextView.setTextColor(Color.parseColor("#FFFFFF"));
+            localValueTextView.setText(getString(R.string.local, sb.toString()));
+
+            textLayout.addView(localTextView);
+            textLayout.addView(localValueTextView);
+            linearLayout.addView(textLayout);
+
+        }
 
         // preparing list data
         prepareListData((Script)listOfProcesses.get(position));
@@ -121,14 +181,38 @@ public class ScriptFragment extends Fragment {
             header.append(subscript.getScriptDefinition().getName());
 
             StringBuilder localsSb = new StringBuilder();
+            HashMap<String, HashSet<String>> map = new HashMap<String, HashSet<String>>();
 
             for (LocalValues lv : subscript.getLocalValues()){
-                localsSb.append(lv.getLocalProperties().getW5h_value());
-                localsSb.append(": ");
-                localsSb.append(lv.getValue());
-                localsSb.append("\n");
-                localsSb.toString();
+                String key=lv.getLocalProperties().getW5h_value();
+                if(map.containsKey(key)){
+                    map.get(key).add(lv.getValue());
+                }else{
+                    HashSet<String> valueSet = new HashSet<String>();
+                    valueSet.add(lv.getValue());
+                    map.put(key,valueSet);
+                }
             }
+
+            for(String w5hValue: map.keySet()){
+                localsSb.append(w5hValue);
+                localsSb.append(": ");
+                for (String value: map.get(w5hValue)) {
+                    localsSb.append(value);
+                    localsSb.append(",");
+                }
+                localsSb.deleteCharAt(localsSb.length()-1);
+                localsSb.append("\n");
+            }
+
+
+//            for (LocalValues lv : subscript.getLocalValues()){
+//                localsSb.append(lv.getLocalProperties().getW5h_value());
+//                localsSb.append(": ");
+//                localsSb.append(lv.getValue());
+//                localsSb.append("\n");
+//                localsSb.toString();
+//            }
             listDataHeader.add(header.toString());
             listDataHeaderLocals.put(header.toString(),localsSb.toString());
 

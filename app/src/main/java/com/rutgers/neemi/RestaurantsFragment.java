@@ -57,9 +57,11 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.sql.Array;
 import java.sql.SQLException;
+import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -67,6 +69,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.json.JsonString;
 
@@ -328,10 +331,30 @@ public class RestaurantsFragment extends Fragment {
                                 values.add(whoValue);
                                 map.put(w5hLabel, values);
                             }
-                        } else {
+                        } else if(w5hLabel.startsWith("when")){
+                                String localValue =taskLocalValues.getValue();
+                                Date extractedDate=null;
+                                String parsedDate=null;
+                                System.err.println(localValue);
+                                try {
+                                    extractedDate = new Date(Long.parseLong(localValue));
+                                    Format format = new SimpleDateFormat("yyyy-MM-dd");
+                                    parsedDate = format.format(extractedDate);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    extractedDate = new Date(localValue);
+                                    Format format = new SimpleDateFormat("yyyy-MM-dd");
+                                    parsedDate= format.format(extractedDate);
+                                }
+                                if(parsedDate!=null) {
+                                    values.add(parsedDate);
+                                    map.put(w5hLabel, values);
+                                }
+                        } else{
                             values.add(taskLocalValues.getValue());
                             map.put(w5hLabel, values);
                         }
+
                     }
 
                 }
@@ -881,7 +904,6 @@ public class RestaurantsFragment extends Fragment {
             View rowView=inflater.inflate(R.layout.restaurantsview, null,false);
             LinearLayout linearLayout = (LinearLayout) rowView.findViewById(R.id.linearLayout);
 
-           // TextView txtTitle = (TextView) rowView.findViewById(R.id.item);
             ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
 
 
@@ -914,11 +936,37 @@ public class RestaurantsFragment extends Fragment {
 
             for (String localLabel:map.keySet()) {
                 StringBuilder sb = new StringBuilder();
-                for (String localValue:map.get(localLabel)) {
-                    sb.append(localValue);
-                    sb.append(", ");
-                }
-                sb.delete(sb.length()-2,sb.length()-1);
+
+//                if(localLabel.startsWith("when")){
+//                    for (String localValue : map.get(localLabel)) {
+//                        Date extractedDate=null;
+//                        String parsedDate=null;
+//                        System.err.println(localValue);
+//                        try {
+//                            extractedDate = new Date(Long.parseLong(localValue));
+//                            Format format = new SimpleDateFormat("yyyy-MM-dd");
+//                            parsedDate = format.format(extractedDate);
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                            extractedDate = new Date(localValue);
+//                            Format format = new SimpleDateFormat("yyyy-MM-dd");
+//                            parsedDate= format.format(extractedDate);
+//                        }
+//                        if(parsedDate!=null) {
+//                            sb.append(parsedDate);
+//                            sb.append(", ");
+//                        }
+//                    }
+//                    sb.delete(sb.length() - 2, sb.length() - 1);
+//
+//                }else {
+
+                    for (String localValue : map.get(localLabel)) {
+                        sb.append(localValue);
+                        sb.append(", ");
+                    }
+                    sb.delete(sb.length() - 2, sb.length() - 1);
+               // }
 
                 LinearLayout textLayout = new LinearLayout(context);
                 textLayout.setOrientation(LinearLayout.HORIZONTAL);
@@ -938,77 +986,8 @@ public class RestaurantsFragment extends Fragment {
                 textLayout.addView(localValueTextView);
                 linearLayout.addView(textLayout);
 
-
-
             }
 
-
-
-//                for (Task processTask : itemname.get(position).getTasks()) {
-//                System.out.println("SIZE OF TASKS = "+itemname.get(position).getTasks().size());
-//                if (processTask.getPid() instanceof Email){
-//                    //txtTitle.setText(itemname.get(position).getScore()+", "+String.valueOf(((Email)processTask.getPid()).get_id()));
-//                    imageView.setImageResource(imgid[0]);
-//                    if (processTask.getLocalValues() != null) {
-//                        for (LocalValues local : processTask.getLocalValues()) {
-//                            if (local.getValue()!=null) {
-//                                if (!local.getValue().toString().equalsIgnoreCase("[null]") && !local.getValue().toString().equalsIgnoreCase("[]")) {
-//
-//                                    LinearLayout textLayout = new LinearLayout(context);
-//                                    textLayout.setOrientation(LinearLayout.HORIZONTAL);
-//                                    LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-//                                    llp.setMargins(10, 5, 5, 0);
-//                                    textLayout.setLayoutParams(llp);
-//
-//                                    TextView localTextView = new TextView(this.getContext());
-//                                    localTextView.setTextColor(Color.parseColor("#99CCFF"));
-//                                    localTextView.setText(getString(R.string.local, local.getLocalProperties().getW5h_value() + " : "));
-//
-//                                    TextView localValueTextView = new TextView(this.getContext());
-//                                    localValueTextView.setTextColor(Color.parseColor("#FFFFFF"));
-//                                    localValueTextView.setText(getString(R.string.local, local.getValue().toString()));
-//
-//                                    textLayout.addView(localTextView);
-//                                    textLayout.addView(localValueTextView);
-//                                    linearLayout.addView(textLayout);
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//                }else if (processTask.getPid() instanceof Payment) {
-//                    //txtTitle.setText(itemname.get(position).getScore()+", "+((Payment) processTask.getPid()).getName());
-//                    imageView.setImageResource(imgid[0]);
-//                    if (processTask.getLocalValues() != null) {
-//                        for (LocalValues local : processTask.getLocalValues()) {
-//                            LinearLayout textLayout = new LinearLayout(context);
-//                            textLayout.setOrientation(LinearLayout.HORIZONTAL);
-//                            LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-//                            llp.setMargins(10, 5, 5, 0);
-//                            textLayout.setLayoutParams(llp);
-//
-//                            TextView localTextView = new TextView(this.getContext());
-//                            localTextView.setTextColor(Color.parseColor("#99CCFF"));
-//                            localTextView.setText(getString(R.string.local, local.getLocalProperties().getW5h_value() + " : "));
-//
-//                            TextView localValueTextView = new TextView(this.getContext());
-//                            localValueTextView.setTextColor(Color.parseColor("#FFFFFF"));
-//                            localValueTextView.setText(getString(R.string.local, local.getLocalProperties().getW5h_value().toString()));
-//
-//                            textLayout.addView(localTextView);
-//                            textLayout.addView(localValueTextView);
-//                            linearLayout.addView(textLayout);
-//
-//                            localTextView = new TextView(this.getContext());
-//                            llp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-//                            llp.setMargins(5, 5, 5, 5);
-//                            localTextView.setLayoutParams(llp);
-//                            localTextView.setText(getString(R.string.local, local.getLocalProperties().getW5h_label() + " : " + local.getValue().toString()));
-//                            linearLayout.addView(localTextView);
-//                        }
-//                    }
-//                }
-//            }
             return rowView;
         };
     }
