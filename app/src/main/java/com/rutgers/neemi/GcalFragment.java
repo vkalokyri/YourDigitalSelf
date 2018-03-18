@@ -459,7 +459,7 @@ public class GcalFragment extends Fragment implements EasyPermissions.Permission
                             if(gcalevent.getCreator()!=null) {
                                 Person person = helper.personExistsByEmail(gcalevent.getCreator().getEmail());
                                 if (person ==null) {
-                                    Person newPerson = new Person(gcalevent.getCreator().getDisplayName(), gcalevent.getCreator().getEmail(),gcalevent.getCreator().isSelf());
+                                    Person newPerson = new Person(gcalevent.getCreator().getDisplayName(), gcalevent.getCreator().getEmail(),null,gcalevent.getCreator().isSelf());
                                     personDao.create(newPerson);
                                     event.setCreator(newPerson);
                                 }else{
@@ -479,7 +479,7 @@ public class GcalFragment extends Fragment implements EasyPermissions.Permission
                             if(gcalevent.getOrganizer()!=null){
                                 Person person = helper.personExistsByEmail(gcalevent.getOrganizer().getEmail());
                                 if (person ==null) {
-                                    Person newPerson = new Person(gcalevent.getOrganizer().getDisplayName(), gcalevent.getOrganizer().getEmail(),gcalevent.getCreator().isSelf());
+                                    Person newPerson = new Person(gcalevent.getOrganizer().getDisplayName(), gcalevent.getOrganizer().getEmail(),null,gcalevent.getCreator().isSelf());
                                     personDao.create(newPerson);
                                     event.setOrganizer(newPerson);
                                 }else{
@@ -500,7 +500,7 @@ public class GcalFragment extends Fragment implements EasyPermissions.Permission
                                 for (EventAttendee attendee:gcalevent.getAttendees()){
                                     Person person = helper.personExistsByEmail(attendee.getEmail());
                                     if (person ==null) {
-                                        Person newPerson = new Person(attendee.getDisplayName(), attendee.getEmail(),attendee.isSelf());
+                                        Person newPerson = new Person(attendee.getDisplayName(), attendee.getEmail(),null,attendee.isSelf());
                                         personDao.create(newPerson);
                                         attendeesList.add(newPerson);
                                     }else{

@@ -226,6 +226,9 @@ foreign=true
 # --field-start--
 fieldName=picture
 # --field-end--
+# --field-start--
+fieldName=source
+# --field-end--
 # --table-fields-end--
 # --table-end--
 #################################

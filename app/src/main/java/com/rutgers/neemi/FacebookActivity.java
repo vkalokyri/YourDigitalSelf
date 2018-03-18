@@ -128,7 +128,7 @@ public class FacebookActivity extends AppCompatActivity {
 
 
 
-                        GenericRawResults<String[]> rawResults = photoDao.queryRaw("select max(timestamp) from Photo;");
+                        GenericRawResults<String[]> rawResults = photoDao.queryRaw("select max(timestamp) from Photo where source=\"facebook\";");
                         List<String[]> results = null;
                         try {
                             results = rawResults.getResults();
@@ -441,6 +441,7 @@ public class FacebookActivity extends AppCompatActivity {
                                                 }
                                             }
                                             photo.setTimestamp(System.currentTimeMillis() / 1000);
+                                            photo.setSource("facebook");
                                             photoDao.create(photo);
 
                                             List<Person> taggedList = new ArrayList<Person>();

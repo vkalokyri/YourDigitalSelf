@@ -25,7 +25,10 @@ public enum PROPERTIES {
 	FACEBOOK_WEIGHT("facebook_weight"),
 	FOURSQUARE_WEIGHT("foursquare_weight"),
 	TWITTER_WEIGHT("twitter_weight"),
-	GMAPS("google_maps_API");
+	GMAPS("google_maps_API"),
+	INSTAGRAM_BASE_URL("instagram_base_url"),
+	INSTAGRAM_CLIENT_ID("instagram_API"),
+	INSTAGRAM_REDIRECT_URI("instagram_redirect_url");
 	
 	private String strVal;
 	private PROPERTIES(final String pstrVal) {

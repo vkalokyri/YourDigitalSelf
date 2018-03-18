@@ -31,12 +31,13 @@ public class Photo implements Serializable {
     Event event;
     @DatabaseField(canBeNull = true, foreign = true, columnName = "place_id")
     Place place;
-    //@ForeignCollectionField(eager = false, columnName = "tags")
-    //ForeignCollection<Person> tags;
     @DatabaseField(canBeNull = true, foreign = true, columnName = "creator_id")
     Person creator;
     @DatabaseField
     String picture;
+    @DatabaseField
+    String source;
+
 
 
     public Photo() {
@@ -138,5 +139,13 @@ public class Photo implements Serializable {
 
     public void setPicture(String picture) {
         this.picture = picture;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }

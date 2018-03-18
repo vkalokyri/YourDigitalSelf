@@ -50,6 +50,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.rutgers.neemi.LocationActivity" />
         </activity>
+        <activity android:name=".InstagramActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.rutgers.neemi.MainActivity" />
+        </activity>
         <activity android:name=".PlaidActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

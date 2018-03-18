@@ -71,15 +71,12 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-//        ApplicationManager appManager = new ApplicationManager();
-//        appManager.initScript(helper,getApplicationContext());
-
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (!prefs.getBoolean("firstTime", false)) {
             // <---- run your one time code here
-//            ApplicationManager appManager = new ApplicationManager();
-//            appManager.initScript(helper,getApplicationContext());
+            ApplicationManager appManager = new ApplicationManager();
+            appManager.initScript(helper,getApplicationContext());
 
             // mark first time has runned.
             SharedPreferences.Editor editor = prefs.edit();
@@ -104,6 +101,19 @@ public class MainActivity extends AppCompatActivity {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No facebook photos fetched.", Snackbar.LENGTH_LONG).show();
                 } else {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " facebook photos fetched.", Snackbar.LENGTH_LONG).show();
+                }
+
+            }
+            if (key.equalsIgnoreCase("instagram")) {
+                SettingsFragment settingsfragment = new SettingsFragment();
+                android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                setfragmentTransaction.add(R.id.frame, settingsfragment);
+                setfragmentTransaction.addToBackStack(null);
+                setfragmentTransaction.commit();
+                if (items == 0) {
+                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No instagram photos fetched.", Snackbar.LENGTH_LONG).show();
+                } else {
+                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " instagram photos fetched.", Snackbar.LENGTH_LONG).show();
                 }
 
             }

@@ -32,6 +32,7 @@ public class SettingsFragment extends Fragment {
 
     String[] itemname ={
             "Facebook",
+            "Instagram",
             "Google Calendar",
             "Gmail",
             "Bank data",
@@ -40,6 +41,7 @@ public class SettingsFragment extends Fragment {
 
     Integer[] imgid={
             R.drawable.fb_logo,
+            R.drawable.insta_logo,
             R.drawable.google_calendar,
             R.drawable.gmail_icon,
             R.drawable.bank,
@@ -79,6 +81,11 @@ public class SettingsFragment extends Fragment {
                      myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                      startActivity(myIntent);
                  }
+                if (Selecteditem.equalsIgnoreCase("Instagram")) {
+                    Intent myIntent = new Intent(getActivity(), InstagramActivity.class);
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(myIntent);
+                }
                 if (Selecteditem.equalsIgnoreCase("Gmail")){
                     Intent myIntent = new Intent(getActivity(), GmailActivity.class);
                     myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

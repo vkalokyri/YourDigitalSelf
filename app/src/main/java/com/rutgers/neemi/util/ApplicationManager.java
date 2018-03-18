@@ -111,7 +111,7 @@ public class ApplicationManager {
         if (subscript != null) {
             ScriptDefinition scriptDef = helper.scriptDefinitionExists(subscript.getName(),subscript.getArgument());
             if (scriptDef == null) {
-                scriptDefDao.create(subscript); //edw nomizw
+                scriptDefDao.create(subscript);
                 ArrayList<LocalProperties> locals = subscript.getLocalProperties();
                 for (LocalProperties local: locals) {
                     localPropertiesDao.create(local);

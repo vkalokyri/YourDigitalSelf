@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.rutgers.neemi.InstagramActivity">
+
+    <Button
+        android:id="@+id/btn_get_access_token"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="#5196E9"
+        android:drawableLeft="@drawable/insta_logo2"
+        android:gravity="left|center_vertical"
+        android:onClick="onClick"
+        android:padding="6dp"
+        android:text="Continue with Instagram"
+        android:textColor="#ffffff"
+        android:textStyle="bold"
+        android:textSize="13sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="2dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="2dp"
+        android:textAllCaps="false" />
+
+</android.support.constraint.ConstraintLayout>

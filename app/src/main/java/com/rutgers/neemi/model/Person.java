@@ -15,6 +15,8 @@ public class Person implements Serializable {
     public static final String FIELD_ID = "ID";
     public static final String FIELD_EMAIL = "EMAIL";
     public static final String FIELD_NAME = "NAME";
+    public static final String FIELD_USERNAME = "USERNAME";
+
 
     @DatabaseField(generatedId = true)
     int _id;
@@ -26,6 +28,8 @@ public class Person implements Serializable {
     String email;
     @DatabaseField
     boolean isSelf;
+    @DatabaseField(columnName = FIELD_USERNAME)
+    String username;
 
 
 
@@ -34,10 +38,12 @@ public class Person implements Serializable {
     }
 
 
-    public Person(String name, String email, boolean isSelf) {
+    public Person(String name, String email, String username, boolean isSelf) {
         this.name = name;
         this.email = email;
         this.isSelf = isSelf;
+        this.username = username;
+
     }
 
     public String getId() {
@@ -70,5 +76,13 @@ public class Person implements Serializable {
 
     public void setSelf(boolean self) {
         isSelf = self;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getUsername() {
+        return username;
     }
 }
