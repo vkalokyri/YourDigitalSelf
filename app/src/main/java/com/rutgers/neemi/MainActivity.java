@@ -156,6 +156,18 @@ public class MainActivity extends AppCompatActivity {
                 }
 
             }
+            if (key.equalsIgnoreCase("gdrive")) {
+                SettingsFragment settingsfragment = new SettingsFragment();
+                android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                setfragmentTransaction.add(R.id.frame, settingsfragment);
+                setfragmentTransaction.addToBackStack(null);
+                setfragmentTransaction.commit();
+                if (items == 0) {
+                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No financial transactions fetched.", Snackbar.LENGTH_LONG).show();
+                } else {
+                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout),  items+" financial transactions fetched.", Snackbar.LENGTH_LONG).show();
+                }
+            }
 
         }
 

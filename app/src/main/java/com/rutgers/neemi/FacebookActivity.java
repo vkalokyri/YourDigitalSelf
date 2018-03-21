@@ -121,7 +121,7 @@ public class FacebookActivity extends AppCompatActivity {
 
 
                         Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                        cal.add(Calendar.MONTH, -6); // substract 6 months
+                        cal.add(Calendar.MONTH, -12); // substract 6 months
                         DateTime since=new DateTime(cal.getTimeInMillis());
                         System.out.println("since = "+since);
                         String timestamp = null;

@@ -28,7 +28,10 @@ public enum PROPERTIES {
 	GMAPS("google_maps_API"),
 	INSTAGRAM_BASE_URL("instagram_base_url"),
 	INSTAGRAM_CLIENT_ID("instagram_API"),
-	INSTAGRAM_REDIRECT_URI("instagram_redirect_url");
+	INSTAGRAM_REDIRECT_URI("instagram_redirect_url"),
+	PLAID_CLIENT_ID("plaid_client_id"),
+	PLAID_SECRET("plaid_secret");
+
 	
 	private String strVal;
 	private PROPERTIES(final String pstrVal) {

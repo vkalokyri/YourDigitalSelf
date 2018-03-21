@@ -813,4 +813,23 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	}
 
 
+	public Category categoryExists(String name) {
+
+		QueryBuilder<Category, String> queryBuilder =
+				this.categoryRuntimeDao.queryBuilder();
+		Where<Category, String> where = queryBuilder.where();
+		try {
+			where.eq(Category.CATEGORY, name);
+			List<Category> results = queryBuilder.query();
+			if (results.size() != 0) {
+				return results.get(0);
+			} else
+				return null;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
 }

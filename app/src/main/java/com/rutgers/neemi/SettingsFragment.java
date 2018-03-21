@@ -36,6 +36,7 @@ public class SettingsFragment extends Fragment {
             "Google Calendar",
             "Gmail",
             "Bank data",
+            "Google Drive",
             "Location data",
     };
 
@@ -45,6 +46,7 @@ public class SettingsFragment extends Fragment {
             R.drawable.google_calendar,
             R.drawable.gmail_icon,
             R.drawable.bank,
+            R.drawable.gdrive_icon,
             R.drawable.location
     };
 
@@ -123,6 +125,11 @@ public class SettingsFragment extends Fragment {
                         setfragmentTransaction.commit();
                     }
 
+                }
+                if (Selecteditem.equalsIgnoreCase("Google Drive")) {
+                    Intent myIntent = new Intent(getActivity(), GDriveActivity.class);
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(myIntent);
                 }
                 if (Selecteditem.equalsIgnoreCase("Location data")){
                     Intent myIntent = new Intent(getActivity(), LocationActivity.class);

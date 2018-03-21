@@ -344,7 +344,7 @@ public class PlaidActivity extends AppCompatActivity {
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
                     Calendar cal = Calendar.getInstance();
-                    cal.add(Calendar.MONTH, -6);
+                    cal.add(Calendar.MONTH, -12);
                     Date startDate = null;
                     Date endDate = null;
 
@@ -497,7 +497,7 @@ public class PlaidActivity extends AppCompatActivity {
                                         }
                                         placeDao.create(newPlace);
                                         transaction.setPlace(newPlace);
-
+                                        placeExists=newPlace;
                                     } else {
                                         transaction.setPlace(placeExists);
                                     }
@@ -510,7 +510,7 @@ public class PlaidActivity extends AppCompatActivity {
                             if (txn.getCategory() != null) {
                                 List<Category> categoryList = new ArrayList<>();
                                 for (String category : txn.getCategory()) {
-                                    Category categoryExists = categoryExists(category);
+                                    Category categoryExists = helper.categoryExists(category);
                                     if (categoryExists == null) {
                                         Category newCategory = new Category();
                                         newCategory.setCategoryName(category);
@@ -551,25 +551,6 @@ public class PlaidActivity extends AppCompatActivity {
 
         }
 
-        public Category categoryExists(String name) {
-
-            RuntimeExceptionDao<Category, String> categoryDao = helper.getCategoryDao();
-
-            QueryBuilder<Category, String> queryBuilder =
-                    categoryDao.queryBuilder();
-            Where<Category, String> where = queryBuilder.where();
-            try {
-                where.eq(Category.CATEGORY, name);
-                List<Category> results = queryBuilder.query();
-                if (results.size() != 0) {
-                    return results.get(0);
-                } else
-                    return null;
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
     }
 
 }

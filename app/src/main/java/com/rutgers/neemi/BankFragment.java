@@ -35,6 +35,8 @@ import com.rutgers.neemi.model.Payment;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Place;
 import com.rutgers.neemi.model.PlaceHasCategory;
+import com.rutgers.neemi.util.ConfigReader;
+import com.rutgers.neemi.util.PROPERTIES;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -225,7 +227,7 @@ public class BankFragment extends Fragment {
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
                         Calendar cal = Calendar.getInstance();
-                        cal.add(Calendar.MONTH, -6);
+                        cal.add(Calendar.MONTH, -12);
                         Date startDate = null;
                         Date endDate = null;
 
@@ -378,7 +380,7 @@ public class BankFragment extends Fragment {
                                                 }
                                                 placeDao.create(newPlace);
                                                 transaction.setPlace(newPlace);
-
+                                                placeExists=newPlace;
                                             } else {
                                                 transaction.setPlace(placeExists);
                                             }
