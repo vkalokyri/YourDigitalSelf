@@ -5,6 +5,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:textSize="14dp"
+        android:background="@drawable/textlines"
+        android:text="Please select which data you want to include in the app:"></TextView>
+
     <ListView
         android:id="@+id/list"
         android:layout_width="match_parent"

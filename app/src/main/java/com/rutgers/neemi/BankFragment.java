@@ -116,9 +116,14 @@ public class BankFragment extends Fragment {
 
         addBank.setOnClickListener(new View.OnClickListener() {
             public void onClick(View arg0) {
-                Intent myIntent = new Intent(getActivity(), PlaidActivity.class);
-                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(myIntent);
+                PlaidFragment plaidFragment = new PlaidFragment();
+                android.support.v4.app.FragmentTransaction setfragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+                setfragmentTransaction.replace(R.id.frame_container,plaidFragment);
+                setfragmentTransaction.addToBackStack(null);
+                setfragmentTransaction.commit();
+//                Intent myIntent = new Intent(getActivity(), BankFragment.class);
+//                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                startActivity(myIntent);
             }
         });
 

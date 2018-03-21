@@ -36,7 +36,6 @@ public class SettingsFragment extends Fragment {
             "Google Calendar",
             "Gmail",
             "Bank data",
-            "Google Drive",
             "Location data",
     };
 
@@ -46,7 +45,6 @@ public class SettingsFragment extends Fragment {
             R.drawable.google_calendar,
             R.drawable.gmail_icon,
             R.drawable.bank,
-            R.drawable.gdrive_icon,
             R.drawable.location
     };
 
@@ -94,43 +92,42 @@ public class SettingsFragment extends Fragment {
                     startActivity(myIntent);
                 }
                 if (Selecteditem.equalsIgnoreCase("Bank data")){
-                    ArrayList accountNames = new ArrayList();
-                    String line;
-                    try {
-                        FileInputStream fis = getActivity().openFileInput("BankAccounts");
-                        InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
-                        BufferedReader br = new BufferedReader(isr);
-                        while ((line = br.readLine()) != null) {
-                            accountNames.add(line);
-                        }
-                        fis.close();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    if (accountNames.size()==0) {
-                        Intent myIntent = new Intent(getActivity(), PlaidActivity.class);
-                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(myIntent);
-                    }else{
-                        BankFragment bankfragment = new BankFragment();
-                        Bundle args = new Bundle();
-                        args.putStringArrayList("Accounts", accountNames);
-                        bankfragment.setArguments(args);
-                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        setfragmentTransaction.replace(R.id.frame,bankfragment);
-                        setfragmentTransaction.addToBackStack(null);
-                        setfragmentTransaction.commit();
-                    }
-
-                }
-                if (Selecteditem.equalsIgnoreCase("Google Drive")) {
-                    Intent myIntent = new Intent(getActivity(), GDriveActivity.class);
+                    Intent myIntent = new Intent(getActivity(), BankActivity.class);
                     myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(myIntent);
+//                    ArrayList accountNames = new ArrayList();
+//                    String line;
+//                    try {
+//                        FileInputStream fis = getActivity().openFileInput("BankAccounts");
+//                        InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
+//                        BufferedReader br = new BufferedReader(isr);
+//                        while ((line = br.readLine()) != null) {
+//                            accountNames.add(line);
+//                        }
+//                        fis.close();
+//                    } catch (FileNotFoundException e) {
+//                        e.printStackTrace();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//                    if (accountNames.size()==0) {
+//                        Intent myIntent = new Intent(getActivity(), BankActivity.class);
+//                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                        startActivity(myIntent);
+//                    }else{
+//                        BankFragment bankfragment = new BankFragment();
+//                        Bundle args = new Bundle();
+//                        args.putStringArrayList("Accounts", accountNames);
+//                        bankfragment.setArguments(args);
+//                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
+//                        setfragmentTransaction.replace(R.id.frame,bankfragment);
+//                        setfragmentTransaction.addToBackStack(null);
+//                        setfragmentTransaction.commit();
+//                    }
+
                 }
+
                 if (Selecteditem.equalsIgnoreCase("Location data")){
                     Intent myIntent = new Intent(getActivity(), LocationActivity.class);
                     myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

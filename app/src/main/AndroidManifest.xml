@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -18,10 +18,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <activity
+            android:name=".GDriveActivity"
+            android:exported="true"
+            android:label="DigitalSelf">
+            <meta-data
+                android:name="com.google.android.apps.drive.APP_ID"
+                android:value="id=258155102735" />
 
-
-        <activity android:name=".GDriveActivity" android:label="DigitalSelf" android:exported="true" >
-            <meta-data android:name="com.google.android.apps.drive.APP_ID" android:value="id=258155102735" />
             <intent-filter>
                 <action android:name="com.google.android.apps.drive.DRIVE_OPEN" />
             </intent-filter>
@@ -31,7 +35,7 @@
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
 
-        <activity android:name=".GmailActivity" >
+        <activity android:name=".GmailActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.rutgers.neemi.MainActivity" />
@@ -39,7 +43,7 @@
         <activity
             android:name=".FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-            android:label="@string/app_name" >
+            android:label="@string/app_name">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.rutgers.neemi.MainActivity" />
@@ -50,9 +54,9 @@
             android:value="@string/facebook_app_id" />
 
         <activity android:name=".GcalActivity">
-        <meta-data
-            android:name="android.support.PARENT_ACTIVITY"
-            android:value="com.rutgers.neemi.MainActivity" />
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.rutgers.neemi.MainActivity" />
         </activity>
         <activity android:name=".LocationActivity">
             <meta-data
@@ -64,7 +68,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.rutgers.neemi.MainActivity" />
         </activity>
-        <activity android:name=".PlaidActivity" >
+        <activity android:name=".BankActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.rutgers.neemi.MainActivity" />
@@ -72,10 +76,14 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".LocationService" android:process=":my_service" />
+
+        <service
+            android:name=".LocationService"
+            android:process=":my_service" />
 
     </application>
 

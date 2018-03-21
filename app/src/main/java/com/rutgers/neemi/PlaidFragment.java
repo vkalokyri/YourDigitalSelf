@@ -7,18 +7,21 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.google.android.gms.common.SignInButton;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
-import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.stmt.Where;
 import com.plaid.client.PlaidClient;
 import com.plaid.client.request.AccountsGetRequest;
 import com.plaid.client.request.ItemPublicTokenExchangeRequest;
@@ -29,10 +32,9 @@ import com.plaid.client.response.ItemPublicTokenExchangeResponse;
 import com.plaid.client.response.TransactionsGetResponse;
 import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Payment;
-import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.PaymentHasCategory;
+import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Place;
-
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -51,7 +53,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class PlaidActivity extends AppCompatActivity {
+public class PlaidFragment extends Fragment {
 
 
     String client_id = "596e6db04e95b810ac887f56";
@@ -67,23 +69,24 @@ public class PlaidActivity extends AppCompatActivity {
     DatabaseHelper helper;
     String account_name;
     String accountId;
+    View view;
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_plaid);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar ab = getSupportActionBar();
+        view = inflater.inflate(R.layout.activity_plaid,container,false);
+
+//        Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
+//        ActionBar ab = getSupportActionBar();
 
         // Enable the Up button
-        ab.setDisplayHomeAsUpEnabled(true);
+       // ab.setDisplayHomeAsUpEnabled(true);
 
-        helper=DatabaseHelper.getHelper(this);
+        helper=DatabaseHelper.getHelper(getActivity());
 
-        mProgress = new ProgressDialog(this);
+        mProgress = new ProgressDialog(getActivity());
         mProgress.setMessage("Getting your financial transactions. Please wait ...");
 
         // Initialize Link
@@ -107,7 +110,7 @@ public class PlaidActivity extends AppCompatActivity {
 
         // Modify Webview settings - all of these settings may not be applicable
         // or necesscary for your integration.
-        final WebView plaidLinkWebview = (WebView) findViewById(R.id.webview);
+        final WebView plaidLinkWebview = (WebView) view.findViewById(R.id.webview);
         WebSettings webSettings = plaidLinkWebview.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
@@ -144,7 +147,7 @@ public class PlaidActivity extends AppCompatActivity {
 
 
 
-                       new RetrieveTransactionsTask(getApplicationContext()).execute(linkData.get("public_token"));
+                       new RetrieveTransactionsTask(getContext()).execute(linkData.get("public_token"));
 
 
                     } else if (action.equals("exit")) {
@@ -179,6 +182,8 @@ public class PlaidActivity extends AppCompatActivity {
                 }
             }
         });
+
+        return view;
 
     }
 
@@ -284,10 +289,10 @@ public class PlaidActivity extends AppCompatActivity {
                     String full_account = accountName+"_@#_"+last4digits+"_@#_"+accountId;
 
                     try {
-                        FileOutputStream fos = openFileOutput(full_account, Context.MODE_PRIVATE);
+                        FileOutputStream fos = getContext().openFileOutput(full_account, Context.MODE_PRIVATE);
                         fos.write(accessToken.getBytes());
                         fos.close();
-                        FileOutputStream fos2 = openFileOutput("BankAccounts", Context.MODE_APPEND);
+                        FileOutputStream fos2 = getContext().openFileOutput("BankAccounts", Context.MODE_APPEND);
                         fos2.write((full_account+System.getProperty("line.separator")).getBytes());
                         fos2.close();
                     } catch (FileNotFoundException e) {
@@ -525,7 +530,7 @@ public class PlaidActivity extends AppCompatActivity {
 
         protected void onPostExecute(Integer output) {
             mProgress.hide();
-            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+            Intent myIntent = new Intent(getContext(), MainActivity.class);
             myIntent.putExtra("key", "bank");
             myIntent.putExtra("items", output);
             myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
