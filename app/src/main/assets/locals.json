@@ -1,6 +1,6 @@
 {
 	"whenPaid":
-	{	"Payment":"date"
+	{	"Transaction":"date"
 	},
 	"whoSentEmail":
 	{	"Email":"from"
@@ -21,19 +21,19 @@
 	{	"Email":"date"
 	},
 	"whoPaid":
-	{	"Payment": "payer"
+	{	"Transaction": "payer"
 	},
 	"wherePaymentOccured":
-	{	"Payment": "name"
+	{	"Transaction": "merchant_name"
 	},
 	"whenPaid":
-	{	"Payment": "date"
+	{	"Transaction": "date"
 	},
 	"whatWasPaymentAbout":
-	{	"Payment": "description"
+	{	"Transaction": "description"
 	},
 	"howWasPaid":
-	{	"Payment": "payment_method"
+	{	"Transaction": "payment_method"
 	},
 	"whoMadeTheReservation":{
 		"Email": "from"

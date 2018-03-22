@@ -8,8 +8,8 @@ import java.io.Serializable;
 /**
  * Created by suitcase on 7/19/17.
  */
-@DatabaseTable(tableName = "PaymentHasCategory")
-public class PaymentHasCategory implements Serializable {
+@DatabaseTable(tableName = "TransactionHasCategory")
+public class TransactionHasCategory implements Serializable {
 
 
     @DatabaseField(generatedId = true)
@@ -17,17 +17,17 @@ public class PaymentHasCategory implements Serializable {
 
     // This is a foreign object which just stores the id from the Person object in this table.
     @DatabaseField(foreign = true, columnName = "transaction_id")
-    Payment transaction;
+    Transaction transaction;
 
     // This is a foreign object which just stores the id from the Post object in this table.
     @DatabaseField(foreign = true, columnName = "category_id")
     Category category;
 
-    public PaymentHasCategory() {
+    public TransactionHasCategory() {
         // for ormlite
     }
 
-    public PaymentHasCategory(Payment transaction, Category category) {
+    public TransactionHasCategory(Transaction transaction, Category category) {
         this.transaction = transaction;
         this.category = category;
     }

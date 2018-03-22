@@ -24,8 +24,8 @@ import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.EventAttendees;
 import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.LocalValues;
-import com.rutgers.neemi.model.PaymentHasCategory;
-import com.rutgers.neemi.model.Payment;
+import com.rutgers.neemi.model.TransactionHasCategory;
+import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.PhotoTags;
@@ -37,6 +37,7 @@ import com.rutgers.neemi.model.ScriptHasTasks;
 import com.rutgers.neemi.model.Subscript;
 import com.rutgers.neemi.model.Task;
 import com.rutgers.neemi.model.TaskDefinition;
+import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.util.ApplicationManager;
 
 /**
@@ -59,10 +60,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private RuntimeExceptionDao<Place, String> placeRuntimeDao = null;
 	private RuntimeExceptionDao<EventAttendees, String> eventAttendeesRuntimeDao = null;
 	private RuntimeExceptionDao<PhotoTags, String> photoTagsRuntimeDao = null;
-	private RuntimeExceptionDao<Payment, String> paymentRuntimeDao = null;
+	private RuntimeExceptionDao<Transaction, String> transactionRuntimeDao = null;
 	private RuntimeExceptionDao<Category, String> categoryRuntimeDao = null;
 	private RuntimeExceptionDao<PlaceHasCategory, String> placeHasCategoryRuntimeDao = null;
-	private RuntimeExceptionDao<PaymentHasCategory, String> paymentHasCategoryRuntimeDao = null;
+	private RuntimeExceptionDao<TransactionHasCategory, String> transactionHasCategoryRuntimeDao = null;
 	private RuntimeExceptionDao<Script, String> scriptRuntimeDao = null;
     private RuntimeExceptionDao<ScriptDefinition, String> scriptDefRuntimeDao = null;
     private RuntimeExceptionDao<ScriptHasTasks, String> scriptDefHasTaskDefRuntimeDao = null;
@@ -110,8 +111,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, EventAttendees.class);
 			TableUtils.createTable(connectionSource, PhotoTags.class);
 			TableUtils.createTable(connectionSource, Category.class);
-			TableUtils.createTable(connectionSource, Payment.class);
-			TableUtils.createTable(connectionSource, PaymentHasCategory.class);
+			TableUtils.createTable(connectionSource, Transaction.class);
+			TableUtils.createTable(connectionSource, TransactionHasCategory.class);
 			TableUtils.createTable(connectionSource, PlaceHasCategory.class);
 			TableUtils.createTable(connectionSource, Script.class);
             TableUtils.createTable(connectionSource, ScriptDefinition.class);
@@ -162,8 +163,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, EventAttendees.class,true);
 			TableUtils.dropTable(connectionSource, PhotoTags.class, true);
 			TableUtils.dropTable(connectionSource, Category.class, true);
-			TableUtils.dropTable(connectionSource, Payment.class, true);
-			TableUtils.dropTable(connectionSource, PaymentHasCategory.class, true);
+			TableUtils.dropTable(connectionSource, Transaction.class, true);
+			TableUtils.dropTable(connectionSource, TransactionHasCategory.class, true);
 			TableUtils.dropTable(connectionSource, PlaceHasCategory.class, true);
 			TableUtils.dropTable(connectionSource, Script.class, true);
             TableUtils.dropTable(connectionSource, ScriptDefinition.class, true);
@@ -258,11 +259,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		return photoTagsRuntimeDao;
 	}
 
-	public RuntimeExceptionDao<Payment, String> getPaymentDao() {
-		if (paymentRuntimeDao == null) {
-			paymentRuntimeDao = getRuntimeExceptionDao(Payment.class);
+	public RuntimeExceptionDao<Transaction, String> getTransactionDao() {
+		if (transactionRuntimeDao == null) {
+			transactionRuntimeDao = getRuntimeExceptionDao(Transaction.class);
 		}
-		return paymentRuntimeDao;
+		return transactionRuntimeDao;
 	}
 
 	public RuntimeExceptionDao<Category, String> getCategoryDao() {
@@ -272,11 +273,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		return categoryRuntimeDao;
 	}
 
-	public RuntimeExceptionDao<PaymentHasCategory, String> getPaymentHasCategoryRuntimeDao() {
-		if (paymentHasCategoryRuntimeDao == null) {
-			paymentHasCategoryRuntimeDao = getRuntimeExceptionDao(PaymentHasCategory.class);
+	public RuntimeExceptionDao<TransactionHasCategory, String> getTransactionHasCategoryRuntimeDao() {
+		if (transactionHasCategoryRuntimeDao == null) {
+			transactionHasCategoryRuntimeDao = getRuntimeExceptionDao(TransactionHasCategory.class);
 		}
-		return paymentHasCategoryRuntimeDao;
+		return transactionHasCategoryRuntimeDao;
 	}
 
 	public RuntimeExceptionDao<PlaceHasCategory, String> getPlaceHasCategoryRuntimeDao() {
@@ -358,9 +359,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		photoTagsRuntimeDao=null;
 		eventAttendeesRuntimeDao = null;
 		placeHasCategoryRuntimeDao =null;
-		paymentHasCategoryRuntimeDao =null;
+		transactionHasCategoryRuntimeDao =null;
 		categoryRuntimeDao = null;
-		paymentRuntimeDao = null;
+		transactionRuntimeDao = null;
         subscriptRuntimeDao =null;
 	}
 
@@ -437,6 +438,49 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		Where<Place, String> where = queryBuilder.where();
 		try {
 			where.eq(Place.FIELD_ID, id);
+			List<Place> results = queryBuilder.query();
+			if (results.size()!=0){
+				return results.get(0);
+			}else
+				return null;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public Place placeExistsByPhone(String phone) {
+
+		RuntimeExceptionDao<Place, String> placeDao = this.getPlaceDao();
+
+		QueryBuilder<Place, String> queryBuilder =
+				placeDao.queryBuilder();
+		Where<Place, String> where = queryBuilder.where();
+		try {
+			where.eq(Place.FIELD_PHONE, phone);
+			List<Place> results = queryBuilder.query();
+			if (results.size()!=0){
+				return results.get(0);
+			}else
+				return null;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
+	public Place placeExistsByStateCity(String state, String city) {
+
+		RuntimeExceptionDao<Place, String> placeDao = this.getPlaceDao();
+
+		QueryBuilder<Place, String> queryBuilder =
+				placeDao.queryBuilder();
+		Where<Place, String> where = queryBuilder.where();
+		try {
+			where.eq(Place.FIELD_STATE, state);
+			where.eq(Place.FIELD_CITY, city);
+			where.and(2);
 			List<Place> results = queryBuilder.query();
 			if (results.size()!=0){
 				return results.get(0);

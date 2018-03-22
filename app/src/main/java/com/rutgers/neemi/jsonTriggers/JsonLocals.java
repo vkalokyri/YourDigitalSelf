@@ -23,7 +23,7 @@ import com.rutgers.neemi.interfaces.Clues;
 import com.rutgers.neemi.interfaces.Triggers;
 import com.rutgers.neemi.interfaces.W5hLocals;
 import com.rutgers.neemi.model.Email;
-import com.rutgers.neemi.model.Payment;
+import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.parser.TriggersFactory;
 import com.rutgers.neemi.util.ConfigReader;
 import com.rutgers.neemi.util.PROPERTIES;
@@ -75,12 +75,12 @@ public class JsonLocals implements W5hLocals{
 						else if (attributeName.toString().equalsIgnoreCase("\"date\"")){
 							localValues.add(((Email)pid).getDate().toString());
 						}
-					}else if (objectClass.equalsIgnoreCase("Payment")){
-						if (attributeName.toString().equalsIgnoreCase("\"name\"")){
-							localValues.add(((Payment)pid).getName());
+					}else if (objectClass.equalsIgnoreCase("Transaction")){
+						if (attributeName.toString().equalsIgnoreCase("\"merchant_name\"")){
+							localValues.add(((Transaction)pid).getMerchant_name());
 						}
 						else if (attributeName.toString().equalsIgnoreCase("\"date\"")){
-							localValues.add(String.valueOf(((Payment)pid).getDate()));
+							localValues.add(String.valueOf(((Transaction)pid).getDate()));
 						}
 					}
 				}

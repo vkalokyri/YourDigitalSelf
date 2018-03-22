@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
-import com.rutgers.neemi.model.Payment;
+import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Script;
 import com.rutgers.neemi.model.Task;

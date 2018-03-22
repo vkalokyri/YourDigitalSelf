@@ -31,7 +31,7 @@ import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.LocalValues;
-import com.rutgers.neemi.model.Payment;
+import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.Script;
 import com.rutgers.neemi.model.ScriptDefinition;
 import com.rutgers.neemi.model.ScriptHasTasks;
@@ -236,8 +236,8 @@ public class RestaurantsFragment extends Fragment {
                     System.err.println("Task = " + taskName + ", Email = " + ((Email) pid).get_id());
 
 
-                } else if (pid instanceof Payment) {
-                    System.err.println("Task = " + taskName + ", Payment = " + ((Payment) pid).getName());
+                } else if (pid instanceof Transaction) {
+                    System.err.println("Task = " + taskName + ", Transaction = " + ((Transaction) pid).getMerchant_name());
                 }
 
                 ArrayList<LocalProperties> taskLocals = helper.extractTaskLocals(taskName);
@@ -418,9 +418,9 @@ public class RestaurantsFragment extends Fragment {
 
         for (Task task:tasks){
             Date extractedDate=null;
-            if (task.getPid() instanceof Payment){
+            if (task.getPid() instanceof Transaction){
                 try {
-                    extractedDate = sdf.parse(sdf.format(((Payment) task.getPid()).getDate()));
+                    extractedDate = sdf.parse(sdf.format(((Transaction) task.getPid()).getDate()));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -474,8 +474,8 @@ public class RestaurantsFragment extends Fragment {
 //                    Log.d(TAG,"Event = " + ((Event) t.getPid()).getDescription());
 //                }else if (t.getPid() instanceof Email){
 //                    Log.d(TAG, "Email = "+((Email) t.getPid()).getSubject());
-//                }else if (t.getPid() instanceof Payment){
-//                    Log.d(TAG,"Payment = "+((Payment) t.getPid()).getName());
+//                }else if (t.getPid() instanceof Transaction){
+//                    Log.d(TAG,"Transaction = "+((Transaction) t.getPid()).getName());
 //                }
 //            }
 //        }
@@ -490,9 +490,9 @@ public class RestaurantsFragment extends Fragment {
 		for (Script process:listOfScripts){
         	for (Task task:process.getTasks()){
                 Date extractedDate=null;
-                if (task.getPid() instanceof Payment){
+                if (task.getPid() instanceof Transaction){
                     try {
-                        extractedDate = sdf.parse(sdf.format(((Payment) task.getPid()).getDate()));
+                        extractedDate = sdf.parse(sdf.format(((Transaction) task.getPid()).getDate()));
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
@@ -539,8 +539,8 @@ public class RestaurantsFragment extends Fragment {
 //                    Log.d(TAG,"Event = " + ((Event) t.getPid()).getDescription());
 //                }else if (t.getPid() instanceof Email){
 //                    Log.d(TAG, "Email = "+((Email) t.getPid()).getSubject());
-//                }else if (t.getPid() instanceof Payment){
-//                    Log.d(TAG,"Payment = "+((Payment) t.getPid()).getName());
+//                }else if (t.getPid() instanceof Transaction){
+//                    Log.d(TAG,"Transaction = "+((Transaction) t.getPid()).getName());
 //                }
 //            }
 //        }
@@ -700,7 +700,7 @@ public class RestaurantsFragment extends Fragment {
 
                                                 } else {
                                                     whereClause = whereClause + " " + andOrKey;
-                                                    if (andOrKey.contains("Payment") || andOrKey.contains("Category")){
+                                                    if (andOrKey.contains("Transaction") || andOrKey.contains("Category")){
                                                         whereClause = whereClause + " = " + andOrValue.toString().replace("\"", "");
                                                     }else {
                                                         //System.out.println("Clue value = " + andOrValue.toString().replace("\"", ""));
@@ -718,8 +718,8 @@ public class RestaurantsFragment extends Fragment {
                         }
                         if (!foundKeywordsFile){
                             fromClause = fromClause.replace("\"", "");
-                            if (fromClause.contains("Payment")){
-                                query="select distinct Payment._id, Payment.name ";                            }
+                            if (fromClause.contains("Transaction")){
+                                query="select distinct `Transaction`._id, `Transaction`.merchant_name ";                            }
                             query = query + fromClause + whereClause;
                             query=query.substring(0,query.length()-4) +");";
                             System.out.println("QUERY = " + query);
@@ -764,12 +764,12 @@ public class RestaurantsFragment extends Fragment {
                 }
             }
         }
-        if (fromTable.equals("Payment")){
-            GenericRawResults<Payment> rawResults = helper.getPaymentDao().queryRaw(query,helper.getPaymentDao().getRawRowMapper());
-            for (Payment payment: rawResults.getResults()){
+        if (fromTable.equals("Transaction")){
+            GenericRawResults<Transaction> rawResults = helper.getTransactionDao().queryRaw(query,helper.getTransactionDao().getRawRowMapper());
+            for (Transaction transaction: rawResults.getResults()){
                 Task task = new Task();
-                task.setOid(payment.getId());
-                task.setPid(payment);
+                task.setOid(transaction.getId());
+                task.setPid(transaction);
                 task.setName(subtask);
                 task.setScript(script);
                 tasks.add(task);
@@ -795,28 +795,28 @@ public class RestaurantsFragment extends Fragment {
         List<Task> tasks = new ArrayList<Task>();
 
 
-        GenericRawResults<String[]> rawResults = helper.getPaymentDao().queryRaw(query);
+        GenericRawResults<String[]> rawResults = helper.getTransactionDao().queryRaw(query);
        // List<String[]> results = null;
         if (rawResults!=null){
            // if (rawResults.getResults().size()>0){
-                if (fromTable.contains("Payment")){
+                if (fromTable.contains("Transaction")){
                     for (String[] tuple:rawResults.getResults()) {
-                        Payment payment = new Payment();
-                        payment.setId(tuple[0]);
-                        payment.setName(tuple[1]);
+                        Transaction transaction = new Transaction();
+                        transaction.setId(tuple[0]);
+                        transaction.setMerchant_name(tuple[1]);
 
-                        String tempQuery = "select * from `Payment` where `_id`=" + tuple[0];
-                        GenericRawResults<Payment> paymentData = helper.getPaymentDao().queryRaw(tempQuery, helper.getPaymentDao().getRawRowMapper());
+                        String tempQuery = "select * from `Transaction` where `_id`=" + tuple[0];
+                        GenericRawResults<Transaction> transactionData = helper.getTransactionDao().queryRaw(tempQuery, helper.getTransactionDao().getRawRowMapper());
 //                        try {
-//                            System.err.println("PAYMENTSFOUND = " + paymentData.getResults().size());
+//                            System.err.println("TransFOUND = " + transactionData.getResults().size());
 //                        } catch (SQLException e) {
 //                            e.printStackTrace();
 //                        }
                         try {
-                            for (Payment fullpayment : paymentData.getResults()) {
+                            for (Transaction fulltransaction : transactionData.getResults()) {
                                 Task task = new Task();
-                                task.setOid(fullpayment.getId());
-                                task.setPid(fullpayment);
+                                task.setOid(fulltransaction.getId());
+                                task.setPid(fulltransaction);
                                 task.setName(subtask);
                                 task.setScript(script);
                                 tasks.add(task);

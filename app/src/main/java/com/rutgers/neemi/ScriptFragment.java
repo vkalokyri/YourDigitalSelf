@@ -22,10 +22,11 @@ import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.LocalValues;
-import com.rutgers.neemi.model.Payment;
+import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.Script;
 import com.rutgers.neemi.model.ScriptDefinition;
 import com.rutgers.neemi.model.Task;
+import com.rutgers.neemi.model.Transaction;
 
 import java.lang.reflect.Array;
 import java.text.Format;
@@ -287,13 +288,13 @@ public class ScriptFragment extends Fragment {
                 txtListHeader.setText(((Email) childTask.getPid()).getSubject());
                 String text = "whoSent: "+((Email) childTask.getPid()).getFrom()+" \n whoReceived: "+ ((Email) childTask.getPid()).getTo()+" \n whenSent: "+ ((Email) childTask.getPid()).getDate();
                 txtListHeaderBody.setText(text);
-            }else if(childTask.getPid() instanceof Payment){
+            }else if(childTask.getPid() instanceof Transaction){
                 imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.bank));
-                txtListHeader.setText(((Payment) childTask.getPid()).getName());
-                Date extractedDate = new Date(((Payment) childTask.getPid()).getDate());
+                txtListHeader.setText(((Transaction) childTask.getPid()).getMerchant_name());
+                Date extractedDate = new Date(((Transaction) childTask.getPid()).getDate());
                 Format format = new SimpleDateFormat("yyyy-MM-dd");
                 String parsedDate = format.format(extractedDate);
-                String text = "whenPaid: "+parsedDate+" \n howMuchWasPaid: $"+((Payment) childTask.getPid()).getAmount() ;
+                String text = "whenPaid: "+parsedDate+" \n howMuchWasPaid: $"+((Transaction) childTask.getPid()).getAmount() ;
                 txtListHeaderBody.setText(text);
             }else if(childTask.getPid() instanceof Calendar){
                 imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.google_calendar));

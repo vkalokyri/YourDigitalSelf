@@ -8,8 +8,8 @@ import java.io.Serializable;
 /**
  * Created by suitcase on 7/19/17.
  */
-@DatabaseTable(tableName = "Payment")
-public class Payment implements Serializable {
+@DatabaseTable(tableName = "Transaction")
+public class Transaction implements Serializable {
 
     public static final String FIELD_ID = "ID";
 
@@ -20,7 +20,7 @@ public class Payment implements Serializable {
     @DatabaseField
     long timestamp;
     @DatabaseField
-    String name;
+    String merchant_name;
     @DatabaseField
     String description;
     @DatabaseField
@@ -45,7 +45,8 @@ public class Payment implements Serializable {
     Person account_owner;
 
 
-    public Payment() {
+    public Transaction() {
+        this.place = new Place();
     }
 
 
@@ -65,12 +66,12 @@ public class Payment implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public String getName() {
-        return name;
+    public String getMerchant_name() {
+        return merchant_name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setMerchant_name(String merchant_name) {
+        this.merchant_name = merchant_name;
     }
 
     public String getAccount_id() {

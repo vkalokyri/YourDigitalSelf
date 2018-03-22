@@ -30,7 +30,6 @@ import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.rutgers.neemi.model.Album;
 import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Event;
-import com.rutgers.neemi.model.PaymentHasCategory;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.PhotoTags;

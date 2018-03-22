@@ -129,7 +129,7 @@ public class Script {
 		for (Task processTask : tasks) {
 			Object pid = processTask.getPid();
 			float addedScore=0;
-			if (pid instanceof Payment ){
+			if (pid instanceof Transaction ){
 				addedScore = Float.parseFloat(config.getStr(PROPERTIES.BANK_WEIGHT));
 			}else if (pid instanceof Email){
 				addedScore = Float.parseFloat(config.getStr(PROPERTIES.EMAIL_WEIGHT));

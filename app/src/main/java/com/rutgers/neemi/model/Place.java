@@ -10,9 +10,13 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable(tableName = "Place")
 public class Place {
 
-    public static final String FIELD_ID = "ID";
-    public static final String FIELD_LAT = "LATITUDE";
-    public static final String FIELD_LONG = "LONGITUDE";
+    public static final String FIELD_ID = "id";
+    public static final String FIELD_LAT = "latitude";
+    public static final String FIELD_LONG = "longitude";
+    public static final String FIELD_PHONE ="phone";
+    public static final String FIELD_CITY ="city";
+    public static final String FIELD_STATE ="state";
+
 
     @DatabaseField(generatedId = true)
     int _id;
@@ -20,7 +24,7 @@ public class Place {
     String id;
     @DatabaseField
     String name;
-    @DatabaseField
+    @DatabaseField(columnName = FIELD_CITY)
     String city;
     @DatabaseField
     String country;
@@ -30,12 +34,14 @@ public class Place {
     double longitude;
     @DatabaseField
     String region;
-    @DatabaseField
+    @DatabaseField(columnName = FIELD_STATE)
     String state;
     @DatabaseField
     String street;
     @DatabaseField
     String zip;
+    @DatabaseField(columnName = FIELD_PHONE)
+    String phone_number;
 
     public Place() {
     }
@@ -126,5 +132,13 @@ public class Place {
 
     public void setZip(String zip) {
         this.zip = zip;
+    }
+
+    public String getPhone_number() {
+        return phone_number;
+    }
+
+    public void setPhone_number(String phone_number) {
+        this.phone_number = phone_number;
     }
 }

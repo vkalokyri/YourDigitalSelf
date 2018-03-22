@@ -17,12 +17,9 @@ package com.rutgers.neemi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,20 +27,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.drive.Drive;
-import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveClient;
 import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.DriveResourceClient;
-import com.google.android.gms.drive.OpenFileActivityBuilder;
 import com.google.android.gms.drive.OpenFileActivityOptions;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.SearchableField;
@@ -54,10 +44,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.rutgers.neemi.model.Category;
-import com.rutgers.neemi.model.Payment;
-import com.rutgers.neemi.model.PaymentHasCategory;
-import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Place;
+import com.rutgers.neemi.model.TransactionHasCategory;
+import com.rutgers.neemi.model.Transaction;
+import com.rutgers.neemi.parser.BankDescriptionParser;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -65,14 +55,10 @@ import org.apache.commons.csv.CSVRecord;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * An abstract activity that handles authorization and connection to the Drive
@@ -115,8 +101,9 @@ public class GDriveActivity extends Activity {
     SimpleDateFormat format = new SimpleDateFormat("MM/dd/yy");
     DatabaseHelper helper;
     RuntimeExceptionDao<Category, String> categoryDao;
-    RuntimeExceptionDao<Payment, String> paymentDao;
-    RuntimeExceptionDao<PaymentHasCategory, String> transactionHasCategoriesDao;
+    RuntimeExceptionDao<Transaction, String> transactionDao;
+    RuntimeExceptionDao<Place, String> placeDao;
+    RuntimeExceptionDao<TransactionHasCategory, String> transactionHasCategoriesDao;
     int items=1;
 
 
@@ -130,8 +117,9 @@ public class GDriveActivity extends Activity {
         startActivityForResult(mGoogleSignInClient.getSignInIntent(), REQUEST_CODE_SIGN_IN);
         helper=DatabaseHelper.getHelper(this);
         categoryDao = helper.getCategoryDao();
-        paymentDao = helper.getPaymentDao();
-        transactionHasCategoriesDao = helper.getPaymentHasCategoryRuntimeDao();
+        transactionDao = helper.getTransactionDao();
+        transactionHasCategoriesDao = helper.getTransactionHasCategoryRuntimeDao();
+        placeDao = helper.getPlaceDao();
 
 
 
@@ -316,14 +304,43 @@ public class GDriveActivity extends Activity {
                             items=(int)csvParser.getRecordNumber();
 
                             for (CSVRecord csvRecord : csvRecords){
-                                Payment payment = new Payment();
+                                //Payment payment = new Payment();
+
+
+                                BankDescriptionParser parser = new BankDescriptionParser(getApplicationContext());
+                                Transaction payment = parser.parser_memo(csvRecord.get("Description"),new Date());
+
                                 String date =csvRecord.get("Date");
                                 payment.setDate(format.parse(date).getTime());
-                                payment.setName(csvRecord.get("Description"));
                                 payment.setAmount(Double.parseDouble(csvRecord.get("Amount")));
                                 payment.setPending(false);
                                 payment.setTimestamp(System.currentTimeMillis() / 1000);
-                                paymentDao.create(payment);
+
+                                if (payment.getPlace()!=null){
+                                    if (payment.getPlace().getPhone_number()!=null) {
+                                        Place placeExistsByPhone = helper.placeExistsByPhone(payment.getPlace().getPhone_number());
+                                        if (placeExistsByPhone==null) {
+                                            Place newPlace = payment.getPlace();
+                                            placeDao.create(newPlace);
+                                            payment.setPlace(newPlace);
+                                        }else {
+                                            payment.setPlace(placeExistsByPhone);
+                                        }
+                                    }else {
+                                        if(payment.getPlace().getCity()!=null && payment.getPlace().getState()!=null){
+                                            Place placeExists = helper.placeExistsByStateCity(payment.getPlace().getState(),payment.getPlace().getCity());
+                                            if (placeExists == null) {
+                                                Place newPlace = payment.getPlace();
+                                                placeDao.create(newPlace);
+                                                payment.setPlace(newPlace);
+                                            }else{
+                                                payment.setPlace(placeExists);
+                                            }
+                                        }
+                                    }
+                                }
+                                transactionDao.create(payment);
+
                                 String category =csvRecord.get("Category");
                                 List<Category> categoryList = new ArrayList<>();
                                 Category categoryExists = helper.categoryExists(category);
@@ -333,12 +350,12 @@ public class GDriveActivity extends Activity {
                                     categoryDao.create(newCategory);
                                     categoryList.add(newCategory);
                                 } else {
-                                    PaymentHasCategory trans_categories = new PaymentHasCategory(payment, categoryExists);
+                                    TransactionHasCategory trans_categories = new TransactionHasCategory(payment, categoryExists);
                                     transactionHasCategoriesDao.create(trans_categories);
                                 }
 
                                 for (Category eachCategory : categoryList) {
-                                    PaymentHasCategory trans_categories = new PaymentHasCategory(payment, eachCategory);
+                                    TransactionHasCategory trans_categories = new TransactionHasCategory(payment, eachCategory);
                                     transactionHasCategoriesDao.create(trans_categories);
                                 }
                             }

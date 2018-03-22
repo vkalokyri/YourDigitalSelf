@@ -30,13 +30,11 @@ import com.plaid.client.PlaidClient;
 import com.plaid.client.request.TransactionsGetRequest;
 import com.plaid.client.response.TransactionsGetResponse;
 import com.rutgers.neemi.model.Category;
-import com.rutgers.neemi.model.PaymentHasCategory;
-import com.rutgers.neemi.model.Payment;
+import com.rutgers.neemi.model.TransactionHasCategory;
+import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Place;
 import com.rutgers.neemi.model.PlaceHasCategory;
-import com.rutgers.neemi.util.ConfigReader;
-import com.rutgers.neemi.util.PROPERTIES;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -206,10 +204,10 @@ public class BankFragment extends Fragment {
         private class AsyncGetTransactionsTask extends AsyncTask<String, Void, Integer> {
 
             final RuntimeExceptionDao<Category, String> categoryDao = helper.getCategoryDao();
-            final RuntimeExceptionDao<Payment, String> paymentDao = helper.getPaymentDao();
+            final RuntimeExceptionDao<Transaction, String> transactionDao = helper.getTransactionDao();
             final RuntimeExceptionDao<Person, String> personDao = helper.getPersonDao();
             final RuntimeExceptionDao<Place, String> placeDao = helper.getPlaceDao();
-            final RuntimeExceptionDao<PaymentHasCategory, String> transactionHasCategoriesDao = helper.getPaymentHasCategoryRuntimeDao();
+            final RuntimeExceptionDao<TransactionHasCategory, String> transactionHasCategoriesDao = helper.getTransactionHasCategoryRuntimeDao();
 
             int transactionsRetrieved = 0;
 
@@ -249,7 +247,7 @@ public class BankFragment extends Fragment {
 
                         String timestamp = null;
 
-                        GenericRawResults<String[]> rawResults = paymentDao.queryRaw("select max(timestamp) from Payment where account_id='"+selectedAccountID+"';");
+                        GenericRawResults<String[]> rawResults = transactionDao.queryRaw("select max(timestamp) from `Transaction` where account_id='"+selectedAccountID+"';");
                         List<String[]> results = null;
                         try {
                             results = rawResults.getResults();
@@ -287,7 +285,7 @@ public class BankFragment extends Fragment {
                                 totalTransactions = transactionsResponse.body().getTotalTransactions();
 
                                 for (TransactionsGetResponse.Transaction txn : transactionsResponse.body().getTransactions()) {
-                                    Payment transaction = new Payment();
+                                    Transaction transaction = new Transaction();
 
                                     if (txn.getAccountId() != null) {
                                         transaction.setAccount_id(txn.getAccountId());
@@ -311,7 +309,7 @@ public class BankFragment extends Fragment {
                                         transaction.setDate(simpleDateFormat.parse(txn.getDate()).getTime());
                                     }
                                     if (txn.getName() != null) {
-                                        transaction.setName(txn.getName());
+                                        transaction.setMerchant_name(txn.getName());
                                     }
                                     if (txn.getOriginalDescription() != null) {
                                         transaction.setDescription(txn.getOriginalDescription());
@@ -431,7 +429,7 @@ public class BankFragment extends Fragment {
                                     }
 
                                     transaction.setTimestamp(System.currentTimeMillis() / 1000);
-                                    paymentDao.create(transaction);
+                                    transactionDao.create(transaction);
 
                                     if (txn.getCategory() != null) {
                                         List<Category> categoryList = new ArrayList<>();
@@ -443,12 +441,12 @@ public class BankFragment extends Fragment {
                                                 categoryDao.create(newCategory);
                                                 categoryList.add(newCategory);
                                             } else {
-                                                PaymentHasCategory trans_categories = new PaymentHasCategory(transaction, categoryExists);
+                                                TransactionHasCategory trans_categories = new TransactionHasCategory(transaction, categoryExists);
                                                 transactionHasCategoriesDao.create(trans_categories);
                                             }
                                         }
                                         for (Category eachCategory : categoryList) {
-                                            PaymentHasCategory trans_categories = new PaymentHasCategory(transaction, eachCategory);
+                                            TransactionHasCategory trans_categories = new TransactionHasCategory(transaction, eachCategory);
                                             transactionHasCategoriesDao.create(trans_categories);
                                         }
                                     }

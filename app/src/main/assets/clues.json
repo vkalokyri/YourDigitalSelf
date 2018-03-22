@@ -16,19 +16,19 @@
 	"makeAPayment": {
 		"restaurant": [{
 			"PayByCreditCard": {
-				"from": ["Category","Payment","PaymentHasCategory"],
+				"from": ["Category","Transaction","TransactionHasCategory"],
 				"where": {
 					"and": {
 						"category" :["Food and Beverage Store","Food and Drink", "Restaurants", "Fast Food"],
-						"Payment._id": "PaymentHasCategory.transaction_id",
-						"Category._id":"PaymentHasCategory.category_id"
+						"`Transaction`._id": "TransactionHasCategory.transaction_id",
+						"Category._id":"TransactionHasCategory.category_id"
 					}
 				}
 			}
 		}],
 		"gas": [{
 			"PayByCreditCard": {
-				"from": ["Category","Payment","PaymentHasCategory"],
+				"from": ["Category","Transaction","TransactionHasCategory"],
 				"where":{
 					"and": {
 						"category": "Gas Stations"

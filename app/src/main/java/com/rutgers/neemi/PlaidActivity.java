@@ -17,8 +17,6 @@ import android.webkit.WebViewClient;
 
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
-import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.stmt.Where;
 import com.plaid.client.PlaidClient;
 import com.plaid.client.request.AccountsGetRequest;
 import com.plaid.client.request.ItemPublicTokenExchangeRequest;
@@ -28,9 +26,9 @@ import com.plaid.client.response.AccountsGetResponse;
 import com.plaid.client.response.ItemPublicTokenExchangeResponse;
 import com.plaid.client.response.TransactionsGetResponse;
 import com.rutgers.neemi.model.Category;
-import com.rutgers.neemi.model.Payment;
+import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.Person;
-import com.rutgers.neemi.model.PaymentHasCategory;
+import com.rutgers.neemi.model.TransactionHasCategory;
 import com.rutgers.neemi.model.Place;
 
 
@@ -309,10 +307,10 @@ public class PlaidActivity extends AppCompatActivity {
         private class AsyncGetTransactionsTask extends AsyncTask<String, Void, Integer> {
 
         final RuntimeExceptionDao<Category, String> categoryDao = helper.getCategoryDao();
-        final RuntimeExceptionDao<Payment, String> paymentDao = helper.getPaymentDao();
+        final RuntimeExceptionDao<Transaction, String> transactionDao = helper.getTransactionDao();
         final RuntimeExceptionDao<Person, String> personDao = helper.getPersonDao();
         final RuntimeExceptionDao<Place, String> placeDao = helper.getPlaceDao();
-        final RuntimeExceptionDao<PaymentHasCategory, String> transactionHasCategoriesDao = helper.getPaymentHasCategoryRuntimeDao();
+        final RuntimeExceptionDao<TransactionHasCategory, String> transactionHasCategoriesDao = helper.getTransactionHasCategoryRuntimeDao();
 
         int transactionsRetrieved = 0;
 
@@ -343,7 +341,7 @@ public class PlaidActivity extends AppCompatActivity {
 
                     String timestamp = null;
 
-                    GenericRawResults<String[]> rawResults = paymentDao.queryRaw("select max(timestamp) from Payment where account_id='"+accountId+"';");
+                    GenericRawResults<String[]> rawResults = transactionDao.queryRaw("select max(timestamp) from Transaction where account_id='"+accountId+"';");
                     List<String[]> results = null;
                     try {
                         results = rawResults.getResults();
@@ -381,7 +379,7 @@ public class PlaidActivity extends AppCompatActivity {
                         totalTransactions = transactionsResponse.body().getTotalTransactions();
 
                         for (TransactionsGetResponse.Transaction txn : transactionsResponse.body().getTransactions()) {
-                            Payment transaction = new Payment();
+                            Transaction transaction = new Transaction();
 
                             if (txn.getAccountId() != null) {
                                 transaction.setAccount_id(txn.getAccountId());
@@ -405,7 +403,7 @@ public class PlaidActivity extends AppCompatActivity {
                                 transaction.setDate(simpleDateFormat.parse(txn.getDate()).getTime());
                             }
                             if (txn.getName() != null) {
-                                transaction.setName(txn.getName());
+                                transaction.setMerchant_name(txn.getName());
                             }
                             if (txn.getOriginalDescription() != null) {
                                 transaction.setDescription(txn.getOriginalDescription());
@@ -487,7 +485,7 @@ public class PlaidActivity extends AppCompatActivity {
                             }
 
                             transaction.setTimestamp(System.currentTimeMillis() / 1000);
-                            paymentDao.create(transaction);
+                            transactionDao.create(transaction);
 
                             if (txn.getCategory() != null) {
                                 List<Category> categoryList = new ArrayList<>();
@@ -499,12 +497,12 @@ public class PlaidActivity extends AppCompatActivity {
                                         categoryDao.create(newCategory);
                                         categoryList.add(newCategory);
                                     } else {
-                                        PaymentHasCategory trans_categories = new PaymentHasCategory(transaction, categoryExists);
+                                        TransactionHasCategory trans_categories = new TransactionHasCategory(transaction, categoryExists);
                                         transactionHasCategoriesDao.create(trans_categories);
                                     }
                                 }
                                 for (Category eachCategory : categoryList) {
-                                    PaymentHasCategory trans_categories = new PaymentHasCategory(transaction, eachCategory);
+                                    TransactionHasCategory trans_categories = new TransactionHasCategory(transaction, eachCategory);
                                     transactionHasCategoriesDao.create(trans_categories);
                                 }
 
