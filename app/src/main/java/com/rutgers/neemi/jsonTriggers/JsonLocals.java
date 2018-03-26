@@ -5,6 +5,7 @@ import android.content.Context;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,10 +20,14 @@ import javax.json.JsonReader;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
+import com.rutgers.neemi.DatabaseHelper;
 import com.rutgers.neemi.interfaces.Clues;
 import com.rutgers.neemi.interfaces.Triggers;
 import com.rutgers.neemi.interfaces.W5hLocals;
 import com.rutgers.neemi.model.Email;
+import com.rutgers.neemi.model.Feed;
+import com.rutgers.neemi.model.FeedWithTags;
+import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.parser.TriggersFactory;
 import com.rutgers.neemi.util.ConfigReader;
@@ -36,8 +41,10 @@ public class JsonLocals implements W5hLocals{
 	ConfigReader config;
 	JsonReader jsonReader;
 	InputStream fis;
+	DatabaseHelper helper;
 
 	public JsonLocals(Context context){
+		helper = DatabaseHelper.getHelper(context);
 		config = ConfigReader.getInstance();
 		 try {				
 	 
@@ -82,6 +89,35 @@ public class JsonLocals implements W5hLocals{
 						else if (attributeName.toString().equalsIgnoreCase("\"date\"")){
 							localValues.add(String.valueOf(((Transaction)pid).getDate()));
 						}
+					}else if (objectClass.equalsIgnoreCase("Feed")){
+						if (attributeName.toString().equalsIgnoreCase("\"creator_id\"")){
+							localValues.add(((Feed)pid).getCreator().getName());
+						}else if (attributeName.toString().equalsIgnoreCase("\"message\"")) {
+							localValues.add(String.valueOf(((Feed) pid).getMessage()));
+						}else if (attributeName.toString().equalsIgnoreCase("\"created_time\"")){
+								localValues.add(String.valueOf(((Feed)pid).getCreated_time()));
+						}else if (attributeName.toString().equalsIgnoreCase("\"place_id\"")){
+							if (((Feed)pid).getPlace().getName()!=null){
+								localValues.add(String.valueOf(((Feed) pid).getPlace().getName()));
+							}else if (((Feed)pid).getPlace().getCity()!=null) {
+								localValues.add(String.valueOf(((Feed) pid).getPlace().getCity()));
+							}
+
+						}else if (attributeName.toString().equalsIgnoreCase("\"FeedWithTags\"")) {
+							try {
+								ArrayList<Person> tags = helper.getFeedWithTags(((Feed)pid).get_id());
+								for(Person p:tags){
+									localValues.add(p.getName());
+								}
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
+
+
+						}
+// else if(attributeName.toString().equalsIgnoreCase("\"person_id\"")) {
+//							localValues.add(((Feed) pid).getId());
+//						}
 					}
 				}
 			}

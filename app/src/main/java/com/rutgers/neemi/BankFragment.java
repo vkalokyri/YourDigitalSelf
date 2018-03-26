@@ -381,8 +381,6 @@ public class BankFragment extends Fragment {
                                                 if (location.getZip() != null) {
                                                     newPlace.setZip(location.getZip());
                                                 }
-                                                placeDao.create(newPlace);
-                                                transaction.setPlace(newPlace);
                                                 placeExists=newPlace;
                                             } else {
                                                 transaction.setPlace(placeExists);
@@ -398,7 +396,12 @@ public class BankFragment extends Fragment {
                                                         .await();
                                                 if (gmapsResponse.results!=null){
                                                     for(String placeCategory: gmapsResponse.results[0].types){
-
+                                                        if (gmapsResponse.results[0].photos!=null) {
+                                                            String imageUrl = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + gmapsResponse.results[0].photos[0].photoReference + "&key=AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE";
+                                                            placeExists.setPlace_photo_url(imageUrl);
+                                                        }
+                                                        placeDao.create(placeExists);
+                                                        transaction.setPlace(placeExists);
                                                         Category categoryExists = helper.placeCategoryExists(placeCategory);
                                                         if (categoryExists == null) {
                                                             Category newCategory = new Category();
@@ -411,12 +414,21 @@ public class BankFragment extends Fragment {
                                                             helper.getPlaceHasCategoryRuntimeDao().create(trans_categories);
                                                         }
                                                     }
+                                                }else{
+                                                    placeDao.create(placeExists);
+                                                    transaction.setPlace(placeExists);
                                                 }
                                             } catch (ApiException e) {
+                                                placeDao.create(placeExists);
+                                                transaction.setPlace(placeExists);
                                                 e.printStackTrace();
                                             } catch (InterruptedException e) {
+                                                placeDao.create(placeExists);
+                                                transaction.setPlace(placeExists);
                                                 e.printStackTrace();
                                             } catch (IOException e) {
+                                                placeDao.create(placeExists);
+                                                transaction.setPlace(placeExists);
                                                 e.printStackTrace();
                                             }
 
@@ -468,7 +480,7 @@ public class BankFragment extends Fragment {
             }
 
             protected void onPostExecute(Integer output) {
-                mProgress.hide();
+                mProgress.dismiss();
                 Intent myIntent = new Intent(getActivity(), MainActivity.class);
                 myIntent.putExtra("key", "bank");
                 myIntent.putExtra("items", output);

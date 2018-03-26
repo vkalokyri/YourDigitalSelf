@@ -29,6 +29,7 @@ import com.rutgers.neemi.interfaces.Triggers;
 import com.rutgers.neemi.interfaces.W5hLocals;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
+import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.LocalValues;
 import com.rutgers.neemi.model.Transaction;
@@ -235,11 +236,12 @@ public class RestaurantsFragment extends Fragment {
                 } else if (pid instanceof Email) {
                     System.err.println("Task = " + taskName + ", Email = " + ((Email) pid).get_id());
 
-
                 } else if (pid instanceof Transaction) {
                     System.err.println("Task = " + taskName + ", Transaction = " + ((Transaction) pid).getMerchant_name());
-                }
 
+                } else if (pid instanceof Feed) {
+                    System.err.println("Task = " + taskName + ", Feed = " + ((Feed) pid).getMessage());
+                }
                 ArrayList<LocalProperties> taskLocals = helper.extractTaskLocals(taskName);
 
 
@@ -431,8 +433,6 @@ public class RestaurantsFragment extends Fragment {
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
-                }else{
-
                 }
             }else if (task.getPid() instanceof Event){
                 try {
@@ -460,7 +460,25 @@ public class RestaurantsFragment extends Fragment {
 
 
         for (Date date: hashMap.keySet()){
-            listofMergedTasks.add(hashMap.get(date));
+            boolean isTransaction=false;
+            boolean isEvent=false;
+
+            ArrayList<Task> list = new ArrayList<Task>();
+            for(int i=0;i<hashMap.get(date).size();i++){
+                if (hashMap.get(date).get(i).getPid() instanceof Transaction){
+                    if(!isTransaction){
+                        isTransaction=true;
+                        list.add(hashMap.get(date).get(i));
+                    }
+                }else if (hashMap.get(date).get(i).getPid() instanceof Event){
+                    if(!isEvent){
+                        isEvent=true;
+                        list.add(hashMap.get(date).get(i));
+                    }
+                }
+            }
+            listofMergedTasks.add(list);
+            //listofMergedTasks.add(hashMap.get(date));
         }
 
         return listofMergedTasks;
@@ -700,7 +718,7 @@ public class RestaurantsFragment extends Fragment {
 
                                                 } else {
                                                     whereClause = whereClause + " " + andOrKey;
-                                                    if (andOrKey.contains("Transaction") || andOrKey.contains("Category")){
+                                                    if (andOrKey.contains("Transaction") || andOrKey.contains("Category") || andOrKey.contains("Feed")){
                                                         whereClause = whereClause + " = " + andOrValue.toString().replace("\"", "");
                                                     }else {
                                                         //System.out.println("Clue value = " + andOrValue.toString().replace("\"", ""));
@@ -719,7 +737,11 @@ public class RestaurantsFragment extends Fragment {
                         if (!foundKeywordsFile){
                             fromClause = fromClause.replace("\"", "");
                             if (fromClause.contains("Transaction")){
-                                query="select distinct `Transaction`._id, `Transaction`.merchant_name ";                            }
+                                query="select distinct `Transaction`._id, `Transaction`.merchant_name ";
+                            }
+                            if (fromClause.contains("Feed")){
+                                query="select distinct `Feed`._id, `Feed`.message, `Feed`.place_id ";
+                            }
                             query = query + fromClause + whereClause;
                             query=query.substring(0,query.length()-4) +");";
                             System.out.println("QUERY = " + query);
@@ -827,6 +849,34 @@ public class RestaurantsFragment extends Fragment {
 
 
                     }
+                }else if (fromTable.contains("Feed")){
+                    for (String[] tuple:rawResults.getResults()) {
+                        Feed feed = new Feed();
+                        feed.setId(tuple[0]);
+                        feed.setMessage(tuple[1]);
+
+                        String tempQuery = "select * from `Feed` where `_id`=" + tuple[0];
+                        GenericRawResults<Feed> feedData = helper.getFeedDao().queryRaw(tempQuery, helper.getFeedDao().getRawRowMapper());
+//                        try {
+//                            System.err.println("TransFOUND = " + transactionData.getResults().size());
+//                        } catch (SQLException e) {
+//                            e.printStackTrace();
+//                        }
+                        try {
+                            for (Feed fullFeed : feedData.getResults()) {
+                                Task task = new Task();
+                                task.setOid(fullFeed.getId());
+                                task.setPid(fullFeed);
+                                task.setName(subtask);
+                                task.setScript(script);
+                                tasks.add(task);
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
                 }
           //  }
         }
@@ -910,6 +960,7 @@ public class RestaurantsFragment extends Fragment {
             Script script = itemname.get(position);//.getScriptDefinition();
             HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
                     //txtTitle.setText(itemname.get(position).getScore()+", "+String.valueOf(((Email)processTask.getPid()).get_id()));
+
             imageView.setImageResource(imgid[0]);
             ArrayList<LocalValues> localValues = script.getLocalValues();
             if (localValues != null) {
@@ -936,31 +987,6 @@ public class RestaurantsFragment extends Fragment {
 
             for (String localLabel:map.keySet()) {
                 StringBuilder sb = new StringBuilder();
-
-//                if(localLabel.startsWith("when")){
-//                    for (String localValue : map.get(localLabel)) {
-//                        Date extractedDate=null;
-//                        String parsedDate=null;
-//                        System.err.println(localValue);
-//                        try {
-//                            extractedDate = new Date(Long.parseLong(localValue));
-//                            Format format = new SimpleDateFormat("yyyy-MM-dd");
-//                            parsedDate = format.format(extractedDate);
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                            extractedDate = new Date(localValue);
-//                            Format format = new SimpleDateFormat("yyyy-MM-dd");
-//                            parsedDate= format.format(extractedDate);
-//                        }
-//                        if(parsedDate!=null) {
-//                            sb.append(parsedDate);
-//                            sb.append(", ");
-//                        }
-//                    }
-//                    sb.delete(sb.length() - 2, sb.length() - 1);
-//
-//                }else {
-
                     for (String localValue : map.get(localLabel)) {
                         sb.append(localValue);
                         sb.append(", ");

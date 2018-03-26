@@ -522,7 +522,7 @@ public class PlaidActivity extends AppCompatActivity {
         }
 
         protected void onPostExecute(Integer output) {
-            mProgress.hide();
+            mProgress.dismiss();
             Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
             myIntent.putExtra("key", "bank");
             myIntent.putExtra("items", output);

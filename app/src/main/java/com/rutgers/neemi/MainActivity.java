@@ -42,15 +42,13 @@ public class MainActivity extends AppCompatActivity {
 
         DatabaseHelper helper= DatabaseHelper.getHelper(this);
 
-        ConnectionSource connectionSource = new AndroidConnectionSource(helper);
-
+//        ConnectionSource connectionSource = new AndroidConnectionSource(helper);
 //        RuntimeExceptionDao<Subscript, String> subScriptDao = helper.getSubScriptDao();
 //        subScriptDao.queryRaw("delete from  Subscript;");
 //        subScriptDao.queryRaw("delete from LocalProperties;");
 //        subScriptDao.queryRaw("delete from  ScriptHasTasks;");
 //        subScriptDao.queryRaw("delete from  ScriptDefinition;");
 //        subScriptDao.queryRaw("delete from  TaskDefinition;");
-
 //
 //                try {
 //                    //TableUtils.clearTable(connectionSource, Email.class,false);
@@ -68,8 +66,6 @@ public class MainActivity extends AppCompatActivity {
 //                } catch (SQLException e) {
 //                    e.printStackTrace();
 //                }
-
-
 
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -98,9 +94,9 @@ public class MainActivity extends AppCompatActivity {
                 setfragmentTransaction.addToBackStack(null);
                 setfragmentTransaction.commit();
                 if (items == 0) {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No facebook photos fetched.", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No facebook data fetched.", Snackbar.LENGTH_LONG).show();
                 } else {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " facebook photos fetched.", Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " facebook objects fetched.", Snackbar.LENGTH_LONG).show();
                 }
 
             }
@@ -180,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setItemIconTintList(null);
 
 
+
         //Setting Navigation View Item Selected Listener to handle the item click of the navigation menu
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
 
@@ -189,8 +186,10 @@ public class MainActivity extends AppCompatActivity {
 
 
                 //Checking if the item is in checked state or not, if not make it in checked state
-                if(menuItem.isChecked()) menuItem.setChecked(false);
+                if(menuItem.isChecked())
+                    menuItem.setChecked(false);
                 else menuItem.setChecked(true);
+
 
                 //Closing drawer on item click
                 drawerLayout.closeDrawers();
@@ -255,7 +254,15 @@ public class MainActivity extends AppCompatActivity {
         //calling sync state is necessay or else your hamburger icon wont show up
         actionBarDrawerToggle.syncState();
 
+        //setFirstItemNavigationView();
 
+
+
+    }
+
+    private void setFirstItemNavigationView() {
+        navigationView.setCheckedItem(R.id.restaurants);
+        navigationView.getMenu().performIdentifierAction(R.id.restaurants, 0);
     }
 
     @Override

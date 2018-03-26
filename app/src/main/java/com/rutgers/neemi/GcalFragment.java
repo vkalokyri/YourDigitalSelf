@@ -536,7 +536,7 @@ public class GcalFragment extends Fragment implements EasyPermissions.Permission
 
         @Override
         protected void onPostExecute(Integer output) {
-            mProgress.hide();
+            mProgress.dismiss();
             if (output == 0) {
                 Snackbar.make(view.findViewById(R.id.gcalCoordinatorLayout), "No calendar events fetched.", Snackbar.LENGTH_SHORT ).show();
             } else {
@@ -548,7 +548,7 @@ public class GcalFragment extends Fragment implements EasyPermissions.Permission
 
         @Override
         protected void onCancelled() {
-            mProgress.hide();
+            mProgress.dismiss();
             if (mLastError != null) {
                 if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
                     showGooglePlayServicesAvailabilityErrorDialog(

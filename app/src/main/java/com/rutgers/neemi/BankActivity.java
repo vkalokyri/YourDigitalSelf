@@ -13,6 +13,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -26,7 +27,6 @@ public class BankActivity extends AppCompatActivity {
     private PlaidFragment plaidFragment;
     private BankFragment bankFragment;
     private TabLayout allTabs;
-    private boolean plaidUsedBefore=false;
 
     private int[] tabIcons = {
             R.drawable.gdrive_icon,
@@ -81,37 +81,37 @@ public class BankActivity extends AppCompatActivity {
         });
     }
     private void setCurrentTabFragment(int tabPosition) {
-        ArrayList accountNames = new ArrayList();
-        String line;
-        try {
-            FileInputStream fis = openFileInput("BankAccounts");
-            InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
-            BufferedReader br = new BufferedReader(isr);
-            while ((line = br.readLine()) != null) {
-                accountNames.add(line);
-            }
-            fis.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (accountNames.size()!=0) {
-            plaidUsedBefore=true;
-        }
 
         switch (tabPosition)
         {
             case 0 :
-                if(plaidUsedBefore){
-                    Bundle args = new Bundle();
-                    args.putStringArrayList("Accounts", accountNames);
-                    bankFragment.setArguments(args);
-                    replaceFragment(bankFragment);
-                }else {
-                    replaceFragment(plaidFragment);
+                ArrayList accountNames = new ArrayList();
+                String line;
+                try {
+                    File file = getFileStreamPath("BankAccounts");
+                    if(file == null || !file.exists()) {
+                        replaceFragment(plaidFragment);
+                    }else{
+                        FileInputStream fis = openFileInput("BankAccounts");
+                        InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
+                        BufferedReader br = new BufferedReader(isr);
+                        while ((line = br.readLine()) != null) {
+                            accountNames.add(line);
+                        }
+                        fis.close();
+
+                        Bundle args = new Bundle();
+                        args.putStringArrayList("Accounts", accountNames);
+                        bankFragment.setArguments(args);
+                        replaceFragment(bankFragment);
+                    }
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+
                 break;
             case 1 :
                 Intent myIntent = new Intent(this, GDriveActivity.class);

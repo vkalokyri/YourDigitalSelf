@@ -574,7 +574,7 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
 
         @Override
         protected void onPostExecute(Integer output) {
-            mProgress.hide();
+            mProgress.dismiss();
             Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
             myIntent.putExtra("key", "gcal");
             myIntent.putExtra("items", output);
@@ -592,7 +592,7 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
 
         @Override
         protected void onCancelled() {
-            mProgress.hide();
+            mProgress.dismiss();
             if (mLastError != null) {
                 if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
                     showGooglePlayServicesAvailabilityErrorDialog(

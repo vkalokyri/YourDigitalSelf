@@ -117,5 +117,7 @@
     <string name="init_failed">Unable to initialize activity.</string>
     <string name="file_not_selected">No file selected, can not continue.</string>
     <string name="folder_not_selected">No folder selected, can not continue.</string>
+    <string name="download_progress">Download Progress:</string>
+
 
 </resources>

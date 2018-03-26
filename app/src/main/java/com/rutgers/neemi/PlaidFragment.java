@@ -525,7 +525,7 @@ public class PlaidFragment extends Fragment {
         }
 
         protected void onPostExecute(Integer output) {
-            mProgress.hide();
+            mProgress.dismiss();
             Intent myIntent = new Intent(getContext(), MainActivity.class);
             myIntent.putExtra("key", "bank");
             myIntent.putExtra("items", output);

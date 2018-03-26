@@ -20,6 +20,7 @@ import android.content.IntentSender;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +36,7 @@ import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.DriveResourceClient;
 import com.google.android.gms.drive.OpenFileActivityOptions;
+import com.google.android.gms.drive.events.OpenFileCallback;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.SearchableField;
 import com.google.android.gms.tasks.Continuation;
@@ -42,6 +44,11 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
+import com.google.maps.GeoApiContext;
+import com.google.maps.PlacesApi;
+import com.google.maps.errors.ApiException;
+import com.google.maps.model.PlacesSearchResponse;
+import com.google.maps.model.PlacesSearchResult;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Place;
@@ -54,7 +61,9 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -95,7 +104,8 @@ public class GDriveActivity extends Activity {
 
     public DriveFile file;
 
-    private TextView mFileContents;
+    private ProgressBar mProgressBar;
+
 
 
     SimpleDateFormat format = new SimpleDateFormat("MM/dd/yy");
@@ -112,7 +122,9 @@ public class GDriveActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gdrive);
-        mFileContents = findViewById(R.id.fileContents);
+        mProgressBar = findViewById(R.id.progressBar);
+        mProgressBar.setMax(100);
+
         GoogleSignInClient mGoogleSignInClient = buildGoogleSignInClient();
         startActivityForResult(mGoogleSignInClient.getSignInIntent(), REQUEST_CODE_SIGN_IN);
         helper=DatabaseHelper.getHelper(this);
@@ -278,113 +290,281 @@ public class GDriveActivity extends Activity {
 
     private void retrieveContents(DriveFile file) {
 
-        // [START open_file]
-        Task<DriveContents> openFileTask =
-                getDriveResourceClient().openFile(file, DriveFile.MODE_READ_ONLY);
-        // [END open_file]
-        // [START read_contents]
-        openFileTask.continueWithTask(new Continuation<DriveContents, Task<Void>>() {
-                    @Override
-                    public Task<Void> then(@NonNull Task<DriveContents> task) throws Exception {
-                        DriveContents contents = task.getResult();
-                        // Process contents...
-                        // [START_EXCLUDE]
-                        // [START read_as_string]
-                        try (BufferedReader reader = new BufferedReader(
-                                new InputStreamReader(contents.getInputStream()))) {
+
+        OpenFileCallback openCallback = new OpenFileCallback() {
+            @Override
+            public void onProgress(long bytesDownloaded, long bytesExpected) {
+                // Update progress dialog with the latest progress.
+                int progress = (int) (bytesDownloaded * 100 / bytesExpected);
+                Log.d(TAG, String.format("Loading progress: %d percent", progress));
+                mProgressBar.setProgress(progress);
+            }
 
 
-                            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
-                                    .withHeader("Date", "Description", "Amount", "Category")
-                                    .withFirstRecordAsHeader()
-                                    .withIgnoreHeaderCase()
-                                    .withTrim());
+            @Override
+            public void onContents(@NonNull DriveContents driveContents) {
+                // onProgress may not be called for files that are already
+                // available on the device. Mark the progress as complete
+                // when contents available to ensure status is updated.
+                mProgressBar.setProgress(100);
+                // Read contents
+                // [START_EXCLUDE]
+               // DriveContents contents = task.getResult();
+                // Process contents...
+                // [START_EXCLUDE]
+                // [START read_as_string]
+                GeoApiContext geoApiContext = new GeoApiContext.Builder()
+                        .apiKey("AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE")
+                        .build();
 
-                            Iterable<CSVRecord> csvRecords = csvParser.getRecords();
-                            items=(int)csvParser.getRecordNumber();
-
-                            for (CSVRecord csvRecord : csvRecords){
-                                //Payment payment = new Payment();
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(driveContents.getInputStream()))) {
 
 
-                                BankDescriptionParser parser = new BankDescriptionParser(getApplicationContext());
-                                Transaction payment = parser.parser_memo(csvRecord.get("Description"),new Date());
+                    CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
+                            .withHeader("Date", "Description", "Amount", "Category")
+                            .withFirstRecordAsHeader()
+                            .withIgnoreHeaderCase()
+                            .withTrim());
 
-                                String date =csvRecord.get("Date");
-                                payment.setDate(format.parse(date).getTime());
-                                payment.setAmount(Double.parseDouble(csvRecord.get("Amount")));
-                                payment.setPending(false);
-                                payment.setTimestamp(System.currentTimeMillis() / 1000);
+                    Iterable<CSVRecord> csvRecords = csvParser.getRecords();
+                    items=(int)csvParser.getRecordNumber();
 
-                                if (payment.getPlace()!=null){
-                                    if (payment.getPlace().getPhone_number()!=null) {
-                                        Place placeExistsByPhone = helper.placeExistsByPhone(payment.getPlace().getPhone_number());
-                                        if (placeExistsByPhone==null) {
-                                            Place newPlace = payment.getPlace();
-                                            placeDao.create(newPlace);
-                                            payment.setPlace(newPlace);
-                                        }else {
-                                            payment.setPlace(placeExistsByPhone);
-                                        }
-                                    }else {
-                                        if(payment.getPlace().getCity()!=null && payment.getPlace().getState()!=null){
-                                            Place placeExists = helper.placeExistsByStateCity(payment.getPlace().getState(),payment.getPlace().getCity());
-                                            if (placeExists == null) {
-                                                Place newPlace = payment.getPlace();
-                                                placeDao.create(newPlace);
-                                                payment.setPlace(newPlace);
-                                            }else{
-                                                payment.setPlace(placeExists);
-                                            }
-                                        }
+                    for (CSVRecord csvRecord : csvRecords){
+                        //Payment payment = new Payment();
+                        StringBuilder googleMapQuery = new StringBuilder();
+
+
+                        BankDescriptionParser parser = new BankDescriptionParser(getApplicationContext());
+                        Transaction payment = parser.parser_memo(csvRecord.get("Description"),new Date());
+                        googleMapQuery.append(payment.getMerchant_name());
+
+                        String date =csvRecord.get("Date");
+                        payment.setDate(format.parse(date).getTime());
+                        payment.setAmount(Double.parseDouble(csvRecord.get("Amount")));
+                        payment.setPending(false);
+                        payment.setTimestamp(System.currentTimeMillis() / 1000);
+
+                        if (payment.getPlace()!=null){
+                            Place placeExists=null;
+                            if (payment.getPlace().getPhone_number()!=null) {
+                                placeExists = helper.placeExistsByPhone(payment.getPlace().getPhone_number());
+                                if (placeExists==null) {
+                                    placeExists = payment.getPlace();
+                                    payment.setPlace(placeExists);
+                                }else {
+                                    payment.setPlace(placeExists);
+                                }
+                                googleMapQuery.append("+");
+                                googleMapQuery.append(payment.getPlace().getPhone_number());
+                            }else {
+                                if(payment.getPlace().getCity()!=null && payment.getPlace().getState()!=null){
+                                    placeExists = helper.placeExistsByStateCity(payment.getPlace().getState(),payment.getPlace().getCity());
+                                    if (placeExists == null) {
+                                        Place newPlace = payment.getPlace();
+                                        placeExists=newPlace;
+                                        payment.setPlace(placeExists);
+                                    }else{
+                                        payment.setPlace(placeExists);
                                     }
-                                }
-                                transactionDao.create(payment);
-
-                                String category =csvRecord.get("Category");
-                                List<Category> categoryList = new ArrayList<>();
-                                Category categoryExists = helper.categoryExists(category);
-                                if (categoryExists == null) {
-                                    Category newCategory = new Category();
-                                    newCategory.setCategoryName(category);
-                                    categoryDao.create(newCategory);
-                                    categoryList.add(newCategory);
-                                } else {
-                                    TransactionHasCategory trans_categories = new TransactionHasCategory(payment, categoryExists);
-                                    transactionHasCategoriesDao.create(trans_categories);
-                                }
-
-                                for (Category eachCategory : categoryList) {
-                                    TransactionHasCategory trans_categories = new TransactionHasCategory(payment, eachCategory);
-                                    transactionHasCategoriesDao.create(trans_categories);
+                                    googleMapQuery.append("+");
+                                    googleMapQuery.append(payment.getPlace().getCity());
+                                    googleMapQuery.append("+");
+                                    googleMapQuery.append(payment.getPlace().getState());
                                 }
                             }
 
+
+                            PlacesSearchResponse gmapsResponse = null;
+                            try {
+                                gmapsResponse = PlacesApi.textSearchQuery(geoApiContext, googleMapQuery.toString()).await();
+                                if (gmapsResponse.results != null) {
+                                    if (gmapsResponse.results.length > 0) {
+                                        PlacesSearchResult place = gmapsResponse.results[0];
+                                        if (place.photos != null) {
+                                            String imageUrl = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + gmapsResponse.results[0].photos[0].photoReference + "&key=AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE";
+                                            if (placeExists!=null) {
+                                                placeExists.setPlace_photo_url(imageUrl);
+                                            }else{
+                                                placeExists = new Place();
+                                                placeExists.setPlace_photo_url(imageUrl);
+                                                placeExists.setName(place.name);
+                                                placeExists.setStreet(place.formattedAddress);
+                                            }
+
+                                        }
+                                    }
+                                }
+                            } catch (ApiException e) {
+                                e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            placeDao.create(placeExists);
+                            payment.setPlace(placeExists);
+
                         }
-                        // [END read_as_string]
-                        // [END_EXCLUDE]
-                        // [START discard_contents]
-                        Task<Void> discardTask = getDriveResourceClient().discardContents(contents);
-                        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-                        myIntent.putExtra("key", "gdrive");
-                        myIntent.putExtra("items", items);
-                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(myIntent);
-                        // [END discard_contents]
-                        return discardTask;
+
+                        String category =csvRecord.get("Category");
+                        List<Category> categoryList = new ArrayList<>();
+                        Category categoryExists = helper.categoryExists(category);
+                        if (categoryExists == null) {
+                            Category newCategory = new Category();
+                            newCategory.setCategoryName(category);
+                            categoryDao.create(newCategory);
+                            categoryList.add(newCategory);
+                        } else {
+                            TransactionHasCategory trans_categories = new TransactionHasCategory(payment, categoryExists);
+                            transactionHasCategoriesDao.create(trans_categories);
+                        }
+
+                        for (Category eachCategory : categoryList) {
+                            TransactionHasCategory trans_categories = new TransactionHasCategory(payment, eachCategory);
+                            transactionHasCategoriesDao.create(trans_categories);
+                        }
+
+
+
+
                     }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // Handle failure
-                        // [START_EXCLUDE]
-                        Log.e(TAG, "Unable to read contents", e);
-                        showMessage(getString(R.string.read_failed));
-                        finish();
-                        // [END_EXCLUDE]
-                    }
-                });
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                // [END read_as_string]
+                // [END_EXCLUDE]
+                // [START discard_contents]
+                Task<Void> discardTask = getDriveResourceClient().discardContents(driveContents);
+                Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                myIntent.putExtra("key", "gdrive");
+                myIntent.putExtra("items", items);
+                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(myIntent);
+                // [END_EXCLUDE]
+            }
+
+            @Override
+            public void onError(@NonNull Exception e) {
+                // Handle error
+                // [START_EXCLUDE]
+                Log.e(TAG, "Unable to read contents", e);
+                showMessage(getString(R.string.read_failed));
+                finish();
+                // [END_EXCLUDE]
+            }
+        };
+
+        getDriveResourceClient().openFile(file, DriveFile.MODE_READ_ONLY, openCallback);
+
+
+        // [START open_file]
+//       Task<DriveContents> openFileTask = getDriveResourceClient().openFile(file, DriveFile.MODE_READ_ONLY);
+//        // [END open_file]
+//        // [START read_contents]
+//        openFileTask.continueWithTask(new Continuation<DriveContents, Task<Void>>() {
+//                    @Override
+//                    public Task<Void> then(@NonNull Task<DriveContents> task) throws Exception {
+//                        DriveContents contents = task.getResult();
+//                        // Process contents...
+//                        // [START_EXCLUDE]
+//                        // [START read_as_string]
+//                        try (BufferedReader reader = new BufferedReader(
+//                                new InputStreamReader(contents.getInputStream()))) {
+//
+//
+//                            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
+//                                    .withHeader("Date", "Description", "Amount", "Category")
+//                                    .withFirstRecordAsHeader()
+//                                    .withIgnoreHeaderCase()
+//                                    .withTrim());
+//
+//                            Iterable<CSVRecord> csvRecords = csvParser.getRecords();
+//                            items=(int)csvParser.getRecordNumber();
+//
+//                            for (CSVRecord csvRecord : csvRecords){
+//                                //Payment payment = new Payment();
+//
+//
+//                                BankDescriptionParser parser = new BankDescriptionParser(getApplicationContext());
+//                                Transaction payment = parser.parser_memo(csvRecord.get("Description"),new Date());
+//
+//                                String date =csvRecord.get("Date");
+//                                payment.setDate(format.parse(date).getTime());
+//                                payment.setAmount(Double.parseDouble(csvRecord.get("Amount")));
+//                                payment.setPending(false);
+//                                payment.setTimestamp(System.currentTimeMillis() / 1000);
+//
+//                                if (payment.getPlace()!=null){
+//                                    if (payment.getPlace().getPhone_number()!=null) {
+//                                        Place placeExistsByPhone = helper.placeExistsByPhone(payment.getPlace().getPhone_number());
+//                                        if (placeExistsByPhone==null) {
+//                                            Place newPlace = payment.getPlace();
+//                                            placeDao.create(newPlace);
+//                                            payment.setPlace(newPlace);
+//                                        }else {
+//                                            payment.setPlace(placeExistsByPhone);
+//                                        }
+//                                    }else {
+//                                        if(payment.getPlace().getCity()!=null && payment.getPlace().getState()!=null){
+//                                            Place placeExists = helper.placeExistsByStateCity(payment.getPlace().getState(),payment.getPlace().getCity());
+//                                            if (placeExists == null) {
+//                                                Place newPlace = payment.getPlace();
+//                                                placeDao.create(newPlace);
+//                                                payment.setPlace(newPlace);
+//                                            }else{
+//                                                payment.setPlace(placeExists);
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                                transactionDao.create(payment);
+//
+//                                String category =csvRecord.get("Category");
+//                                List<Category> categoryList = new ArrayList<>();
+//                                Category categoryExists = helper.categoryExists(category);
+//                                if (categoryExists == null) {
+//                                    Category newCategory = new Category();
+//                                    newCategory.setCategoryName(category);
+//                                    categoryDao.create(newCategory);
+//                                    categoryList.add(newCategory);
+//                                } else {
+//                                    TransactionHasCategory trans_categories = new TransactionHasCategory(payment, categoryExists);
+//                                    transactionHasCategoriesDao.create(trans_categories);
+//                                }
+//
+//                                for (Category eachCategory : categoryList) {
+//                                    TransactionHasCategory trans_categories = new TransactionHasCategory(payment, eachCategory);
+//                                    transactionHasCategoriesDao.create(trans_categories);
+//                                }
+//                            }
+//
+//                        }
+//                        // [END read_as_string]
+//                        // [END_EXCLUDE]
+//                        // [START discard_contents]
+//                        Task<Void> discardTask = getDriveResourceClient().discardContents(contents);
+//                        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+//                        myIntent.putExtra("key", "gdrive");
+//                        myIntent.putExtra("items", items);
+//                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                        startActivity(myIntent);
+//                        // [END discard_contents]
+//                        return discardTask;
+//                    }
+//                })
+//                .addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        // Handle failure
+//                        // [START_EXCLUDE]
+//                        Log.e(TAG, "Unable to read contents", e);
+//                        showMessage(getString(R.string.read_failed));
+//                        finish();
+//                        // [END_EXCLUDE]
+//                    }
+//                });
         // [END read_contents]
     }
 

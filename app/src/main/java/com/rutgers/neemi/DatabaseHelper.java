@@ -22,6 +22,9 @@ import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.EventAttendees;
+import com.rutgers.neemi.model.Feed;
+import com.rutgers.neemi.model.FeedMessageTags;
+import com.rutgers.neemi.model.FeedWithTags;
 import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.LocalValues;
 import com.rutgers.neemi.model.TransactionHasCategory;
@@ -56,10 +59,13 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private RuntimeExceptionDao<Event, String> calEventRuntimeDao = null;
 	private RuntimeExceptionDao<Person, String> personRuntimeDao = null;
 	private RuntimeExceptionDao<Photo, String> photoRuntimeDao = null;
+	private RuntimeExceptionDao<Feed, String> feedRuntimeDao = null;
 	private RuntimeExceptionDao<Album, String> albumRuntimeDao = null;
 	private RuntimeExceptionDao<Place, String> placeRuntimeDao = null;
 	private RuntimeExceptionDao<EventAttendees, String> eventAttendeesRuntimeDao = null;
 	private RuntimeExceptionDao<PhotoTags, String> photoTagsRuntimeDao = null;
+	private RuntimeExceptionDao<FeedWithTags, String> feedWithTagsRuntimeDao = null;
+	private RuntimeExceptionDao<FeedMessageTags, String> feedMessageTagsRuntimeDao = null;
 	private RuntimeExceptionDao<Transaction, String> transactionRuntimeDao = null;
 	private RuntimeExceptionDao<Category, String> categoryRuntimeDao = null;
 	private RuntimeExceptionDao<PlaceHasCategory, String> placeHasCategoryRuntimeDao = null;
@@ -107,9 +113,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, Person.class);
 			TableUtils.createTable(connectionSource, Album.class);
 			TableUtils.createTable(connectionSource, Photo.class);
+			TableUtils.createTable(connectionSource, Feed.class);
 			TableUtils.createTable(connectionSource, Place.class);
 			TableUtils.createTable(connectionSource, EventAttendees.class);
 			TableUtils.createTable(connectionSource, PhotoTags.class);
+			TableUtils.createTable(connectionSource, FeedWithTags.class);
+			TableUtils.createTable(connectionSource, FeedMessageTags.class);
 			TableUtils.createTable(connectionSource, Category.class);
 			TableUtils.createTable(connectionSource, Transaction.class);
 			TableUtils.createTable(connectionSource, TransactionHasCategory.class);
@@ -173,6 +182,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, Task.class, true);
             TableUtils.dropTable(connectionSource, TaskDefinition.class, true);
             TableUtils.dropTable(connectionSource, Subscript.class, true);
+			TableUtils.dropTable(connectionSource, Feed.class, true);
+			TableUtils.dropTable(connectionSource, FeedWithTags.class, true);
+			TableUtils.dropTable(connectionSource, FeedMessageTags.class, true);
 			// after we drop the old databases, we create the new ones
 			onCreate(db, connectionSource);
 		} catch (SQLException e) {
@@ -236,6 +248,27 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			photoRuntimeDao = getRuntimeExceptionDao(Photo.class);
 		}
 		return photoRuntimeDao;
+	}
+
+	public RuntimeExceptionDao<Feed, String> getFeedDao() {
+		if (feedRuntimeDao == null) {
+			feedRuntimeDao = getRuntimeExceptionDao(Feed.class);
+		}
+		return feedRuntimeDao;
+	}
+
+	public RuntimeExceptionDao<FeedWithTags, String> getFeedWithTagsDao() {
+		if (feedWithTagsRuntimeDao == null) {
+			feedWithTagsRuntimeDao = getRuntimeExceptionDao(FeedWithTags.class);
+		}
+		return feedWithTagsRuntimeDao;
+	}
+
+	public RuntimeExceptionDao<FeedMessageTags, String> getFeedMessagesTagsDao() {
+		if (feedMessageTagsRuntimeDao == null) {
+			feedMessageTagsRuntimeDao = getRuntimeExceptionDao(FeedMessageTags.class);
+		}
+		return feedMessageTagsRuntimeDao;
 	}
 
 	public RuntimeExceptionDao<Album, String> getAlbumDao() {
@@ -356,6 +389,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		placeRuntimeDao =null;
 		albumRuntimeDao =null;
 		photoRuntimeDao =null;
+		feedRuntimeDao =null;
+		feedWithTagsRuntimeDao=null;
+		feedMessageTagsRuntimeDao=null;
 		photoTagsRuntimeDao=null;
 		eventAttendeesRuntimeDao = null;
 		placeHasCategoryRuntimeDao =null;
@@ -873,6 +909,28 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+
+	public ArrayList<Person> getFeedWithTags(int feed_id) throws SQLException {
+		RuntimeExceptionDao<Person, String> personDao = getPersonDao();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT Person.name,Person.email,Person.username,Person.isSelf  from Person, FeedWithTags, Feed where Feed._id='");
+		sb.append(feed_id);
+		sb.append("' and Feed._id=FeedWithTags.feed_id and FeedWithTags.person_id=Person._id;");
+
+		GenericRawResults<Person> rawResults =
+				personDao.queryRaw(sb.toString(),
+						new RawRowMapper<Person>() {
+							public Person mapRow(String[] columnNames,
+														  String[] resultColumns) {
+								return new Person((String)resultColumns[0],(String)resultColumns[1],(String)resultColumns[2],Boolean.parseBoolean(resultColumns[3]));
+							}
+						});
+
+		return (ArrayList<Person>)rawResults.getResults();
+
 	}
 
 

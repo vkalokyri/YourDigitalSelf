@@ -25,11 +25,11 @@ public class Album implements Serializable {
     String description;
     @DatabaseField
     long created_time;
-    @DatabaseField(canBeNull = true, foreign = true, columnName = "event_id")
+    @DatabaseField(canBeNull = true, foreign = true,foreignAutoRefresh=true)
     Event event;
-    @DatabaseField(canBeNull = true, foreign = true, columnName = "place_id")
+    @DatabaseField(canBeNull = true, foreign = true,foreignAutoRefresh=true)
     Place place;
-    @DatabaseField(canBeNull = true, foreign = true, columnName = "creator_id")
+    @DatabaseField(canBeNull = true, foreign = true,foreignAutoRefresh=true)
     Person creator;
 
     public Album() {

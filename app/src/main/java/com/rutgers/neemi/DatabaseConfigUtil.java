@@ -9,6 +9,9 @@ import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.EventAttendees;
+import com.rutgers.neemi.model.Feed;
+import com.rutgers.neemi.model.FeedMessageTags;
+import com.rutgers.neemi.model.FeedWithTags;
 import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.LocalValues;
 import com.rutgers.neemi.model.Transaction;
@@ -33,7 +36,7 @@ import com.rutgers.neemi.model.Transition;
 public class DatabaseConfigUtil extends OrmLiteConfigUtil {
 
     // put all your database classes in this array
-    private static final Class<?>[] classes = new Class[]{Email.class, Event.class, Person.class, Album.class, Photo.class, Place.class, EventAttendees.class, PhotoTags.class, TransactionHasCategory.class, PlaceHasCategory.class, Transaction.class, Category.class, Task.class, Script.class, TaskDefinition.class, ScriptDefinition.class, LocalProperties.class, LocalValues.class, ScriptHasTasks.class, Subscript.class, Transition.class};
+    private static final Class<?>[] classes = new Class[]{Email.class, Event.class, Person.class, Album.class, Photo.class, Place.class, EventAttendees.class, PhotoTags.class, TransactionHasCategory.class, PlaceHasCategory.class, Transaction.class, Category.class, Task.class, Script.class, TaskDefinition.class, ScriptDefinition.class, LocalProperties.class, LocalValues.class, ScriptHasTasks.class, Subscript.class, Transition.class, Feed.class, FeedMessageTags.class, FeedWithTags.class};
 
 
     public static void main(String[] args) throws SQLException, IOException {

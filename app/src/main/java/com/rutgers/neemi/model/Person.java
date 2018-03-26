@@ -12,10 +12,10 @@ import java.io.Serializable;
 @DatabaseTable(tableName = "Person")
 public class Person implements Serializable {
 
-    public static final String FIELD_ID = "ID";
-    public static final String FIELD_EMAIL = "EMAIL";
-    public static final String FIELD_NAME = "NAME";
-    public static final String FIELD_USERNAME = "USERNAME";
+    public static final String FIELD_ID = "id";
+    public static final String FIELD_EMAIL = "email";
+    public static final String FIELD_NAME = "name";
+    public static final String FIELD_USERNAME = "username";
 
 
     @DatabaseField(generatedId = true)
@@ -84,5 +84,13 @@ public class Person implements Serializable {
 
     public String getUsername() {
         return username;
+    }
+
+    public int get_id() {
+        return _id;
+    }
+
+    public void set_id(int _id) {
+        this._id = _id;
     }
 }

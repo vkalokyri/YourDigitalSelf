@@ -1,25 +1,37 @@
 package com.rutgers.neemi;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
+import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.LocalValues;
 import com.rutgers.neemi.model.Transaction;
@@ -29,6 +41,7 @@ import com.rutgers.neemi.model.Task;
 import com.rutgers.neemi.model.Transaction;
 
 import java.lang.reflect.Array;
+import java.net.URL;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,6 +50,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
+import static com.facebook.FacebookSdk.getApplicationContext;
 
 
 public class ScriptFragment extends Fragment {
@@ -49,9 +64,6 @@ public class ScriptFragment extends Fragment {
     List<String> listDataHeader;
     HashMap<String, String> listDataHeaderLocals;
     HashMap<String, List<Task>> listDataChild;
-    DatabaseHelper dbHelper;
-
-
 
 
     Integer[] imgid={
@@ -138,10 +150,6 @@ public class ScriptFragment extends Fragment {
         expListView.setAdapter(listAdapter);
 
 
-//        CustomListAdapter adapter=new CustomListAdapter(getActivity(), listOfProcesses, imgid);
-//        ListView list=(ListView) myView.findViewById(R.id.restaurant_list);
-//        list.setAdapter(adapter);
-
         return myView;
     }
 
@@ -150,23 +158,6 @@ public class ScriptFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
 
         super.onActivityCreated(savedInstanceState);
-//        expListView = (ExpandableListView) myView.findViewById(R.id.lvExp);
-//
-//        // preparing list data
-//        prepareListData();
-//
-//        listAdapter = new ExpandableListAdapter(getActivity(), listDataHeader, listDataChild);
-//
-//        // setting list adapter
-//        expListView.setAdapter(listAdapter);
-//
-//        Toast.makeText(getContext(), "Pressed 2!", Toast.LENGTH_LONG).show();
-
-        // get the listview
-
-        // CustomListAdapter adapter=new CustomListAdapter(getActivity(), listOfProcesses, imgid);
-        // ListView list=(ListView) myView.findViewById(R.id.lvExp);
-        // list.setAdapter(adapter);
 
     }
 
@@ -209,23 +200,11 @@ public class ScriptFragment extends Fragment {
                 localsSb.append("\n");
             }
 
-
-//            for (LocalValues lv : subscript.getLocalValues()){
-//                localsSb.append(lv.getLocalProperties().getW5h_value());
-//                localsSb.append(": ");
-//                localsSb.append(lv.getValue());
-//                localsSb.append("\n");
-//                localsSb.toString();
-//            }
             listDataHeader.add(header.toString());
             listDataHeaderLocals.put(header.toString(),localsSb.toString());
 
         }
 
-        // Adding child data
-//        listDataHeader.add("Initiate Discussion");
-//        listDataHeader.add("Make Reservation");
-//        listDataHeader.add("Write in Calendar");
 
         // Adding child data
         List<Task> tasksInitiated = new ArrayList<Task>();
@@ -235,8 +214,6 @@ public class ScriptFragment extends Fragment {
         }
 
         listDataChild.put(listDataHeader.get(0), tasksInitiated); // Header, Child data
-//        listDataChild.put(listDataHeader.get(1), nowShowing);
-//        listDataChild.put(listDataHeader.get(2), comingSoon);
     }
 
 
@@ -282,7 +259,7 @@ public class ScriptFragment extends Fragment {
             txtListChild.setText(childTask.getName());
             TextView txtListHeader = (TextView) convertView.findViewById(R.id.relItemHeader);
             TextView txtListHeaderBody = (TextView) convertView.findViewById(R.id.relItem);
-            ImageView imageView = (ImageView) convertView.findViewById(R.id.icon);
+            final ImageView imageView = (ImageView) convertView.findViewById(R.id.icon);
             if(childTask.getPid() instanceof Email){
                 imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.gmail_icon));
                 txtListHeader.setText(((Email) childTask.getPid()).getSubject());
@@ -300,6 +277,44 @@ public class ScriptFragment extends Fragment {
                 imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.google_calendar));
                 txtListHeader.setText(((Event) childTask.getPid()).getTitle());
                 txtListHeaderBody.setText(((Event) childTask.getPid()).getCreator().getName());
+            }else if(childTask.getPid() instanceof Feed){
+                imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.fb_logo));
+                txtListHeader.setText(((Feed) childTask.getPid()).getMessage());
+                txtListHeaderBody.setText(((Feed) childTask.getPid()).getCreator().getName());
+                Date extractedDate = new Date(((Feed) childTask.getPid()).getCreated_time());
+                Format format = new SimpleDateFormat("yyyy-MM-dd");
+                String parsedDate = format.format(extractedDate);
+                StringBuilder sb = new StringBuilder();
+                sb.append("whenWasPosted: "+parsedDate+"\n");
+                sb.append("whereWasPosted: "+((Feed) childTask.getPid()).getPlace().getName()+"\n"+"whatWasPosted: ");
+                final SpannableString myString = new SpannableString(((Feed) childTask.getPid()).getLink());
+                sb.append(myString);
+                String allTheString = sb.toString();
+                final int i1 = allTheString.indexOf(myString.toString());
+                txtListHeaderBody.setMovementMethod(LinkMovementMethod.getInstance());
+                txtListHeaderBody.setText(allTheString, TextView.BufferType.SPANNABLE);
+
+                Spannable mySpannable = (Spannable)txtListHeaderBody.getText();
+
+                ClickableSpan myClickableSpan = new ClickableSpan() {
+                    @Override
+                    public void onClick(View view) {
+                        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+
+                        WebView mWebview  = new WebView(getApplicationContext());
+                        mWebview .loadUrl(((TextView)view).getText().toString().substring(i1));
+                        alert.setView(mWebview);
+                        alert.create();
+                        alert.show();
+
+
+                    }
+                };
+                mySpannable.setSpan(myClickableSpan, i1, i1+myString.length() , Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                txtListHeaderBody.setText(mySpannable);
+                txtListHeaderBody.setMovementMethod(LinkMovementMethod.getInstance());
+
+
             }
 
             return convertView;

@@ -42,6 +42,8 @@ public class Place {
     String zip;
     @DatabaseField(columnName = FIELD_PHONE)
     String phone_number;
+    @DatabaseField
+    String place_photo_url;
 
     public Place() {
     }
@@ -140,5 +142,13 @@ public class Place {
 
     public void setPhone_number(String phone_number) {
         this.phone_number = phone_number;
+    }
+
+    public String getPlace_photo_url() {
+        return place_photo_url;
+    }
+
+    public void setPlace_photo_url(String place_photo_url) {
+        this.place_photo_url = place_photo_url;
     }
 }

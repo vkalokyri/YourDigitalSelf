@@ -46,7 +46,7 @@
 <parallelGateway gatewayDirection="Converging" name="" id="AfterCheckingWeatherAndHowToGo"/>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="BeforeGoingToThePlace"/>
 <callActivity calledElement="goToAPlace" name="goToRestaurant" t="restaurant" id="SubProcessGoToTheRestaurant"/>
-<callActivity calledElement="attendEatingOutEvent" name="AttendEatingOutEvent" id="SubProcessAttendEatingOutEvent" minDuration="30m" maxDuration="3h"/>
+<callActivity calledElement="attendEatingOutEvent" name="AttendEatingOutEvent" t="restaurant" id="SubProcessAttendEatingOutEvent" minDuration="30m" maxDuration="3h"/>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="GoHomeORgoElsewhere"/>
 <callActivity calledElement="goToAPlace" name="goHome" t="home" id="SubProcessGoHome" minDuration="10m" maxDuration="2h"/>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="GoElsewhere" id="GoElsewhere"/>

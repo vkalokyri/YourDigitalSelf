@@ -61,5 +61,21 @@
 	},
 	"whoInitiatedTheConversation":{
 		"Email":"from"
+	},
+	"whoMadeThePost":{
+		"Feed":"creator_id"
+	},
+	"whoIsIncludedInPost":{
+		"Feed":"FeedWithTags"
+	},
+	"whatIsPostAbout":{
+		"Feed":"message"
+	},
+	"whenWasPosted":{
+		"Feed":"created_time"
+	},
+	"whereWasPosted":{
+		"Feed":"place_id"
 	}
+
 }

@@ -121,7 +121,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         mProgress.setMessage("Getting your emails ...");
         mProgress.setIndeterminate(false);
         mProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        mProgress.setCanceledOnTouchOutside(false);
+
 
         mCredential = GoogleAccountCredential.usingOAuth2(
                 this, Arrays.asList(SCOPES))
@@ -677,7 +677,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
         @Override
         protected void onPostExecute(Integer output) {
-            mProgress.hide();
+            mProgress.dismiss();
             new ExtractTimeTask().execute();
 
             Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
@@ -697,7 +697,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
         @Override
         protected void onCancelled() {
-            mProgress.hide();
+            mProgress.dismiss();
             if (mLastError != null) {
                 Log.d(TAG, "ERROR "+mLastError);
                 if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {

@@ -114,12 +114,18 @@
 
 		]
 	},
-	"momentCapturing": {
+	"attendEatingOutEvent": {
 		"restaurant": [
 			{
 				"PostOnFacebook": {
-					"from":
-						"Photo"
+					"from": ["Feed", "PlaceHasCategory", "Category"],
+					"where": {
+						"and": {
+							"category" :["Food and Beverage Store","Food and Drink", "restaurant", "Fast Food"],
+							"Feed.place_id":"PlaceHasCategory.place_id",
+							"Category._id":"PlaceHasCategory.category_id"
+						}
+					}
 				}
 		}]
 	}
