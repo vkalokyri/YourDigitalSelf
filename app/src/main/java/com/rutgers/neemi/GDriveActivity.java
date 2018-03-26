@@ -47,6 +47,7 @@ import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.maps.GeoApiContext;
 import com.google.maps.PlacesApi;
 import com.google.maps.errors.ApiException;
+import com.google.maps.model.PhotoResult;
 import com.google.maps.model.PlacesSearchResponse;
 import com.google.maps.model.PlacesSearchResult;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
@@ -314,7 +315,7 @@ public class GDriveActivity extends Activity {
                 // [START_EXCLUDE]
                 // [START read_as_string]
                 GeoApiContext geoApiContext = new GeoApiContext.Builder()
-                        .apiKey("AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE")
+                        .apiKey("AIzaSyC2c-DGrPjl947J-8mTE7bRZT_OO-F3Dno")
                         .build();
 
                 try (BufferedReader reader = new BufferedReader(
@@ -382,12 +383,16 @@ public class GDriveActivity extends Activity {
                                     if (gmapsResponse.results.length > 0) {
                                         PlacesSearchResult place = gmapsResponse.results[0];
                                         if (place.photos != null) {
-                                            String imageUrl = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + gmapsResponse.results[0].photos[0].photoReference + "&key=AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE";
+                                            PhotoResult photoResult = PlacesApi.photo(geoApiContext,place.photos[0].photoReference).maxWidth(755)
+                                                    .await();
+                                            byte[] image = photoResult.imageData;
+
+                                            //String imageUrl = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + gmapsResponse.results[0].photos[0].photoReference + "&key=AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE";
                                             if (placeExists!=null) {
-                                                placeExists.setPlace_photo_url(imageUrl);
+                                                placeExists.setImage(image);
                                             }else{
                                                 placeExists = new Place();
-                                                placeExists.setPlace_photo_url(imageUrl);
+                                                placeExists.setImage(image);
                                                 placeExists.setName(place.name);
                                                 placeExists.setStreet(place.formattedAddress);
                                             }
@@ -402,6 +407,8 @@ public class GDriveActivity extends Activity {
                             }
                             placeDao.create(placeExists);
                             payment.setPlace(placeExists);
+                            transactionDao.create(payment);
+
 
                         }
 

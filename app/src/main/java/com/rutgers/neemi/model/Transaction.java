@@ -37,7 +37,7 @@ public class Transaction implements Serializable {
     String payment_method;
     @DatabaseField
     long date;
-    @DatabaseField(canBeNull = true, foreign = true, columnName = "place_id")
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true)
     Place place;
     @DatabaseField
     boolean pending;

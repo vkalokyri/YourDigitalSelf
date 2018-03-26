@@ -21,6 +21,7 @@ import com.google.maps.GeoApiContext;
 import com.google.maps.PlacesApi;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.LatLng;
+import com.google.maps.model.PhotoResult;
 import com.google.maps.model.PlacesSearchResponse;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
@@ -397,8 +398,10 @@ public class BankFragment extends Fragment {
                                                 if (gmapsResponse.results!=null){
                                                     for(String placeCategory: gmapsResponse.results[0].types){
                                                         if (gmapsResponse.results[0].photos!=null) {
-                                                            String imageUrl = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + gmapsResponse.results[0].photos[0].photoReference + "&key=AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE";
-                                                            placeExists.setPlace_photo_url(imageUrl);
+                                                            PhotoResult photoResult = PlacesApi.photo(context,gmapsResponse.results[0].photos[0].photoReference).maxWidth(400)
+                                                                    .await();
+                                                            byte[] image = photoResult.imageData;
+                                                            placeExists.setImage(image);
                                                         }
                                                         placeDao.create(placeExists);
                                                         transaction.setPlace(placeExists);

@@ -1,5 +1,5 @@
 #
-# generated on 2018/03/25 07:15:42
+# generated on 2018/03/25 10:24:58
 #
 # --table-start--
 dataClass=com.rutgers.neemi.model.Email
@@ -287,7 +287,8 @@ fieldName=phone_number
 columnName=phone
 # --field-end--
 # --field-start--
-fieldName=place_photo_url
+fieldName=imageBytes
+dataPersister=BYTE_ARRAY
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -424,8 +425,9 @@ fieldName=date
 # --field-end--
 # --field-start--
 fieldName=place
-columnName=place_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
 fieldName=pending

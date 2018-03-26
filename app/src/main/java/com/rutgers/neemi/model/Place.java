@@ -1,5 +1,6 @@
 package com.rutgers.neemi.model;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -42,8 +43,8 @@ public class Place {
     String zip;
     @DatabaseField(columnName = FIELD_PHONE)
     String phone_number;
-    @DatabaseField
-    String place_photo_url;
+    @DatabaseField(dataType = DataType.BYTE_ARRAY)
+    byte[] imageBytes;
 
     public Place() {
     }
@@ -144,11 +145,11 @@ public class Place {
         this.phone_number = phone_number;
     }
 
-    public String getPlace_photo_url() {
-        return place_photo_url;
+    public byte[] getImage() {
+        return imageBytes;
     }
 
-    public void setPlace_photo_url(String place_photo_url) {
-        this.place_photo_url = place_photo_url;
+    public void setImage(byte[] imageBytes) {
+        this.imageBytes = imageBytes;
     }
 }

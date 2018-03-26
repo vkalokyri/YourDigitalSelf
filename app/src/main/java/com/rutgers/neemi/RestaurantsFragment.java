@@ -2,6 +2,8 @@ package com.rutgers.neemi;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -955,13 +957,29 @@ public class RestaurantsFragment extends Fragment {
             LinearLayout linearLayout = (LinearLayout) rowView.findViewById(R.id.linearLayout);
 
             ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
+            for (Task task: itemname.get(position).getTasks()){
+                if(task.getPid() instanceof Transaction) {
+                    if (((Transaction)task.getPid()).getPlace()!=null){
+                        byte[] image = ((Transaction) task.getPid()).getPlace().getImage();
+                        if (((Transaction) task.getPid()).getPlace().getImage() != null) {
+                            Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
+                            imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp,40,40, false));
+                        }
+                    }else{
+                        imageView.setImageResource(imgid[0]);
+                    }
+                }else{
+                    imageView.setImageResource(imgid[0]);
+                }
+            }
+
 
 
             Script script = itemname.get(position);//.getScriptDefinition();
             HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
                     //txtTitle.setText(itemname.get(position).getScore()+", "+String.valueOf(((Email)processTask.getPid()).get_id()));
 
-            imageView.setImageResource(imgid[0]);
+
             ArrayList<LocalValues> localValues = script.getLocalValues();
             if (localValues != null) {
                 for (LocalValues localValue : localValues) {

@@ -89,7 +89,23 @@ public class ScriptFragment extends Fragment {
 
         Script script = (Script)listOfProcesses.get(position);//.getScriptDefinition();
         HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
-        imageView.setImageResource(imgid[0]);
+
+        for (Task task: script.getTasks()){
+            if(task.getPid() instanceof Transaction) {
+                if (((Transaction)task.getPid()).getPlace()!=null){
+                    byte[] image = ((Transaction) task.getPid()).getPlace().getImage();
+                    if (((Transaction) task.getPid()).getPlace().getImage() != null) {
+                        Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
+                        imageView.setImageBitmap(bmp);//Bitmap.createScaledBitmap(bmp,bmp.getWidth(),80, false));
+                    }
+                }else{
+                    imageView.setImageResource(imgid[0]);
+                }
+            }else{
+                imageView.setImageResource(imgid[0]);
+            }
+        }
+        //imageView.setImageResource(imgid[0]);
         ArrayList<LocalValues> localValues = script.getLocalValues();
         if (localValues != null) {
             for (LocalValues localValue : localValues) {
