@@ -33,7 +33,9 @@ import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.LocalProperties;
-import com.rutgers.neemi.model.LocalValues;
+import com.rutgers.neemi.model.Photo;
+import com.rutgers.neemi.model.Place;
+import com.rutgers.neemi.model.ScriptLocalValues;
 import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.Script;
 import com.rutgers.neemi.model.ScriptDefinition;
@@ -56,20 +58,18 @@ import static com.facebook.FacebookSdk.getApplicationContext;
 
 public class ScriptFragment extends Fragment {
 
-
     private static final String TAG = "ScriptFragment";
     View myView;
     ExpandableListAdapter listAdapter;
     ExpandableListView expListView;
     List<String> listDataHeader;
     HashMap<String, String> listDataHeaderLocals;
-    HashMap<String, List<Task>> listDataChild;
+    HashMap<String, List<Object>> listDataChild;
 
 
     Integer[] imgid={
             R.drawable.restaurant
     };
-
 
 
 
@@ -90,37 +90,48 @@ public class ScriptFragment extends Fragment {
         Script script = (Script)listOfProcesses.get(position);//.getScriptDefinition();
         HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
 
-        for (Task task: script.getTasks()){
-            if(task.getPid() instanceof Transaction) {
-                if (((Transaction)task.getPid()).getPlace()!=null){
-                    byte[] image = ((Transaction) task.getPid()).getPlace().getImage();
-                    if (((Transaction) task.getPid()).getPlace().getImage() != null) {
-                        Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
-                        imageView.setImageBitmap(bmp);//Bitmap.createScaledBitmap(bmp,bmp.getWidth(),80, false));
-                    }
-                }else{
-                    imageView.setImageResource(imgid[0]);
-                }
-            }else{
-                imageView.setImageResource(imgid[0]);
+        Place place = null;
+
+        for (Task task: script.getTasks()) {
+            if (task.getPid() instanceof Transaction) {
+                place = ((Transaction) task.getPid()).getPlace();
+                break;
+            } else if (task.getPid() instanceof Photo) {
+                place = ((Photo) task.getPid()).getPlace();
+                break;
+            } else if (task.getPid() instanceof Feed) {
+                place = ((Feed) task.getPid()).getPlace();
+                break;
             }
         }
+
+        if (place != null) {
+            byte[] image = place.getImage();
+            if (image != null) {
+                Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
+                imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
+            }
+        }else{
+            imageView.setImageResource(imgid[0]);
+
+        }
+
         //imageView.setImageResource(imgid[0]);
-        ArrayList<LocalValues> localValues = script.getLocalValues();
+        ArrayList<ScriptLocalValues> localValues = script.getLocalValues();
         if (localValues != null) {
-            for (LocalValues localValue : localValues) {
+            for (ScriptLocalValues localValue : localValues) {
                 if (localValue != null) {
                     LocalProperties lp = localValue.getLocalProperties();
                     if (lp != null) {
                         String w5h_value = lp.getW5h_value();
                         if (map.containsKey(w5h_value)) {
                             ArrayList<String> values = map.get(w5h_value);
-                            values.add(localValue.getValue());
+                            values.add(localValue.getLocal_value());
                             map.put(w5h_value, values);
                         } else {
                             if (w5h_value != null) {
                                 ArrayList<String> values = new ArrayList<String>();
-                                values.add(localValue.getValue());
+                                values.add(localValue.getLocal_value());
                                 map.put(w5h_value, values);
                             }
                         }
@@ -183,9 +194,8 @@ public class ScriptFragment extends Fragment {
      */
     private void prepareListData(Script script) {
         listDataHeader = new ArrayList<String>();
-        listDataChild = new HashMap<String, List<Task>>();
+        listDataChild = new HashMap<String, List<Object>>();
         listDataHeaderLocals = new HashMap<String, String>();
-
 
         for(Script subscript : script.getSubscripts()){
             StringBuilder header = new StringBuilder();
@@ -194,13 +204,13 @@ public class ScriptFragment extends Fragment {
             StringBuilder localsSb = new StringBuilder();
             HashMap<String, HashSet<String>> map = new HashMap<String, HashSet<String>>();
 
-            for (LocalValues lv : subscript.getLocalValues()){
+            for (ScriptLocalValues lv : subscript.getLocalValues()){
                 String key=lv.getLocalProperties().getW5h_value();
                 if(map.containsKey(key)){
-                    map.get(key).add(lv.getValue());
+                    map.get(key).add(lv.getLocal_value());
                 }else{
                     HashSet<String> valueSet = new HashSet<String>();
-                    valueSet.add(lv.getValue());
+                    valueSet.add(lv.getLocal_value());
                     map.put(key,valueSet);
                 }
             }
@@ -218,16 +228,23 @@ public class ScriptFragment extends Fragment {
 
             listDataHeader.add(header.toString());
             listDataHeaderLocals.put(header.toString(),localsSb.toString());
-
         }
 
 
         // Adding child data
-        List<Task> tasksInitiated = new ArrayList<Task>();
+        List<Object> tasksInitiated = new ArrayList<Object>();
 
-        for(Task task:script.getTasks()){
-            tasksInitiated.add(task);
-        }
+        tasksInitiated.addAll(script.getTasks());
+        tasksInitiated.addAll(script.getSubscripts());
+
+//        for(Task task:script.getTasks()){
+//            tasksInitiated.add(task);
+//        }
+//
+//        for (Script sub: script.getSubscripts()){
+//            tasksInitiated.addAll(sub)
+//        }
+//
 
         listDataChild.put(listDataHeader.get(0), tasksInitiated); // Header, Child data
     }
@@ -238,11 +255,11 @@ public class ScriptFragment extends Fragment {
         private Context _context;
         private List<String> _listDataHeader; // header titles
         // child data in format of header title, child title
-        private HashMap<String, List<Task>> _listDataChild;
+        private HashMap<String, List<Object>> _listDataChild;
         private HashMap<String, String> _listDataHeaderLocals;
 
         public ExpandableListAdapter(Activity context, List<String> listDataHeader,  HashMap<String, String> listDataHeaderLocals,
-                                     HashMap<String, List<Task>> listChildData) {
+                                     HashMap<String, List<Object>> listChildData) {
             this._context = context;
             this._listDataHeader = listDataHeader;
             this._listDataChild = listChildData;
@@ -264,72 +281,128 @@ public class ScriptFragment extends Fragment {
         public View getChildView(int groupPosition, final int childPosition,
                                  boolean isLastChild, View convertView, ViewGroup parent) {
 
-            final Task childTask = (Task) getChild(groupPosition, childPosition);
+            //final Task childTask = (Task) getChild(groupPosition, childPosition);
 
-            if (convertView == null) {
-                LayoutInflater infalInflater = (LayoutInflater) this._context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                convertView = infalInflater.inflate(R.layout.list_item, null);
-            }
+            Object child = (Object) getChild(groupPosition, childPosition);
 
-            TextView txtListChild = (TextView) convertView.findViewById(R.id.lblListItem);
-            txtListChild.setText(childTask.getName());
-            TextView txtListHeader = (TextView) convertView.findViewById(R.id.relItemHeader);
-            TextView txtListHeaderBody = (TextView) convertView.findViewById(R.id.relItem);
-            final ImageView imageView = (ImageView) convertView.findViewById(R.id.icon);
-            if(childTask.getPid() instanceof Email){
-                imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.gmail_icon));
-                txtListHeader.setText(((Email) childTask.getPid()).getSubject());
-                String text = "whoSent: "+((Email) childTask.getPid()).getFrom()+" \n whoReceived: "+ ((Email) childTask.getPid()).getTo()+" \n whenSent: "+ ((Email) childTask.getPid()).getDate();
-                txtListHeaderBody.setText(text);
-            }else if(childTask.getPid() instanceof Transaction){
-                imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.bank));
-                txtListHeader.setText(((Transaction) childTask.getPid()).getMerchant_name());
-                Date extractedDate = new Date(((Transaction) childTask.getPid()).getDate());
-                Format format = new SimpleDateFormat("yyyy-MM-dd");
-                String parsedDate = format.format(extractedDate);
-                String text = "whenPaid: "+parsedDate+" \n howMuchWasPaid: $"+((Transaction) childTask.getPid()).getAmount() ;
-                txtListHeaderBody.setText(text);
-            }else if(childTask.getPid() instanceof Calendar){
-                imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.google_calendar));
-                txtListHeader.setText(((Event) childTask.getPid()).getTitle());
-                txtListHeaderBody.setText(((Event) childTask.getPid()).getCreator().getName());
-            }else if(childTask.getPid() instanceof Feed){
-                imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.fb_logo));
-                txtListHeader.setText(((Feed) childTask.getPid()).getMessage());
-                txtListHeaderBody.setText(((Feed) childTask.getPid()).getCreator().getName());
-                Date extractedDate = new Date(((Feed) childTask.getPid()).getCreated_time());
-                Format format = new SimpleDateFormat("yyyy-MM-dd");
-                String parsedDate = format.format(extractedDate);
-                StringBuilder sb = new StringBuilder();
-                sb.append("whenWasPosted: "+parsedDate+"\n");
-                sb.append("whereWasPosted: "+((Feed) childTask.getPid()).getPlace().getName()+"\n"+"whatWasPosted: ");
-                final SpannableString myString = new SpannableString(((Feed) childTask.getPid()).getLink());
-                sb.append(myString);
-                String allTheString = sb.toString();
-                final int i1 = allTheString.indexOf(myString.toString());
-                txtListHeaderBody.setMovementMethod(LinkMovementMethod.getInstance());
-                txtListHeaderBody.setText(allTheString, TextView.BufferType.SPANNABLE);
+            if (child instanceof Task){
+                Task childTask = (Task) child;
 
-                Spannable mySpannable = (Spannable)txtListHeaderBody.getText();
+                if (convertView == null) {
+                    LayoutInflater infalInflater = (LayoutInflater) this._context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    convertView = infalInflater.inflate(R.layout.list_item, null);
+                }
 
-                ClickableSpan myClickableSpan = new ClickableSpan() {
-                    @Override
-                    public void onClick(View view) {
-                        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                TextView txtListChild = (TextView) convertView.findViewById(R.id.lblListItem);
+                txtListChild.setText(childTask.getName());
+                TextView txtListHeader = (TextView) convertView.findViewById(R.id.relItemHeader);
+                TextView txtListHeaderBody = (TextView) convertView.findViewById(R.id.relItem);
+                final ImageView imageView = (ImageView) convertView.findViewById(R.id.icon);
+                if(childTask.getPid() instanceof Email){
+                    imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.gmail_icon));
+                    txtListHeader.setText(((Email) childTask.getPid()).getSubject());
+                    String text = "whoSent: "+((Email) childTask.getPid()).getFrom()+" \n whoReceived: "+ ((Email) childTask.getPid()).getTo()+" \n whenSent: "+ ((Email) childTask.getPid()).getDate();
+                    txtListHeaderBody.setText(text);
+                }else if(childTask.getPid() instanceof Transaction){
+                    imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.bank));
+                    txtListHeader.setText(((Transaction) childTask.getPid()).getMerchant_name());
+                    Date extractedDate = new Date(((Transaction) childTask.getPid()).getDate());
+                    Format format = new SimpleDateFormat("yyyy-MM-dd");
+                    String parsedDate = format.format(extractedDate);
+                    String text = "whenPaid: "+parsedDate+" \n howMuchWasPaid: $"+((Transaction) childTask.getPid()).getAmount() ;
+                    txtListHeaderBody.setText(text);
+                }else if(childTask.getPid() instanceof Calendar){
+                    imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.google_calendar));
+                    txtListHeader.setText(((Event) childTask.getPid()).getTitle());
+                    txtListHeaderBody.setText(((Event) childTask.getPid()).getCreator().getName());
+                }else if(childTask.getPid() instanceof Feed){
+                    imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.fb_logo));
+                    txtListHeader.setText(((Feed) childTask.getPid()).getMessage());
+                    txtListHeaderBody.setText(((Feed) childTask.getPid()).getCreator().getName());
+                    Date extractedDate = new Date(((Feed) childTask.getPid()).getCreated_time());
+                    Format format = new SimpleDateFormat("yyyy-MM-dd");
+                    String parsedDate = format.format(extractedDate);
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("whenWasPosted: "+parsedDate+"\n");
+                    sb.append("whereWasPosted: "+((Feed) childTask.getPid()).getPlace().getName()+"\n"+"whatWasPosted: ");
+                    final SpannableString myString = new SpannableString(((Feed) childTask.getPid()).getLink());
+                    sb.append(myString);
+                    String allTheString = sb.toString();
+                    final int i1 = allTheString.indexOf(myString.toString());
+                    txtListHeaderBody.setMovementMethod(LinkMovementMethod.getInstance());
+                    txtListHeaderBody.setText(allTheString, TextView.BufferType.SPANNABLE);
 
-                        WebView mWebview  = new WebView(getApplicationContext());
-                        mWebview .loadUrl(((TextView)view).getText().toString().substring(i1));
-                        alert.setView(mWebview);
-                        alert.create();
-                        alert.show();
+                    Spannable mySpannable = (Spannable)txtListHeaderBody.getText();
+
+                    ClickableSpan myClickableSpan = new ClickableSpan() {
+                        @Override
+                        public void onClick(View view) {
+                            AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+
+                            WebView mWebview  = new WebView(getApplicationContext());
+                            mWebview .loadUrl(((TextView)view).getText().toString().substring(i1));
+                            alert.setView(mWebview);
+                            alert.create();
+                            alert.show();
 
 
+                        }
+                    };
+                    mySpannable.setSpan(myClickableSpan, i1, i1+myString.length() , Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    txtListHeaderBody.setText(mySpannable);
+                    txtListHeaderBody.setMovementMethod(LinkMovementMethod.getInstance());
+                }
+            }else if (child instanceof Script){
+                for(Script subscript : ((Script)child).getSubscripts()){
+                    StringBuilder header = new StringBuilder();
+                    header.append(subscript.getScriptDefinition().getName());
+
+                    StringBuilder localsSb = new StringBuilder();
+                    HashMap<String, HashSet<String>> map = new HashMap<String, HashSet<String>>();
+
+                    for (ScriptLocalValues lv : subscript.getLocalValues()){
+                        String key=lv.getLocalProperties().getW5h_value();
+                        if(map.containsKey(key)){
+                            map.get(key).add(lv.getLocal_value());
+                        }else{
+                            HashSet<String> valueSet = new HashSet<String>();
+                            valueSet.add(lv.getLocal_value());
+                            map.put(key,valueSet);
+                        }
                     }
-                };
-                mySpannable.setSpan(myClickableSpan, i1, i1+myString.length() , Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                txtListHeaderBody.setText(mySpannable);
-                txtListHeaderBody.setMovementMethod(LinkMovementMethod.getInstance());
 
+                    for(String w5hValue: map.keySet()){
+                        localsSb.append(w5hValue);
+                        localsSb.append(": ");
+                        for (String value: map.get(w5hValue)) {
+                            localsSb.append(value);
+                            localsSb.append(",");
+                        }
+                        localsSb.deleteCharAt(localsSb.length()-1);
+                        localsSb.append("\n");
+                    }
+
+                    //listDataHeader.add(header.toString());
+                   // listDataHeaderLocals.put(header.toString(),localsSb.toString());
+
+                    if (convertView == null) {
+                        LayoutInflater infalInflater = (LayoutInflater) this._context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                        convertView = infalInflater.inflate(R.layout.list_group, null);
+                        convertView.setBackgroundColor(Color.parseColor("#999999"));
+                    }
+                    TextView lblListHeader = (TextView) convertView.findViewById(R.id.lblListHeader);
+                    lblListHeader.setTextColor(Color.parseColor("#333333"));
+                    lblListHeader.setTypeface(null, Typeface.BOLD);
+                    lblListHeader.setText(header.toString());
+
+                    TextView lblListHeaderLocals = (TextView) convertView.findViewById(R.id.lblListHeaderLocals);
+                    lblListHeaderLocals.setTextColor(Color.parseColor("#333333"));
+                    lblListHeaderLocals.setTypeface(null, Typeface.NORMAL);
+                    lblListHeaderLocals.setText(localsSb.toString());
+                }
+
+
+                //String headerTitle = (String) getGroup(groupPosition);
 
             }
 

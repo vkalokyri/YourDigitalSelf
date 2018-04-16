@@ -23,15 +23,15 @@ public class Photo implements Serializable {
     String name;
     @DatabaseField
     String link;
-    @DatabaseField(canBeNull = true, foreign = true, columnName = "album_id")
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true)
     Album album;
     @DatabaseField
     long created_time;
-    @DatabaseField(canBeNull = true, foreign = true, columnName = "event_id")
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true)
     Event event;
-    @DatabaseField(canBeNull = true, foreign = true, columnName = "place_id")
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true)
     Place place;
-    @DatabaseField(canBeNull = true, foreign = true, columnName = "creator_id")
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true)
     Person creator;
     @DatabaseField
     String picture;

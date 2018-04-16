@@ -6,7 +6,7 @@ import android.provider.MediaStore;
  * Created by suitcase on 3/15/18.
  */
 
-public class Data {
+public class Data{
 
     private Images images;
     private User user;

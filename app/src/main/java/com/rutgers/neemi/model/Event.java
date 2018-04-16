@@ -42,7 +42,7 @@ public class Event implements Serializable {
     Person organizer;
     @DatabaseField
     String source;
-    @DatabaseField(canBeNull = true, foreign = true, foreignAutoCreate = true, foreignAutoRefresh = true, columnName = "place_id")
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoCreate = true, foreignAutoRefresh = true)
     Place place;
 
     public Event() {

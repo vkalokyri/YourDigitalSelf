@@ -36,13 +36,13 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="PostOnFacebook" id="PostOnFacebook">
-<locals>
-<who name="whoMadeThePost"/>
-<who name="whoIsIncludedInPost"/>
-<what name="whatIsPostAbout"/>
-<when name="whenWasPosted"/>
-    <where name="whereWasPosted"/>
-</locals>
+    <locals>
+        <who name="whoMadeThePost"/>
+        <who name="whoIsIncludedInPost"/>
+        <what name="whatIsPostAbout"/>
+        <when name="whenWasPosted"/>
+        <where name="whereWasPosted"/>
+    </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="SendFacebookEvent" id="SendFacebookEvent">
 <locals>

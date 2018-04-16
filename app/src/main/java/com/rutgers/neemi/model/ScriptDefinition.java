@@ -3,18 +3,20 @@ package com.rutgers.neemi.model;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 @DatabaseTable(tableName = "ScriptDefinition")
-public class ScriptDefinition{
+public class ScriptDefinition implements Serializable {
 
 	@DatabaseField(generatedId = true)
-	int id;
+	int _id;
 	@DatabaseField
 	String name;
 	@DatabaseField
-	String argument;
+	String ofType;
+
 
 	ArrayList<LocalProperties> localProperties;
 
@@ -68,18 +70,18 @@ public class ScriptDefinition{
 	}
 
 	public int getId() {
-		return id;
+		return _id;
 	}
 
 	public void setId(int id) {
-		this.id = id;
+		this._id = id;
 	}
 
-	public String getArgument() {
-		return argument;
+	public String getOfType() {
+		return ofType;
 	}
 
-	public void setArgument(String argument) {
-		this.argument = argument;
+	public void setOfType(String argument) {
+		this.ofType = argument;
 	}
 }

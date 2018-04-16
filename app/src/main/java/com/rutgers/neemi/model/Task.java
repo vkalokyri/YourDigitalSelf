@@ -19,15 +19,20 @@ public class Task implements Serializable{
 	String oid;
 	@DatabaseField(canBeNull = true)
 	boolean isGateway;
-	@DatabaseField(canBeNull = false, foreign = true, columnName = "script_id")
+	@DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
 	Script script;
+	@DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
+	TaskDefinition taskDefinition;
+
 
 	Object pid;
-	ArrayList<LocalValues> localValues;
+
+
+	ArrayList<TaskLocalValues> localValues;
 
 
 	public Task(){
-		this.localValues=new ArrayList<LocalValues>();
+		this.localValues=new ArrayList<TaskLocalValues>();
 	}
 
 	public int getId() {
@@ -54,13 +59,13 @@ public class Task implements Serializable{
 		this.pid = pid;
 	}
 
-	public ArrayList<LocalValues> getLocalValues() {
+	public ArrayList<TaskLocalValues> getLocalValues() {
 		return localValues;
 	}
-	public void setLocalValues(ArrayList<LocalValues> locals) {
+	public void setLocalValues(ArrayList<TaskLocalValues> locals) {
 		this.localValues = locals;
 	}
-	public void addLocalValue(LocalValues sublocal) {
+	public void addLocalValue(TaskLocalValues sublocal) {
 		this.localValues.add(sublocal);
 	}
 
@@ -78,5 +83,13 @@ public class Task implements Serializable{
 
 	public void setScript(Script script) {
 		this.script = script;
+	}
+
+	public TaskDefinition getTaskDefinition() {
+		return taskDefinition;
+	}
+
+	public void setTaskDefinition(TaskDefinition taskDefinition) {
+		this.taskDefinition = taskDefinition;
 	}
 }

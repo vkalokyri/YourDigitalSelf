@@ -1,29 +1,23 @@
 package com.rutgers.neemi;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.rutgers.neemi.interfaces.Clues;
@@ -33,52 +27,40 @@ import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.LocalProperties;
-import com.rutgers.neemi.model.LocalValues;
+import com.rutgers.neemi.model.ScriptLocalValues;
+import com.rutgers.neemi.model.Photo;
+import com.rutgers.neemi.model.Place;
+import com.rutgers.neemi.model.TaskLocalValues;
 import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.Script;
 import com.rutgers.neemi.model.ScriptDefinition;
-import com.rutgers.neemi.model.ScriptHasTasks;
+import com.rutgers.neemi.model.ScriptDefHasTaskDef;
 import com.rutgers.neemi.model.Subscript;
 import com.rutgers.neemi.model.Task;
 import com.rutgers.neemi.model.TaskDefinition;
 import com.rutgers.neemi.parser.TriggersFactory;
-import com.rutgers.neemi.parser.ScriptParser;
-import com.rutgers.neemi.util.ApplicationManager;
 import com.rutgers.neemi.util.ConfigReader;
 import com.rutgers.neemi.util.PROPERTIES;
-import com.rutgers.neemi.util.TinyDB;
-import com.rutgers.neemi.util.Utilities;
-
-import org.apache.poi.hssf.record.SCLRecord;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Type;
 import java.nio.charset.Charset;
-import java.sql.Array;
 import java.sql.SQLException;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
 
 import javax.json.JsonString;
 
-import static com.facebook.FacebookSdk.getApplicationContext;
 import static com.rutgers.neemi.parser.InitiateScript.JsonTriggerFactory;
-import static com.rutgers.neemi.parser.InitiateScript.util;
 
 
 public class RestaurantsFragment extends Fragment {
@@ -97,10 +79,9 @@ public class RestaurantsFragment extends Fragment {
     RuntimeExceptionDao<ScriptDefinition, String> scriptDefDao;
     RuntimeExceptionDao<Subscript, String> subscriptsDao;
     RuntimeExceptionDao<TaskDefinition, String> taskDefDao;
-    RuntimeExceptionDao<ScriptHasTasks, String> scriptHasTasksDao;
-    RuntimeExceptionDao<LocalValues, String> localValuesDao;
-
-
+    RuntimeExceptionDao<ScriptDefHasTaskDef, String> scriptHasTasksDao;
+    RuntimeExceptionDao<ScriptLocalValues, String> scriptlocalValuesDao;
+    RuntimeExceptionDao<TaskLocalValues, String> tasklocalValuesDao;
 
     Integer[] imgid={
             R.drawable.restaurant
@@ -158,7 +139,7 @@ public class RestaurantsFragment extends Fragment {
                     @Override
                     public void onItemClick(AdapterView<?> arg0, View view,
                                             int position, long id) {
-                        ScriptFragment scriptFragment = new ScriptFragment();
+                        ScriptFragment2 scriptFragment = new ScriptFragment2();
                         Bundle arguments = new Bundle();
                         arguments.putSerializable("processes", listOfScripts);
                         arguments.putSerializable("position",position);
@@ -186,9 +167,10 @@ public class RestaurantsFragment extends Fragment {
         subscriptsDao = helper.getSubScriptDao();
         taskDefDao = helper.getTaskDefinitionDao();
         scriptHasTasksDao = helper.getScriptHasTasksDao();
-        localValuesDao = helper.getLocalValuesDao();
+        scriptlocalValuesDao = helper.getScriptLocalValuesDao();
+        tasklocalValuesDao = helper.getTaskLocalValuesDao();
 
-        scriptDefDao.queryRaw("delete from LocalValues;");
+//        scriptDefDao.queryRaw("delete from LocalValues;");
 
 
         try{
@@ -246,6 +228,7 @@ public class RestaurantsFragment extends Fragment {
                 }
                 ArrayList<LocalProperties> taskLocals = helper.extractTaskLocals(taskName);
 
+                task.getTaskDefinition().setLocals(taskLocals);
 
                 if (taskLocals!=null){
                     for(LocalProperties w5h:taskLocals){
@@ -254,11 +237,11 @@ public class RestaurantsFragment extends Fragment {
                         if (localValue.size()>0) {
                             for (String lValue:localValue) {
 
-                                LocalValues w5hInfo = new LocalValues();
+                                TaskLocalValues w5hInfo = new TaskLocalValues();
                                 w5hInfo.setLocalProperties(w5h);
-                                w5hInfo.setValue(lValue);
-                                w5hInfo.setTask(task);
-                                localValuesDao.create(w5hInfo);
+                                w5hInfo.setLocal_value(lValue);
+                                //w5hInfo.setTask(task);
+                                tasklocalValuesDao.create(w5hInfo);
                                 task.addLocalValue(w5hInfo);
                             }
                         }
@@ -296,38 +279,39 @@ public class RestaurantsFragment extends Fragment {
     }
 
     public ArrayList<Script> createScriptPerTask(ArrayList<ArrayList<Task>> taskThreads) throws SQLException {
-
         ArrayList<Script> scripts = new ArrayList<Script>();
+
         for(ArrayList<Task> tasksRunning:taskThreads) {
             //put all tasks local values under the abstract who, what, where dimensions
             HashMap<String, HashSet<String>> map = new HashMap<String, HashSet<String>>();
 
-            Script script = new Script();
-            String scriptName = null;
-            String ofType =null;
+            ArrayList<Script> scriptList = new ArrayList<Script>();
+
             for (Task task : tasksRunning) {
-                scriptName = task.getScript().getName();
-                ofType = task.getScript().getOfType();
-                HashSet<String> values=null;
-                for (LocalValues taskLocalValues : task.getLocalValues()) {
+                Script script = new Script();
+                script.setScriptDefinition(new ScriptDefinition());
+                ScriptDefinition taskScriptDefinition = task.getScript().getScriptDefinition();
+                script.addTask(task);
+                HashSet<String> values = null;
+                //Get Task's localValues e.g. whenPaid, wherePaymentOccured and put them under when, where, who etc.
+                for (TaskLocalValues taskLocalValues : task.getLocalValues()) {
                     String w5hLabel = taskLocalValues.getLocalProperties().getW5h_label();
                     if (map.containsKey(w5hLabel)) {
                         values = map.get(w5hLabel);
-                    }else{
+                    } else {
                         if (w5hLabel != null) {
                             values = new HashSet<>();
                         }
                     }
-
-                    if (taskLocalValues.getValue()!=null) {
+                    if (taskLocalValues.getLocal_value() != null) {
                         //HashSet<String> values = map.get(w5hLabel);
                         if (w5hLabel.equalsIgnoreCase("who")) {
-                            String whoValue = taskLocalValues.getValue();
+                            String whoValue = taskLocalValues.getLocal_value();
                             String[] whoNames = whoValue.split("<");
                             if (whoNames.length > 1) {
-                                if(whoNames[0].contains("\"")){
-                                    values.add(whoNames[0].substring(1,whoNames[0].length()-2));
-                                }else{
+                                if (whoNames[0].contains("\"")) {
+                                    values.add(whoNames[0].substring(1, whoNames[0].length() - 2));
+                                } else {
                                     values.add(whoNames[0]);
                                 }
                                 map.put(w5hLabel, values);
@@ -335,83 +319,108 @@ public class RestaurantsFragment extends Fragment {
                                 values.add(whoValue);
                                 map.put(w5hLabel, values);
                             }
-                        } else if(w5hLabel.startsWith("when")){
-                                String localValue =taskLocalValues.getValue();
-                                Date extractedDate=null;
-                                String parsedDate=null;
-                                System.err.println(localValue);
-                                try {
-                                    extractedDate = new Date(Long.parseLong(localValue));
-                                    Format format = new SimpleDateFormat("yyyy-MM-dd");
-                                    parsedDate = format.format(extractedDate);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                    extractedDate = new Date(localValue);
-                                    Format format = new SimpleDateFormat("yyyy-MM-dd");
-                                    parsedDate= format.format(extractedDate);
-                                }
-                                if(parsedDate!=null) {
-                                    values.add(parsedDate);
-                                    map.put(w5hLabel, values);
-                                }
-                        } else{
-                            values.add(taskLocalValues.getValue());
+                        } else if (w5hLabel.startsWith("when")) {
+                            String localValue = taskLocalValues.getLocal_value();
+                            Date extractedDate = null;
+                            String parsedDate = null;
+                            System.err.println(localValue);
+                            try {
+                                extractedDate = new Date(Long.parseLong(localValue));
+                                Format format = new SimpleDateFormat("yyyy-MM-dd");
+                                parsedDate = format.format(extractedDate);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                extractedDate = new Date(localValue);
+                                Format format = new SimpleDateFormat("yyyy-MM-dd");
+                                parsedDate = format.format(extractedDate);
+                            }
+                            if (parsedDate != null) {
+                                values.add(parsedDate);
+                                map.put(w5hLabel, values);
+                            }
+                        } else {
+                            values.add(taskLocalValues.getLocal_value());
                             map.put(w5hLabel, values);
                         }
 
                     }
 
                 }
+                taskScriptDefinition.addTaskMap(task.getName(), task.getTaskDefinition());
+                script.setScriptDefinition(helper.getScriptDefinition(taskScriptDefinition.getId(), taskScriptDefinition));
+
+                // script.setScriptDefinition(helper.getTopScripts(scriptName, ofType, tasksRunning));
+
+//            script.setTasks(tasksRunning);
+
+                script = this.setLocalValuesInSuperscripts(script, map, task);
+
+
+
+                scriptList.add(script);
+
             }
 
 
-            script.setScriptDefinition(helper.getTopScripts(scriptName, ofType));
-            script.setTasks(tasksRunning);
+            Script mergedScript = mergeScripts(scriptList);
 
 
-            for (LocalProperties localProp : script.getScriptDefinition().getLocalProperties()) {
-                HashSet<String> values = map.get(localProp.getW5h_label());
-                if (values != null) {
-                    for (String value : values) {
-                        LocalValues scriptLocalValues = new LocalValues();
-                        scriptLocalValues.setLocalProperties(localProp);
-                        //scriptLocalValues.setTask(task);
-                        scriptLocalValues.setValue(value);
-                        script.addLocalValue(scriptLocalValues);
-                    }
-                }
-            }
-
-            //add local values in the definitions
-
-            ArrayList<ScriptDefinition> scriptDefinitionList = script.getScriptDefinition().getSubscripts();
-            for (ScriptDefinition subscriptDef : scriptDefinitionList) {
-                Script subscript = new Script();
-                subscript.setScriptDefinition(subscriptDef);
-
-
-                for (LocalProperties localProp : subscriptDef.getLocalProperties()) {
-                    HashSet<String> values = map.get(localProp.getW5h_label());
-                    if (values != null) {
-                        for (String value : values) {
-                            LocalValues scriptLocalValues = new LocalValues();
-                            scriptLocalValues.setLocalProperties(localProp);
-                            //scriptLocalValues.setTask(task);
-                            scriptLocalValues.setValue(value);
-                            subscript.addLocalValue(scriptLocalValues);
-                        }
-                    }
-                }
-                script.addSubscript(subscript);
-            }
-
-
-            script.assignScore(getContext());
-            scripts.add(script);
+            // script.assignScore(getContext());
+            scripts.add(mergedScript);
 
         }
 
         return scripts;
+    }
+
+
+
+    public Script mergeScripts(ArrayList<Script> scriptList){
+
+
+        Script a =null;
+        if (scriptList.size()>0){
+            a = scriptList.get(0);
+            for (int i=1;i<scriptList.size();i++){
+                a.merge(scriptList.get(i));
+            }
+
+        }
+
+        return a;
+    }
+
+
+    public Script setLocalValuesInSuperscripts(Script script, HashMap<String, HashSet<String>> map, Task task){
+
+
+        for (LocalProperties localProp : script.getScriptDefinition().getLocalProperties()) {
+            HashSet<String> localvalues = map.get(localProp.getW5h_label());
+            if (localvalues != null) {
+                for (String value : localvalues) {
+                    ScriptLocalValues scriptLocalValues = new ScriptLocalValues();
+                    scriptLocalValues.setLocalProperties(localProp);
+                    //scriptLocalValues.setTask(task);
+                    scriptLocalValues.setLocal_value(value);
+                    script.addLocalValue(scriptLocalValues);
+                }
+            }
+        }
+
+        ArrayList<ScriptDefinition> scriptDefinitionList = script.getScriptDefinition().getSubscripts();
+
+        if (scriptDefinitionList.size()>0) {
+            for (ScriptDefinition subscriptDef : scriptDefinitionList) {
+                Script subscript = new Script();
+                subscript.setScriptDefinition(subscriptDef);
+                subscript = setLocalValuesInSuperscripts(subscript, map, task);
+                script.addSubscript(subscript);
+            }
+        }else{
+            script.addTask(task);
+        }
+
+        return script;
     }
 
 
@@ -439,6 +448,18 @@ public class RestaurantsFragment extends Fragment {
             }else if (task.getPid() instanceof Event){
                 try {
                     extractedDate = sdf.parse(sdf.format(((Event) task.getPid()).getStartTime()));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }else if (task.getPid() instanceof Feed){
+                try {
+                    extractedDate = sdf.parse(sdf.format(((Feed) task.getPid()).getCreated_time()));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }else if (task.getPid() instanceof Photo){
+                try {
+                    extractedDate = sdf.parse(sdf.format(((Photo) task.getPid()).getCreated_time()));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -471,12 +492,22 @@ public class RestaurantsFragment extends Fragment {
                     if(!isTransaction){
                         isTransaction=true;
                         list.add(hashMap.get(date).get(i));
+                    }else{
+                        ArrayList<Task> list2 = new ArrayList<Task>();
+                        list2.add(hashMap.get(date).get(i));
+                        listofMergedTasks.add(list2);
                     }
                 }else if (hashMap.get(date).get(i).getPid() instanceof Event){
                     if(!isEvent){
                         isEvent=true;
                         list.add(hashMap.get(date).get(i));
+                    }else{
+                        ArrayList<Task> list2 = new ArrayList<Task>();
+                        list2.add(hashMap.get(date).get(i));
+                        listofMergedTasks.add(list2);
                     }
+                }else{
+                    list.add(hashMap.get(date).get(i));
                 }
             }
             listofMergedTasks.add(list);
@@ -646,9 +677,9 @@ public class RestaurantsFragment extends Fragment {
             }else{
                 scriptName=scriptType;
             }
+            ScriptDefinition sd = helper.getScriptDefinition(scriptName,typeOf);
             Script script = new Script();
-            script.setName(scriptName);
-            script.setOfType(typeOf);
+            script.setScriptDefinition(sd);
             List<HashMap<Object, Object>> values = (List<HashMap<Object, Object>>) entry.getValue();
             if (values!=null) {
                 for (HashMap<Object, Object> value : values) {
@@ -784,6 +815,7 @@ public class RestaurantsFragment extends Fragment {
                     task.setPid(email);
                     task.setName(subtask);
                     task.setScript(script);
+                    task.setTaskDefinition(new TaskDefinition(subtask));
                     tasks.add(task);
                 }
             }
@@ -795,6 +827,7 @@ public class RestaurantsFragment extends Fragment {
                 task.setOid(transaction.getId());
                 task.setPid(transaction);
                 task.setName(subtask);
+                task.setTaskDefinition(new TaskDefinition(subtask));
                 task.setScript(script);
                 tasks.add(task);
             }
@@ -806,6 +839,7 @@ public class RestaurantsFragment extends Fragment {
                 task.setOid(event.getId());
                 task.setPid(event);
                 task.setName(subtask);
+                task.setTaskDefinition(new TaskDefinition(subtask));
                 task.setScript(script);
                 tasks.add(task);
 
@@ -843,6 +877,7 @@ public class RestaurantsFragment extends Fragment {
                                 task.setPid(fulltransaction);
                                 task.setName(subtask);
                                 task.setScript(script);
+                                task.setTaskDefinition(new TaskDefinition(subtask));
                                 tasks.add(task);
                             }
                         } catch (SQLException e) {
@@ -871,6 +906,7 @@ public class RestaurantsFragment extends Fragment {
                                 task.setPid(fullFeed);
                                 task.setName(subtask);
                                 task.setScript(script);
+                                task.setTaskDefinition(new TaskDefinition(subtask));
                                 tasks.add(task);
                             }
                         } catch (SQLException e) {
@@ -957,20 +993,31 @@ public class RestaurantsFragment extends Fragment {
             LinearLayout linearLayout = (LinearLayout) rowView.findViewById(R.id.linearLayout);
 
             ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
-            for (Task task: itemname.get(position).getTasks()){
-                if(task.getPid() instanceof Transaction) {
-                    if (((Transaction)task.getPid()).getPlace()!=null){
-                        byte[] image = ((Transaction) task.getPid()).getPlace().getImage();
-                        if (((Transaction) task.getPid()).getPlace().getImage() != null) {
-                            Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
-                            imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp,40,40, false));
-                        }
-                    }else{
-                        imageView.setImageResource(imgid[0]);
-                    }
-                }else{
-                    imageView.setImageResource(imgid[0]);
+            Place place = null;
+
+
+            for (Task task: itemname.get(position).getTasks()) {
+                if (task.getPid() instanceof Transaction) {
+                    place = ((Transaction) task.getPid()).getPlace();
+                    break;
+                } else if (task.getPid() instanceof Photo) {
+                    place = ((Photo) task.getPid()).getPlace();
+                    break;
+                } else if (task.getPid() instanceof Feed) {
+                    place = ((Feed) task.getPid()).getPlace();
+                    break;
                 }
+            }
+
+            if (place != null) {
+                byte[] image = place.getImage();
+                if (image != null) {
+                    Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
+                    imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
+                }
+            }else{
+                imageView.setImageResource(imgid[0]);
+
             }
 
 
@@ -980,21 +1027,21 @@ public class RestaurantsFragment extends Fragment {
                     //txtTitle.setText(itemname.get(position).getScore()+", "+String.valueOf(((Email)processTask.getPid()).get_id()));
 
 
-            ArrayList<LocalValues> localValues = script.getLocalValues();
+            ArrayList<ScriptLocalValues> localValues = script.getLocalValues();
             if (localValues != null) {
-                for (LocalValues localValue : localValues) {
+                for (ScriptLocalValues localValue : localValues) {
                     if (localValue != null) {
                         LocalProperties lp = localValue.getLocalProperties();
                         if (lp != null) {
                             String w5h_value = lp.getW5h_value();
                             if (map.containsKey(w5h_value)) {
                                 ArrayList<String> values = map.get(w5h_value);
-                                values.add(localValue.getValue());
+                                values.add(localValue.getLocal_value());
                                 map.put(w5h_value, values);
                             } else {
                                 if (w5h_value != null) {
                                     ArrayList<String> values = new ArrayList<String>();
-                                    values.add(localValue.getValue());
+                                    values.add(localValue.getLocal_value());
                                     map.put(w5h_value, values);
                                 }
                             }

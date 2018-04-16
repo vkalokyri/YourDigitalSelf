@@ -124,7 +124,8 @@ public class GDriveActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gdrive);
         mProgressBar = findViewById(R.id.progressBar);
-        mProgressBar.setMax(100);
+        //mProgressBar.setMax(100);
+        mProgressBar.isIndeterminate();
 
         GoogleSignInClient mGoogleSignInClient = buildGoogleSignInClient();
         startActivityForResult(mGoogleSignInClient.getSignInIntent(), REQUEST_CODE_SIGN_IN);
@@ -296,9 +297,9 @@ public class GDriveActivity extends Activity {
             @Override
             public void onProgress(long bytesDownloaded, long bytesExpected) {
                 // Update progress dialog with the latest progress.
-                int progress = (int) (bytesDownloaded * 100 / bytesExpected);
-                Log.d(TAG, String.format("Loading progress: %d percent", progress));
-                mProgressBar.setProgress(progress);
+               // int progress = (int) (bytesDownloaded * 100 / bytesExpected);
+              //  Log.d(TAG, String.format("Loading progress: %d percent", progress));
+                //mProgressBar.setProgress(progress);
             }
 
 
@@ -307,7 +308,7 @@ public class GDriveActivity extends Activity {
                 // onProgress may not be called for files that are already
                 // available on the device. Mark the progress as complete
                 // when contents available to ensure status is updated.
-                mProgressBar.setProgress(100);
+               // mProgressBar.setProgress(100);
                 // Read contents
                 // [START_EXCLUDE]
                // DriveContents contents = task.getResult();
@@ -383,7 +384,7 @@ public class GDriveActivity extends Activity {
                                     if (gmapsResponse.results.length > 0) {
                                         PlacesSearchResult place = gmapsResponse.results[0];
                                         if (place.photos != null) {
-                                            PhotoResult photoResult = PlacesApi.photo(geoApiContext,place.photos[0].photoReference).maxWidth(755)
+                                            PhotoResult photoResult = PlacesApi.photo(geoApiContext,place.photos[0].photoReference).maxWidth(1600)
                                                     .await();
                                             byte[] image = photoResult.imageData;
 

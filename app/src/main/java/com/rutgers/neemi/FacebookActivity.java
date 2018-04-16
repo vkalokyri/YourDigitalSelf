@@ -400,11 +400,28 @@ public class FacebookActivity extends AppCompatActivity {
                                                                 if (gmapsResponse.results!=null){
                                                                     if (gmapsResponse.results.length>0) {
                                                                         if (gmapsResponse.results[0].photos!=null) {
-                                                                            PhotoResult photoResult = PlacesApi.photo(geoApiContext,gmapsResponse.results[0].photos[0].photoReference).maxWidth(400)
-                                                                                    .await();
-                                                                            byte[] image = photoResult.imageData;
-                                                                            newPlace.setImage(image);
+                                                                            com.google.maps.model.Photo photoFound=null;
+                                                                            for (com.google.maps.model.Photo p: gmapsResponse.results[0].photos){
+                                                                                if (p.width>750) {
+                                                                                    photoFound=p;
+                                                                                    break;
+                                                                                }
+
+                                                                            }
+                                                                            if (photoFound!=null){
+                                                                                PhotoResult photoResult = PlacesApi.photo(geoApiContext,photoFound.photoReference).maxWidth(1600).await();
+                                                                                byte[] image = photoResult.imageData;
+                                                                                newPlace.setImage(image);
+                                                                            }else{
+                                                                                PhotoResult photoResult = PlacesApi.photo(geoApiContext,gmapsResponse.results[0].photos[0].photoReference).maxWidth(1600).await();
+                                                                                byte[] image = photoResult.imageData;
+                                                                                newPlace.setImage(image);
+                                                                            }
+
+
                                                                         }
+                                                                        placeDao.create(newPlace);
+                                                                        photo.setPlace(newPlace);
                                                                         for (String placeCategory : gmapsResponse.results[0].types) {
 
                                                                             Category categoryExists = helper.placeCategoryExists(placeCategory);
@@ -420,17 +437,23 @@ public class FacebookActivity extends AppCompatActivity {
                                                                             }
                                                                         }
                                                                     }
+                                                                }else{
+                                                                    placeDao.create(newPlace);
+                                                                    photo.setPlace(newPlace);
                                                                 }
                                                             } catch (ApiException e) {
+                                                                placeDao.create(newPlace);
+                                                                photo.setPlace(newPlace);
                                                                 e.printStackTrace();
                                                             } catch (InterruptedException e) {
+                                                                placeDao.create(newPlace);
+                                                                photo.setPlace(newPlace);
                                                                 e.printStackTrace();
                                                             } catch (IOException e) {
+                                                                placeDao.create(newPlace);
+                                                                photo.setPlace(newPlace);
                                                                 e.printStackTrace();
                                                             }
-                                                            placeDao.create(newPlace);
-                                                            photo.setPlace(newPlace);
-
                                                         }
                                                     } else {
                                                         photo.setPlace(place);
@@ -665,12 +688,29 @@ public class FacebookActivity extends AppCompatActivity {
                                                                             if (gmapsResponse.results.length>0) {
                                                                                 for (String placeCategory : gmapsResponse.results[0].types) {
                                                                                     if (gmapsResponse.results[0].photos!=null) {
-                                                                                        PhotoResult photoResult = PlacesApi.photo(geoApiContext,gmapsResponse.results[0].photos[0].photoReference).maxWidth(400)
-                                                                                                .await();
-                                                                                        byte[] image = photoResult.imageData;
-                                                                                        newPlace.setImage(image);
+                                                                                        com.google.maps.model.Photo photoFound=null;
+                                                                                        for (com.google.maps.model.Photo p: gmapsResponse.results[0].photos){
+                                                                                            if (p.width>750) {
+                                                                                                photoFound=p;
+                                                                                                break;
+                                                                                            }
+
+                                                                                        }
+                                                                                        if (photoFound!=null){
+                                                                                            PhotoResult photoResult = PlacesApi.photo(geoApiContext,photoFound.photoReference).maxWidth(1600).await();
+                                                                                            byte[] image = photoResult.imageData;
+                                                                                            newPlace.setImage(image);
+                                                                                        }else{
+                                                                                            PhotoResult photoResult = PlacesApi.photo(geoApiContext,gmapsResponse.results[0].photos[0].photoReference).maxWidth(1600).await();
+                                                                                            byte[] image = photoResult.imageData;
+                                                                                            newPlace.setImage(image);
+                                                                                        }
+
+
                                                                                     }
 
+                                                                                    placeDao.create(newPlace);
+                                                                                    feed.setPlace(newPlace);
                                                                                     Category categoryExists = helper.placeCategoryExists(placeCategory);
                                                                                     if (categoryExists == null) {
                                                                                         Category newCategory = new Category();
@@ -684,16 +724,24 @@ public class FacebookActivity extends AppCompatActivity {
                                                                                     }
                                                                                 }
                                                                             }
+                                                                        }else{
+                                                                            placeDao.create(newPlace);
+                                                                            feed.setPlace(newPlace);
                                                                         }
                                                                     } catch (ApiException e) {
+                                                                        placeDao.create(newPlace);
+                                                                        feed.setPlace(newPlace);
                                                                         e.printStackTrace();
                                                                     } catch (InterruptedException e) {
+                                                                        placeDao.create(newPlace);
+                                                                        feed.setPlace(newPlace);
                                                                         e.printStackTrace();
                                                                     } catch (IOException e) {
+                                                                        placeDao.create(newPlace);
+                                                                        feed.setPlace(newPlace);
                                                                         e.printStackTrace();
                                                                     }
-                                                                    placeDao.create(newPlace);
-                                                                    feed.setPlace(newPlace);
+
                                                                 }
                                                             } else {
                                                                 feed.setPlace(place);

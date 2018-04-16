@@ -13,6 +13,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.ScriptDefinition;
+import com.rutgers.neemi.model.Subscript;
 import com.rutgers.neemi.model.TaskDefinition;
 
 public class ScriptParser {
@@ -70,14 +71,15 @@ public class ScriptParser {
 				//System.err.println("I found process = "+id);
 				process = new ScriptDefinition();
 				process.setName(id);
-				process.setArgument(argument);
+				process.setOfType(argument);
 				StringBuilder sb=new StringBuilder();
 				sb.append(id);
 				sb.append("<");
 				sb.append(argument);
 				sb.append(">");
-				if (parentProcess!=null)
+				if (parentProcess!=null) {
 					parentProcess.addSubscript(process);
+				}
 				if (parentProcess==null)
 					scriptElements.put(sb.toString(), process);
 				//extractXml(parser, name);
@@ -154,28 +156,28 @@ public class ScriptParser {
 					LocalProperties local = new LocalProperties();
 					local.setW5h_label("who");
 					local.setW5h_value(whoValue);
-					local.setTaskDef(task);
+					//local.setTaskDef(task);
 					 task.addSubLocal(local);
 				} else if (name.equals("what")) {
 					String whatValue = parser.getAttributeValue(null, "name");
 					LocalProperties local = new LocalProperties();
 					local.setW5h_label("what");
 					local.setW5h_value(whatValue);
-					local.setTaskDef(task);
+					//local.setTaskDef(task);
 					task.addSubLocal(local);
 				} else if (name.equals("when")) {
 					String whenValue = parser.getAttributeValue(null, "name");
 					LocalProperties local = new LocalProperties();
 					local.setW5h_label("when");
 					local.setW5h_value(whenValue);
-					local.setTaskDef(task);
+					//local.setTaskDef(task);
 					task.addSubLocal(local);
 				} else if (name.equals("where")) {
 					String whereValue = parser.getAttributeValue(null, "name");
 					LocalProperties local = new LocalProperties();
 					local.setW5h_label("where");
 					local.setW5h_value(whereValue);
-					local.setTaskDef(task);
+					//local.setTaskDef(task);
 					task.addSubLocal(local);
 				}
 			}
@@ -196,28 +198,28 @@ public class ScriptParser {
 					LocalProperties local = new LocalProperties();
 					local.setW5h_label("who");
 					local.setW5h_value(whoValue);
-					local.setScriptDef(process);
+					//local.setScriptDef(process);
 					process.addLocalProperties(local);
 				} else if (name.equals("what")) {
 					String whatValue = parser.getAttributeValue(null, "name");
 					LocalProperties local = new LocalProperties();
 					local.setW5h_label("what");
 					local.setW5h_value(whatValue);
-					local.setScriptDef(process);
+					//local.setScriptDef(process);
 					process.addLocalProperties(local);
 				} else if (name.equals("when")) {
 					String whenValue = parser.getAttributeValue(null, "name");
 					LocalProperties local = new LocalProperties();
 					local.setW5h_label("when");
 					local.setW5h_value(whenValue);
-					local.setScriptDef(process);
+					//local.setScriptDef(process);
 					process.addLocalProperties(local);
 				} else if (name.equals("where")) {
 					String whereValue = parser.getAttributeValue(null, "name");
 					LocalProperties local = new LocalProperties();
 					local.setW5h_label("where");
 					local.setW5h_value(whereValue);
-					local.setScriptDef(process);
+					//local.setScriptDef(process);
 					process.addLocalProperties(local);
 				}
 			}

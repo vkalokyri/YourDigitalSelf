@@ -1,5 +1,5 @@
 #
-# generated on 2018/03/25 10:24:58
+# generated on 2018/03/30 05:53:37
 #
 # --table-start--
 dataClass=com.rutgers.neemi.model.Email
@@ -106,7 +106,6 @@ fieldName=source
 # --field-end--
 # --field-start--
 fieldName=place
-columnName=place_id
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
@@ -209,26 +208,30 @@ fieldName=link
 # --field-end--
 # --field-start--
 fieldName=album
-columnName=album_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
 fieldName=created_time
 # --field-end--
 # --field-start--
 fieldName=event
-columnName=event_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
 fieldName=place
-columnName=place_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
 fieldName=creator
-columnName=creator_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
 fieldName=picture
@@ -303,13 +306,15 @@ generatedId=true
 # --field-end--
 # --field-start--
 fieldName=attendee
-columnName=person_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
 fieldName=event
-columnName=event_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -324,13 +329,15 @@ generatedId=true
 # --field-end--
 # --field-start--
 fieldName=tagged
-columnName=person_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
 fieldName=photo
-columnName=photo_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -366,13 +373,15 @@ generatedId=true
 # --field-end--
 # --field-start--
 fieldName=place
-columnName=place_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
 fieldName=category
-columnName=category_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -474,16 +483,17 @@ fieldName=isGateway
 # --field-end--
 # --field-start--
 fieldName=script
-columnName=script_id
 canBeNull=false
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --table-fields-end--
 # --table-end--
 #################################
 # --table-start--
 dataClass=com.rutgers.neemi.model.Script
-tableName=script
+tableName=Script
 # --table-fields-start--
 # --field-start--
 fieldName=id
@@ -491,8 +501,9 @@ generatedId=true
 # --field-end--
 # --field-start--
 fieldName=scriptDefinition
-columnName=script_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
 fieldName=timestamp
@@ -522,14 +533,14 @@ dataClass=com.rutgers.neemi.model.ScriptDefinition
 tableName=ScriptDefinition
 # --table-fields-start--
 # --field-start--
-fieldName=id
+fieldName=_id
 generatedId=true
 # --field-end--
 # --field-start--
 fieldName=name
 # --field-end--
 # --field-start--
-fieldName=argument
+fieldName=ofType
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -548,37 +559,24 @@ fieldName=w5h_label
 # --field-start--
 fieldName=w5h_value
 # --field-end--
-# --field-start--
-fieldName=script
-columnName=script_id
-foreign=true
-# --field-end--
-# --field-start--
-fieldName=task
-columnName=task_id
-foreign=true
-# --field-end--
 # --table-fields-end--
 # --table-end--
 #################################
 # --table-start--
-dataClass=com.rutgers.neemi.model.LocalValues
-tableName=LocalValues
+dataClass=com.rutgers.neemi.model.TaskLocalValues
+tableName=TaskLocalValues
 # --table-fields-start--
 # --field-start--
-fieldName=script
-columnName=s_id
-foreign=true
-# --field-end--
-# --field-start--
-fieldName=local
-columnName=local_id
-foreign=true
-# --field-end--
-# --field-start--
 fieldName=task
-columnName=t_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+# --field-end--
+# --field-start--
+fieldName=localProperties
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
 fieldName=local_value
@@ -587,18 +585,42 @@ fieldName=local_value
 # --table-end--
 #################################
 # --table-start--
-dataClass=com.rutgers.neemi.model.ScriptHasTasks
-tableName=ScriptHasTasks
+dataClass=com.rutgers.neemi.model.ScriptLocalValues
+tableName=ScriptLocalValues
 # --table-fields-start--
 # --field-start--
 fieldName=script
-columnName=script_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+# --field-end--
+# --field-start--
+fieldName=localProperties
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+# --field-end--
+# --field-start--
+fieldName=local_value
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.ScriptDefHasTaskDef
+tableName=ScriptDefHasTaskDef
+# --table-fields-start--
+# --field-start--
+fieldName=script
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
 fieldName=task
-columnName=task_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -608,14 +630,16 @@ dataClass=com.rutgers.neemi.model.Subscript
 tableName=subscript
 # --table-fields-start--
 # --field-start--
-fieldName=superscript_id
-columnName=superscript_id
+fieldName=superscript
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
-fieldName=subscript_id
-columnName=subscript_id
+fieldName=subscript
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -703,13 +727,15 @@ generatedId=true
 # --field-end--
 # --field-start--
 fieldName=tagged
-columnName=person_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
 fieldName=feed
-columnName=feed_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -724,13 +750,34 @@ generatedId=true
 # --field-end--
 # --field-start--
 fieldName=tagged
-columnName=person_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --field-start--
 fieldName=feed
-columnName=feed_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.TaskDefHasLocalProperties
+tableName=TaskDefHasLocalProperties
+# --table-fields-start--
+# --field-start--
+fieldName=taskDefinition
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+# --field-end--
+# --field-start--
+fieldName=localProperties
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
 # --field-end--
 # --table-fields-end--
 # --table-end--

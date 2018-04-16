@@ -16,7 +16,15 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <parallelGateway gatewayDirection="Diverging" name="" id="whileInVenue"/>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="TakePictures" id="TakePictures"/>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="TakeVideo" id="TakeVideo"/>
-<task binding="Task"  completionQuantity="1" startQuantity="1" name="PostOnFacebook" id="PostOnFacebook"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="PostOnFacebook" id="PostOnFacebook">
+<locals>
+    <who name="whoMadeThePost"/>
+    <who name="whoIsIncludedInPost"/>
+    <what name="whatIsPostAbout"/>
+    <when name="whenWasPosted"/>
+    <where name="whereWasPosted"/>
+</locals>
+</task>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="PostOnInstagram" id="PostOnInstagram"/>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="PostOnTwitter" id="PostOnTwitter"/>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="CheckinOnFacebook" id="CheckinOnFacebook"/>

@@ -16,11 +16,11 @@ public class PlaceHasCategory implements Serializable {
     int _id;
 
     // This is a foreign object which just stores the id from the Person object in this table.
-    @DatabaseField(foreign = true, columnName = "place_id")
+    @DatabaseField(foreign = true, foreignAutoRefresh = true)
     Place place;
 
     // This is a foreign object which just stores the id from the Post object in this table.
-    @DatabaseField(foreign = true, columnName = "category_id")
+    @DatabaseField(foreign = true, foreignAutoRefresh = true)
     Category category;
 
     public PlaceHasCategory() {

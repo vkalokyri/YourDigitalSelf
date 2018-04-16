@@ -19,11 +19,11 @@ public class EventAttendees implements Serializable {
 
 
     // This is a foreign object which just stores the id from the Person object in this table.
-    @DatabaseField(foreign = true, columnName = "person_id")
+    @DatabaseField(foreign = true, foreignAutoRefresh=true)
     Person attendee;
 
     // This is a foreign object which just stores the id from the Post object in this table.
-    @DatabaseField(foreign = true, columnName = "event_id")
+    @DatabaseField(foreign = true, foreignAutoRefresh=true)
     Event event;
 
     public EventAttendees() {

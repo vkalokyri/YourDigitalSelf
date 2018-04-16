@@ -4,12 +4,14 @@ import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.io.Serializable;
+
 /**
  * Created by suitcase on 7/19/17.
  */
 
 @DatabaseTable(tableName = "Place")
-public class Place {
+public class Place implements Serializable {
 
     public static final String FIELD_ID = "id";
     public static final String FIELD_LAT = "latitude";

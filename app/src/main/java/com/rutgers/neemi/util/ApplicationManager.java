@@ -3,20 +3,18 @@ package com.rutgers.neemi.util;
 import android.content.Context;
 import android.util.Log;
 
-import com.j256.ormlite.android.AndroidConnectionSource;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
-import com.j256.ormlite.support.ConnectionSource;
-import com.j256.ormlite.table.TableUtils;
 import com.rutgers.neemi.DatabaseHelper;
 import com.rutgers.neemi.model.LocalProperties;
+import com.rutgers.neemi.model.ScriptDefHasLocalProperties;
 import com.rutgers.neemi.model.ScriptDefinition;
-import com.rutgers.neemi.model.ScriptHasTasks;
+import com.rutgers.neemi.model.ScriptDefHasTaskDef;
 import com.rutgers.neemi.model.Subscript;
+import com.rutgers.neemi.model.TaskDefHasLocalProperties;
 import com.rutgers.neemi.model.TaskDefinition;
 import com.rutgers.neemi.parser.ScriptParser;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +30,7 @@ public class ApplicationManager {
     RuntimeExceptionDao<ScriptDefinition, String> scriptDefDao;
     RuntimeExceptionDao<Subscript, String> subscriptsDao;
     RuntimeExceptionDao<TaskDefinition, String> taskDefDao;
-    RuntimeExceptionDao<ScriptHasTasks, String> scriptHasTasksDao;
+    RuntimeExceptionDao<ScriptDefHasTaskDef, String> scriptHasTasksDao;
     RuntimeExceptionDao<LocalProperties, String> localPropertiesDao;
 
     DatabaseHelper helper;
@@ -72,17 +70,18 @@ public class ApplicationManager {
         for (String key: scriptElements.keySet()) {
             if (key != null){
                 ScriptDefinition scriptDefinition = (ScriptDefinition)scriptElements.get(key);
-                ScriptDefinition scriptDef = helper.scriptDefinitionExists(scriptDefinition.getName(),scriptDefinition.getArgument());
+                ScriptDefinition scriptDef = helper.scriptDefinitionExists(scriptDefinition.getName(),scriptDefinition.getOfType());
                 if (scriptDef == null) {
                     scriptDefDao.create(scriptDefinition);
                     ArrayList<LocalProperties> locals = scriptDefinition.getLocalProperties();
                     for (LocalProperties local : locals) {
                         localPropertiesDao.create(local);
+                        ScriptDefHasLocalProperties scriptDefLocals = new ScriptDefHasLocalProperties(scriptDefinition,local);
+                        helper.getScriptDefHasLocalPropertiesDao().create(scriptDefLocals);
                     }
                 }else{
                     scriptDef = scriptDefinition;
                 }
-
 
                 for (String taskName : scriptDefinition.getTaskMap().keySet()) {
                     if (taskName != null) {
@@ -91,7 +90,14 @@ public class ApplicationManager {
                             taskDef = scriptDefinition.getTaskMap().get(taskName);
                             taskDefDao.create(taskDef);
                         }
-                        ScriptHasTasks scriptTasks = new ScriptHasTasks();
+                        ArrayList<LocalProperties> locals = taskDef.getLocals();
+                        for (LocalProperties local : locals) {
+                            localPropertiesDao.create(local);
+                            TaskDefHasLocalProperties taskDefLocals = new TaskDefHasLocalProperties(taskDef,local);
+                            helper.getTaskDefHasLocalPropertiesDao().create(taskDefLocals);
+                        }
+
+                        ScriptDefHasTaskDef scriptTasks = new ScriptDefHasTaskDef();
                         scriptTasks.setTask(taskDef);
                         scriptTasks.setScript(scriptDefinition);
                         scriptHasTasksDao.create(scriptTasks);
@@ -109,12 +115,14 @@ public class ApplicationManager {
 
     public void storeScriptDefinition(ScriptDefinition subscript, ScriptDefinition superScript){
         if (subscript != null) {
-            ScriptDefinition scriptDef = helper.scriptDefinitionExists(subscript.getName(),subscript.getArgument());
+            ScriptDefinition scriptDef = helper.scriptDefinitionExists(subscript.getName(),subscript.getOfType());
             if (scriptDef == null) {
                 scriptDefDao.create(subscript);
                 ArrayList<LocalProperties> locals = subscript.getLocalProperties();
                 for (LocalProperties local: locals) {
                     localPropertiesDao.create(local);
+                    ScriptDefHasLocalProperties scriptDefLocals = new ScriptDefHasLocalProperties(subscript,local);
+                    helper.getScriptDefHasLocalPropertiesDao().create(scriptDefLocals);
                 }
             }else{
                 subscript.setId(scriptDef.getId());
@@ -131,12 +139,14 @@ public class ApplicationManager {
                     if (taskDef == null) {
                         taskDef = subscript.getTaskMap().get(taskName);
                         taskDefDao.create(taskDef);
-                        ArrayList<LocalProperties> locals = taskDef.getLocals();
-                        for (LocalProperties local: locals) {
-                            localPropertiesDao.create(local);
-                        }
                     }
-                    ScriptHasTasks scriptTasks = new ScriptHasTasks();
+                    ArrayList<LocalProperties> locals = taskDef.getLocals();
+                    for (LocalProperties local: locals) {
+                        localPropertiesDao.create(local);
+                        TaskDefHasLocalProperties taskDefLocals = new TaskDefHasLocalProperties(taskDef,local);
+                        helper.getTaskDefHasLocalPropertiesDao().create(taskDefLocals);
+                    }
+                    ScriptDefHasTaskDef scriptTasks = new ScriptDefHasTaskDef();
                     scriptTasks.setTask(taskDef);
                     scriptTasks.setScript(subscript);
                     scriptHasTasksDao.create(scriptTasks);

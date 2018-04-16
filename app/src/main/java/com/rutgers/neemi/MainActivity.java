@@ -15,19 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.api.client.util.Data;
-import com.j256.ormlite.android.AndroidConnectionSource;
-import com.j256.ormlite.dao.RuntimeExceptionDao;
-import com.j256.ormlite.support.ConnectionSource;
-import com.j256.ormlite.table.TableUtils;
-import com.rutgers.neemi.model.Email;
-import com.rutgers.neemi.model.ScriptDefinition;
-import com.rutgers.neemi.model.ScriptHasTasks;
-import com.rutgers.neemi.model.Subscript;
-import com.rutgers.neemi.model.TaskDefinition;
 import com.rutgers.neemi.util.ApplicationManager;
-
-import java.sql.SQLException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 //        RuntimeExceptionDao<Subscript, String> subScriptDao = helper.getSubScriptDao();
 //        subScriptDao.queryRaw("delete from  Subscript;");
 //        subScriptDao.queryRaw("delete from LocalProperties;");
-//        subScriptDao.queryRaw("delete from  ScriptHasTasks;");
+//        subScriptDao.queryRaw("delete from  ScriptDefHasTaskDef;");
 //        subScriptDao.queryRaw("delete from  ScriptDefinition;");
 //        subScriptDao.queryRaw("delete from  TaskDefinition;");
 //
@@ -54,8 +42,8 @@ public class MainActivity extends AppCompatActivity {
 //                    //TableUtils.clearTable(connectionSource, Email.class,false);
 //                    TableUtils.dropTable(connectionSource, Subscript.class,true);
 //                    TableUtils.createTable(connectionSource, Subscript.class);
-//                    TableUtils.dropTable(connectionSource, ScriptHasTasks.class,true);
-//                    TableUtils.createTable(connectionSource, ScriptHasTasks.class);
+//                    TableUtils.dropTable(connectionSource, ScriptDefHasTaskDef.class,true);
+//                    TableUtils.createTable(connectionSource, ScriptDefHasTaskDef.class);
 //                    TableUtils.dropTable(connectionSource, ScriptDefinition.class,true);
 //                    TableUtils.createTable(connectionSource, ScriptDefinition.class);
 //                    TableUtils.dropTable(connectionSource, TaskDefinition.class,true);

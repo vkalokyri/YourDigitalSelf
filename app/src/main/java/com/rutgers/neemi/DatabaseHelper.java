@@ -1,8 +1,9 @@
 package com.rutgers.neemi;
 
-import java.sql.Array;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import android.content.Context;
@@ -26,7 +27,12 @@ import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.FeedMessageTags;
 import com.rutgers.neemi.model.FeedWithTags;
 import com.rutgers.neemi.model.LocalProperties;
-import com.rutgers.neemi.model.LocalValues;
+import com.rutgers.neemi.model.ScriptDefHasLocalProperties;
+import com.rutgers.neemi.model.ScriptLocalValues;
+import com.rutgers.neemi.model.ScriptDefHasTaskDef;
+import com.rutgers.neemi.model.ScriptLocalValues;
+import com.rutgers.neemi.model.TaskDefHasLocalProperties;
+import com.rutgers.neemi.model.TaskLocalValues;
 import com.rutgers.neemi.model.TransactionHasCategory;
 import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.Person;
@@ -36,12 +42,9 @@ import com.rutgers.neemi.model.Place;
 import com.rutgers.neemi.model.PlaceHasCategory;
 import com.rutgers.neemi.model.Script;
 import com.rutgers.neemi.model.ScriptDefinition;
-import com.rutgers.neemi.model.ScriptHasTasks;
 import com.rutgers.neemi.model.Subscript;
 import com.rutgers.neemi.model.Task;
 import com.rutgers.neemi.model.TaskDefinition;
-import com.rutgers.neemi.model.Transaction;
-import com.rutgers.neemi.util.ApplicationManager;
 
 /**
  * Database helper class used to manage the creation and upgrading of your database. This class also usually provides
@@ -72,12 +75,15 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private RuntimeExceptionDao<TransactionHasCategory, String> transactionHasCategoryRuntimeDao = null;
 	private RuntimeExceptionDao<Script, String> scriptRuntimeDao = null;
     private RuntimeExceptionDao<ScriptDefinition, String> scriptDefRuntimeDao = null;
-    private RuntimeExceptionDao<ScriptHasTasks, String> scriptDefHasTaskDefRuntimeDao = null;
-    private RuntimeExceptionDao<Task, String> taskRuntimeDao = null;
+    private RuntimeExceptionDao<ScriptDefHasTaskDef, String> scriptDefHasTaskDefRuntimeDao = null;
+	private RuntimeExceptionDao<ScriptDefHasLocalProperties, String> scriptDefHasLocalPropertiesRuntimeDao = null;
+	private RuntimeExceptionDao<TaskDefHasLocalProperties, String> taskDefHasLocalPropertiesRuntimeDao = null;
+	private RuntimeExceptionDao<Task, String> taskRuntimeDao = null;
     private RuntimeExceptionDao<TaskDefinition, String> taskDefRuntimeDao = null;
 	private RuntimeExceptionDao<LocalProperties, String> localPropertiesRuntimeDao = null;
-    private RuntimeExceptionDao<LocalValues, String> localsRuntimeDao = null;
-    private RuntimeExceptionDao<Subscript, String> subscriptRuntimeDao = null;
+    private RuntimeExceptionDao<ScriptLocalValues, String> scriptlocalsRuntimeDao = null;
+	private RuntimeExceptionDao<TaskLocalValues, String> tasklocalsRuntimeDao = null;
+	private RuntimeExceptionDao<Subscript, String> subscriptRuntimeDao = null;
 	Context context;
 
 
@@ -126,10 +132,13 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, Script.class);
             TableUtils.createTable(connectionSource, ScriptDefinition.class);
 			TableUtils.createTable(connectionSource, LocalProperties.class);
-            TableUtils.createTable(connectionSource, LocalValues.class);
-            TableUtils.createTable(connectionSource, Task.class);
+            TableUtils.createTable(connectionSource, ScriptLocalValues.class);
+			TableUtils.createTable(connectionSource, ScriptDefHasLocalProperties.class);
+			TableUtils.createTable(connectionSource, TaskDefHasLocalProperties.class);
+			TableUtils.createTable(connectionSource, TaskLocalValues.class);
+			TableUtils.createTable(connectionSource, Task.class);
             TableUtils.createTable(connectionSource, TaskDefinition.class);
-            TableUtils.createTable(connectionSource, ScriptHasTasks.class);
+            TableUtils.createTable(connectionSource, ScriptDefHasTaskDef.class);
             TableUtils.createTable(connectionSource, Subscript.class);
 
 			createIndexes();
@@ -177,14 +186,20 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, PlaceHasCategory.class, true);
 			TableUtils.dropTable(connectionSource, Script.class, true);
             TableUtils.dropTable(connectionSource, ScriptDefinition.class, true);
-            TableUtils.dropTable(connectionSource, ScriptHasTasks.class, true);
+            TableUtils.dropTable(connectionSource, ScriptDefHasTaskDef.class, true);
             TableUtils.dropTable(connectionSource, LocalProperties.class, true);
+			TableUtils.dropTable(connectionSource, ScriptLocalValues.class, true);
+			TableUtils.dropTable(connectionSource, TaskLocalValues.class, true);
 			TableUtils.dropTable(connectionSource, Task.class, true);
             TableUtils.dropTable(connectionSource, TaskDefinition.class, true);
             TableUtils.dropTable(connectionSource, Subscript.class, true);
 			TableUtils.dropTable(connectionSource, Feed.class, true);
 			TableUtils.dropTable(connectionSource, FeedWithTags.class, true);
 			TableUtils.dropTable(connectionSource, FeedMessageTags.class, true);
+			TableUtils.dropTable(connectionSource, ScriptDefHasLocalProperties.class, true);
+			TableUtils.dropTable(connectionSource, TaskDefHasLocalProperties.class, true);
+
+
 			// after we drop the old databases, we create the new ones
 			onCreate(db, connectionSource);
 		} catch (SQLException e) {
@@ -355,9 +370,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         return taskDefRuntimeDao;
     }
 
-    public RuntimeExceptionDao<ScriptHasTasks, String> getScriptHasTasksDao() {
+    public RuntimeExceptionDao<ScriptDefHasTaskDef, String> getScriptHasTasksDao() {
         if (scriptDefHasTaskDefRuntimeDao == null) {
-            scriptDefHasTaskDefRuntimeDao = getRuntimeExceptionDao(ScriptHasTasks.class);
+            scriptDefHasTaskDefRuntimeDao = getRuntimeExceptionDao(ScriptDefHasTaskDef.class);
         }
         return scriptDefHasTaskDefRuntimeDao;
     }
@@ -369,12 +384,34 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		return localPropertiesRuntimeDao;
 	}
 
-    public RuntimeExceptionDao<LocalValues, String> getLocalValuesDao() {
-        if ( localsRuntimeDao == null) {
-            localsRuntimeDao = getRuntimeExceptionDao(LocalValues.class);
+    public RuntimeExceptionDao<ScriptLocalValues, String> getScriptLocalValuesDao() {
+        if ( scriptlocalsRuntimeDao == null) {
+            scriptlocalsRuntimeDao = getRuntimeExceptionDao(ScriptLocalValues.class);
         }
-        return  localsRuntimeDao;
+        return  scriptlocalsRuntimeDao;
     }
+
+
+	public RuntimeExceptionDao<TaskLocalValues, String> getTaskLocalValuesDao() {
+		if ( tasklocalsRuntimeDao == null) {
+			tasklocalsRuntimeDao = getRuntimeExceptionDao(TaskLocalValues.class);
+		}
+		return  tasklocalsRuntimeDao;
+	}
+
+	public RuntimeExceptionDao<ScriptDefHasLocalProperties, String> getScriptDefHasLocalPropertiesDao() {
+		if ( scriptDefHasLocalPropertiesRuntimeDao == null) {
+			scriptDefHasLocalPropertiesRuntimeDao = getRuntimeExceptionDao(ScriptDefHasLocalProperties.class);
+		}
+		return  scriptDefHasLocalPropertiesRuntimeDao;
+	}
+
+	public RuntimeExceptionDao<TaskDefHasLocalProperties, String> getTaskDefHasLocalPropertiesDao() {
+		if ( taskDefHasLocalPropertiesRuntimeDao == null) {
+			taskDefHasLocalPropertiesRuntimeDao = getRuntimeExceptionDao(TaskDefHasLocalProperties.class);
+		}
+		return  taskDefHasLocalPropertiesRuntimeDao;
+	}
 
 
 	/**
@@ -644,7 +681,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         Where<ScriptDefinition, String> where = queryBuilder.where();
         try {
             where.eq("name", name);
-			where.eq("argument", arg);
+			where.eq("ofType", arg);
 			where.and(2);
 			List<ScriptDefinition> results = queryBuilder.query();
             if (results.size() != 0) {
@@ -665,9 +702,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 		RuntimeExceptionDao<LocalProperties, String> localPropertiesDao = getLocalPropertiesDao();
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT label_id, w5h_label, w5h_value FROM LocalProperties, TaskDefinition where TaskDefinition.name='");
+		sb.append("SELECT label_id, w5h_label, w5h_value FROM LocalProperties, TaskDefHasLocalProperties, TaskDefinition where TaskDefinition.name='");
 		sb.append(taskName);
-		sb.append("'and TaskDefinition.id=task_id;");
+		sb.append("'and taskdefinition_id=id and localProperties_id=label_id;");
 
 		GenericRawResults<LocalProperties> rawResults =
 				localPropertiesDao.queryRaw(sb.toString(),
@@ -687,9 +724,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		RuntimeExceptionDao<LocalProperties, String> localPropertiesDao = getLocalPropertiesDao();
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT label_id, w5h_label, w5h_value from LocalProperties, ScriptDefinition where name='");
+		sb.append("SELECT label_id, w5h_label, w5h_value from LocalProperties, ScriptDefHasLocalProperties, ScriptDefinition where name='");
 		sb.append(scriptName);
-		sb.append("' and id=script_id;");
+		sb.append("' and scriptDefinition_id=_id; and localProperties_id=label_id");
 
 		GenericRawResults<LocalProperties> rawResults =
 				localPropertiesDao.queryRaw(sb.toString(),
@@ -706,15 +743,44 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	}
 
 
-	public ScriptDefinition getTopScripts(String scriptName, String ofType) throws SQLException {
+//	public ScriptDefinition getScriptDefinition(ArrayList<Task> tasks) throws SQLException {
+//
+//
+//		ScriptDefinition scriptDefinition = null;
+//		HashSet<String> scriptsSet = new HashSet<String>();
+//		for(Task task:tasks) {
+//			String scriptName = task.getScript().getName(); //get Task's script
+//			String ofType = task.getScript().getOfType();
+//			if (scriptDefinition ==null) {
+//				scriptDefinition = getTopScripts(scriptName, ofType);
+//			}else{
+//				if (scriptDefinition.getName()==scriptName){
+//					scriptDefinition.addTaskMap(task.getName(),new TaskDefinition(task.getName()));
+//				}else{
+//					for (ScriptDefinition sd: scriptDefinition.getSubscripts()){
+//						if(sd.getName()==scriptName){
+//							sd.addTaskMap(task.getName(),new TaskDefinition(task.getName()));
+//							break;
+//						}
+//
+//					}
+//				}
+//			}
+//
+//
+//		}
+//
+//	}
+
+	public ScriptDefinition getScriptDefinition(String scriptName, String ofType) throws SQLException {
 		RuntimeExceptionDao<ScriptDefinition, String> scriptDefinitionDao = getScriptDefDao();
 
 
 		//Get one level above scripts that have this Task
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct sd.id, sd.name from ScriptDefinition sd where name='");
+		sb.append("select distinct sd._id, sd.name, sd.ofType from ScriptDefinition sd where name='");
 		sb.append(scriptName);
-		sb.append("' and argument='");
+		sb.append("' and ofType='");
 		sb.append(ofType);
 		sb.append("';");
 
@@ -726,171 +792,270 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 								ScriptDefinition sd=new ScriptDefinition();
 								sd.setId(Integer.parseInt(resultColumns[0]));
 								sd.setName((String)resultColumns[1]);
+								sd.setOfType((String)resultColumns[2]);
 								return sd;
 							}
 						});
 
-
-		for (ScriptDefinition superscriptDownLevel :(ArrayList<ScriptDefinition>)rawResults.getResults()) {
-			//get the Local Properties for this one level up scripts
-			sb=new StringBuilder();
-			sb.append("select label_id, w5h_label, w5h_value from LocalProperties lp where lp.script_id=");
-			sb.append(superscriptDownLevel.getId());
-
-			GenericRawResults<LocalProperties> localPropertiesOneLevelUpScripts =
-					scriptDefinitionDao.queryRaw(sb.toString(),
-							new RawRowMapper<LocalProperties>() {
-								public LocalProperties mapRow(String[] columnNames,
-															  String[] resultColumns) {
-									LocalProperties lp = new LocalProperties(Integer.parseInt(resultColumns[0]),
-											(String) resultColumns[1], (String) resultColumns[2]);
-									return lp;
-								}
-							});
-
-			superscriptDownLevel.setLocalProperties((ArrayList<LocalProperties>) localPropertiesOneLevelUpScripts.getResults());
-			sb = new StringBuilder();
-			sb.append("select distinct superscript_id,name from subscript, ScriptDefinition s where s.id=superscript_id and subscript_id=");
-			sb.append(superscriptDownLevel.getId());
-
-
-			GenericRawResults<ScriptDefinition> topLevelSuperscripts =
-					scriptDefinitionDao.queryRaw(sb.toString(),
-							new RawRowMapper<ScriptDefinition>() {
-								public ScriptDefinition mapRow(String[] columnNames,
-															   String[] resultColumns) {
-									ScriptDefinition sd = new ScriptDefinition();
-									sd.setId(Integer.parseInt(resultColumns[0]));
-									sd.setName((String) resultColumns[1]);
-									return sd;
-								}
-							});
-
-			for(ScriptDefinition topLevel :topLevelSuperscripts){
-				sb = new StringBuilder();
-				sb.append("select label_id, w5h_label, w5h_value from LocalProperties where script_id=");
-				sb.append(topLevel.getId());
-
-
-				GenericRawResults<LocalProperties> TopLevelLocalDefinitions =
-						scriptDefinitionDao.queryRaw(sb.toString(),
-								new RawRowMapper<LocalProperties>() {
-									public LocalProperties mapRow(String[] columnNames,
-																  String[] resultColumns) {
-										LocalProperties lp = new LocalProperties(Integer.parseInt(resultColumns[0]),
-												(String) resultColumns[1], (String) resultColumns[2]);
-										return lp;
-									}
-								});
-
-				topLevel.setLocalProperties((ArrayList<LocalProperties>) TopLevelLocalDefinitions.getResults());
-				topLevel.addSubscript(superscriptDownLevel);
-				return topLevel;
-			}
-
-
-
+		List<ScriptDefinition> list = rawResults.getResults();
+		if(!list.isEmpty()){
+			return list.get(0);
+		}else{
+			return null;
 		}
-
-		return null;
-
-
-		//return (ArrayList<ScriptDefinition>)rawResults.getResults();
 
 	}
 
+	//updated/last one
+	public ScriptDefinition getScriptDefinition(int scriptID, ScriptDefinition sd) throws SQLException {
 
-
-	public ScriptDefinition getTopScriptsByTask(String taskName) throws SQLException {
 		RuntimeExceptionDao<ScriptDefinition, String> scriptDefinitionDao = getScriptDefDao();
 
 
-		//Get one level above scripts that have this Task
-		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct sd.id, sd.name from ScriptDefinition sd, TaskDefinition tf, ScriptHasTasks sht where tf.name='");
-		sb.append(taskName);
-		sb.append("' and sht.task_id=tf.id and sht.script_id=sd.id;");
+		//get the Local Properties for this one level up scripts
+		StringBuilder sb=new StringBuilder();
+		sb.append("select label_id, w5h_label, w5h_value from LocalProperties, ScriptDefHasLocalProperties where localProperties_id=label_id and scriptDefinition_id=");
+		sb.append(scriptID);
 
-		GenericRawResults<ScriptDefinition> rawResults =
+
+		GenericRawResults<LocalProperties> localPropertiesForScript =
+				scriptDefinitionDao.queryRaw(sb.toString(),
+						new RawRowMapper<LocalProperties>() {
+							public LocalProperties mapRow(String[] columnNames,
+														  String[] resultColumns) {
+								LocalProperties lp = new LocalProperties(Integer.parseInt(resultColumns[0]),
+										(String) resultColumns[1], (String) resultColumns[2]);
+								return lp;
+							}
+						});
+
+		sd.setLocalProperties((ArrayList<LocalProperties>) localPropertiesForScript.getResults());
+
+
+
+		sb = new StringBuilder();
+		sb.append("select distinct superscript_id,name,ofType from subscript, ScriptDefinition s where s._id=superscript_id and subscript_id=");
+		sb.append(scriptID);
+
+
+		GenericRawResults<ScriptDefinition> superscript =
 				scriptDefinitionDao.queryRaw(sb.toString(),
 						new RawRowMapper<ScriptDefinition>() {
 							public ScriptDefinition mapRow(String[] columnNames,
-														  String[] resultColumns) {
-								ScriptDefinition sd=new ScriptDefinition();
+														   String[] resultColumns) {
+								ScriptDefinition sd = new ScriptDefinition();
 								sd.setId(Integer.parseInt(resultColumns[0]));
-								sd.setName((String)resultColumns[1]);
+								sd.setName((String) resultColumns[1]);
+								sd.setOfType((String) resultColumns[2]);
 								return sd;
 							}
 						});
 
-
-		for (ScriptDefinition superscriptDownLevel :(ArrayList<ScriptDefinition>)rawResults.getResults()) {
-			//get the Local Properties for this one level up scripts
-			sb=new StringBuilder();
-			sb.append("select label_id, w5h_label, w5h_value from LocalProperties lp where lp.script_id=");
-			sb.append(superscriptDownLevel.getId());
-
-			GenericRawResults<LocalProperties> localPropertiesOneLevelUpScripts =
-					scriptDefinitionDao.queryRaw(sb.toString(),
-							new RawRowMapper<LocalProperties>() {
-								public LocalProperties mapRow(String[] columnNames,
-															   String[] resultColumns) {
-									LocalProperties lp = new LocalProperties(Integer.parseInt(resultColumns[0]),
-											(String) resultColumns[1], (String) resultColumns[2]);
-									return lp;
-								}
-							});
-
-			superscriptDownLevel.setLocalProperties((ArrayList<LocalProperties>) localPropertiesOneLevelUpScripts.getResults());
-			sb = new StringBuilder();
-			sb.append("select distinct superscript_id,name  from subscript, ScriptDefinition s where s.id=superscript_id and  subscript_id=");
-			sb.append(superscriptDownLevel.getId());
-
-
-			GenericRawResults<ScriptDefinition> topLevelSuperscripts =
-					scriptDefinitionDao.queryRaw(sb.toString(),
-							new RawRowMapper<ScriptDefinition>() {
-								public ScriptDefinition mapRow(String[] columnNames,
-															   String[] resultColumns) {
-									ScriptDefinition sd = new ScriptDefinition();
-									sd.setId(Integer.parseInt(resultColumns[0]));
-									sd.setName((String) resultColumns[1]);
-									return sd;
-								}
-							});
-
-			for(ScriptDefinition topLevel :topLevelSuperscripts){
-				sb = new StringBuilder();
-				sb.append("select label_id, w5h_label, w5h_value from LocalProperties where script_id=");
-				sb.append(topLevel.getId());
-
-
-				GenericRawResults<LocalProperties> TopLevelLocalDefinitions =
-						scriptDefinitionDao.queryRaw(sb.toString(),
-								new RawRowMapper<LocalProperties>() {
-									public LocalProperties mapRow(String[] columnNames,
-																   String[] resultColumns) {
-										LocalProperties lp = new LocalProperties(Integer.parseInt(resultColumns[0]),
-												(String) resultColumns[1], (String) resultColumns[2]);
-										return lp;
-									}
-								});
-
-				topLevel.setLocalProperties((ArrayList<LocalProperties>) TopLevelLocalDefinitions.getResults());
-				topLevel.addSubscript(superscriptDownLevel);
-				return topLevel;
-			}
-
-
-
+		List<ScriptDefinition> list = superscript.getResults();
+		if(!list.isEmpty()){
+			ScriptDefinition script = list.get(0);
+			script.addSubscript(sd);
+			return getScriptDefinition(script.getId(), script);
+		}else{
+			return sd;
 		}
-
-		return null;
-
-
-		//return (ArrayList<ScriptDefinition>)rawResults.getResults();
-
 	}
+
+//	public ScriptDefinition getTopScripts(String scriptName, String ofType, ArrayList<Task> tasks) throws SQLException {
+//		RuntimeExceptionDao<ScriptDefinition, String> scriptDefinitionDao = getScriptDefDao();
+//
+//
+//		//Get one level above scripts that have this Task
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("select distinct sd._id, sd.name, sd.ofType from ScriptDefinition sd where name='");
+//		sb.append(scriptName);
+//		sb.append("' and ofType='");
+//		sb.append(ofType);
+//		sb.append("';");
+//
+//		GenericRawResults<ScriptDefinition> rawResults =
+//				scriptDefinitionDao.queryRaw(sb.toString(),
+//						new RawRowMapper<ScriptDefinition>() {
+//							public ScriptDefinition mapRow(String[] columnNames,
+//														   String[] resultColumns) {
+//								ScriptDefinition sd=new ScriptDefinition();
+//								sd.setId(Integer.parseInt(resultColumns[0]));
+//								sd.setName((String)resultColumns[1]);
+//								sd.setOfType((String)resultColumns[2]);
+//								return sd;
+//							}
+//						});
+//
+//
+//		for (ScriptDefinition superscriptDownLevel :(ArrayList<ScriptDefinition>)rawResults.getResults()) {
+//
+//
+//			for (Task task:tasks){
+//				superscriptDownLevel.addTaskMap(task.getName(), task.getTaskDefinition() );
+//			}
+//
+//
+//			//get the Local Properties for this one level up scripts
+//			sb=new StringBuilder();
+//			sb.append("select label_id, w5h_label, w5h_value from LocalProperties, ScriptDefHasLocalProperties where localProperties_id=label_id and scriptDefinition_id=");
+//			sb.append(superscriptDownLevel.getId());
+//
+//
+//			GenericRawResults<LocalProperties> localPropertiesOneLevelUpScripts =
+//					scriptDefinitionDao.queryRaw(sb.toString(),
+//							new RawRowMapper<LocalProperties>() {
+//								public LocalProperties mapRow(String[] columnNames,
+//															  String[] resultColumns) {
+//									LocalProperties lp = new LocalProperties(Integer.parseInt(resultColumns[0]),
+//											(String) resultColumns[1], (String) resultColumns[2]);
+//									return lp;
+//								}
+//							});
+//
+//			superscriptDownLevel.setLocalProperties((ArrayList<LocalProperties>) localPropertiesOneLevelUpScripts.getResults());
+//			sb = new StringBuilder();
+//			sb.append("select distinct superscript_id,name,ofType from subscript, ScriptDefinition s where s._id=superscript_id and subscript_id=");
+//			sb.append(superscriptDownLevel.getId());
+//
+//
+//			GenericRawResults<ScriptDefinition> topLevelSuperscripts =
+//					scriptDefinitionDao.queryRaw(sb.toString(),
+//							new RawRowMapper<ScriptDefinition>() {
+//								public ScriptDefinition mapRow(String[] columnNames,
+//															   String[] resultColumns) {
+//									ScriptDefinition sd = new ScriptDefinition();
+//									sd.setId(Integer.parseInt(resultColumns[0]));
+//									sd.setName((String) resultColumns[1]);
+//									sd.setOfType((String)resultColumns[2]);
+//									return sd;
+//								}
+//							});
+//
+//			for(ScriptDefinition topLevel :topLevelSuperscripts){
+//				sb = new StringBuilder();
+//				sb.append("select label_id, w5h_label, w5h_value from LocalProperties, ScriptDefHasLocalProperties where localProperties_id=label_id and scriptDefinition_id=");
+//				sb.append(topLevel.getId());
+//
+//
+//				GenericRawResults<LocalProperties> TopLevelLocalDefinitions =
+//						scriptDefinitionDao.queryRaw(sb.toString(),
+//								new RawRowMapper<LocalProperties>() {
+//									public LocalProperties mapRow(String[] columnNames,
+//																  String[] resultColumns) {
+//										LocalProperties lp = new LocalProperties(Integer.parseInt(resultColumns[0]),
+//												(String) resultColumns[1], (String) resultColumns[2]);
+//										return lp;
+//									}
+//								});
+//
+//				topLevel.setLocalProperties((ArrayList<LocalProperties>) TopLevelLocalDefinitions.getResults());
+//				topLevel.addSubscript(superscriptDownLevel);
+//				return topLevel;
+//			}
+//
+//
+//
+//		}
+//
+//		return null;
+//
+//
+//		//return (ArrayList<ScriptDefinition>)rawResults.getResults();
+//
+//	}
+
+
+
+//	public ScriptDefinition getTopScriptsByTask(String taskName) throws SQLException {
+//		RuntimeExceptionDao<ScriptDefinition, String> scriptDefinitionDao = getScriptDefDao();
+//
+//
+//		//Get one level above scripts that have this Task
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("select distinct sd.id, sd.name from ScriptDefinition sd, TaskDefinition tf, ScriptDefHasTaskDef sht where tf.name='");
+//		sb.append(taskName);
+//		sb.append("' and sht.task_id=tf.id and sht.script_id=sd.id;");
+//
+//		GenericRawResults<ScriptDefinition> rawResults =
+//				scriptDefinitionDao.queryRaw(sb.toString(),
+//						new RawRowMapper<ScriptDefinition>() {
+//							public ScriptDefinition mapRow(String[] columnNames,
+//														  String[] resultColumns) {
+//								ScriptDefinition sd=new ScriptDefinition();
+//								sd.setId(Integer.parseInt(resultColumns[0]));
+//								sd.setName((String)resultColumns[1]);
+//								return sd;
+//							}
+//						});
+//
+//
+//		for (ScriptDefinition superscriptDownLevel :(ArrayList<ScriptDefinition>)rawResults.getResults()) {
+//			//get the Local Properties for this one level up scripts
+//			sb=new StringBuilder();
+//			sb.append("select label_id, w5h_label, w5h_value from LocalProperties lp where lp.script_id=");
+//			sb.append(superscriptDownLevel.getId());
+//
+//			GenericRawResults<LocalProperties> localPropertiesOneLevelUpScripts =
+//					scriptDefinitionDao.queryRaw(sb.toString(),
+//							new RawRowMapper<LocalProperties>() {
+//								public LocalProperties mapRow(String[] columnNames,
+//															   String[] resultColumns) {
+//									LocalProperties lp = new LocalProperties(Integer.parseInt(resultColumns[0]),
+//											(String) resultColumns[1], (String) resultColumns[2]);
+//									return lp;
+//								}
+//							});
+//
+//			superscriptDownLevel.setLocalProperties((ArrayList<LocalProperties>) localPropertiesOneLevelUpScripts.getResults());
+//			sb = new StringBuilder();
+//			sb.append("select distinct superscript_id,name  from subscript, ScriptDefinition s where s.id=superscript_id and  subscript_id=");
+//			sb.append(superscriptDownLevel.getId());
+//
+//
+//			GenericRawResults<ScriptDefinition> topLevelSuperscripts =
+//					scriptDefinitionDao.queryRaw(sb.toString(),
+//							new RawRowMapper<ScriptDefinition>() {
+//								public ScriptDefinition mapRow(String[] columnNames,
+//															   String[] resultColumns) {
+//									ScriptDefinition sd = new ScriptDefinition();
+//									sd.setId(Integer.parseInt(resultColumns[0]));
+//									sd.setName((String) resultColumns[1]);
+//									return sd;
+//								}
+//							});
+//
+//			for(ScriptDefinition topLevel :topLevelSuperscripts){
+//				sb = new StringBuilder();
+//				sb.append("select label_id, w5h_label, w5h_value from LocalProperties where script_id=");
+//				sb.append(topLevel.getId());
+//
+//
+//				GenericRawResults<LocalProperties> TopLevelLocalDefinitions =
+//						scriptDefinitionDao.queryRaw(sb.toString(),
+//								new RawRowMapper<LocalProperties>() {
+//									public LocalProperties mapRow(String[] columnNames,
+//																   String[] resultColumns) {
+//										LocalProperties lp = new LocalProperties(Integer.parseInt(resultColumns[0]),
+//												(String) resultColumns[1], (String) resultColumns[2]);
+//										return lp;
+//									}
+//								});
+//
+//				topLevel.setLocalProperties((ArrayList<LocalProperties>) TopLevelLocalDefinitions.getResults());
+//				topLevel.addSubscript(superscriptDownLevel);
+//				return topLevel;
+//			}
+//
+//
+//
+//		}
+//
+//		return null;
+//
+//
+//		//return (ArrayList<ScriptDefinition>)rawResults.getResults();
+//
+//	}
 
 
 	public Category categoryExists(String name) {
@@ -916,9 +1081,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		RuntimeExceptionDao<Person, String> personDao = getPersonDao();
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT Person.name,Person.email,Person.username,Person.isSelf  from Person, FeedWithTags, Feed where Feed._id='");
+		sb.append("SELECT Person.name,Person.email,Person.username,Person.isSelf  from Person, FeedWithTags, Feed where Feed._id=");
 		sb.append(feed_id);
-		sb.append("' and Feed._id=FeedWithTags.feed_id and FeedWithTags.person_id=Person._id;");
+		sb.append(" and Feed._id=feed_id and tagged_id=Person._id;");
 
 		GenericRawResults<Person> rawResults =
 				personDao.queryRaw(sb.toString(),

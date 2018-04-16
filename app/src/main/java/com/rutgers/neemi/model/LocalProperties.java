@@ -19,11 +19,11 @@ public class LocalProperties implements Serializable {
 	@DatabaseField
 	String w5h_value;
 
-	@DatabaseField(foreign=true, columnName = "script_id")
-	ScriptDefinition script;
+	//@DatabaseField(foreign=true, foreignAutoRefresh=true)
+	//ScriptDefinition script;
 
-	@DatabaseField(foreign=true, columnName = "task_id")
-	TaskDefinition task;
+	//@DatabaseField(foreign=true, foreignAutoRefresh=true)
+	//TaskDefinition task;
 
 
 	public LocalProperties(int id, String w5h_label, String w5h_value){
@@ -52,21 +52,21 @@ public class LocalProperties implements Serializable {
 		this.w5h_value = w5h_value;
 	}
 
-	public ScriptDefinition getScriptDef() {
-		return script;
-	}
-
-	public void setScriptDef(ScriptDefinition script) {
-		this.script = script;
-	}
-
-	public TaskDefinition getTaskDef() {
-		return task;
-	}
-
-	public void setTaskDef(TaskDefinition task) {
-		this.task = task;
-	}
+//	public ScriptDefinition getScriptDef() {
+//		return script;
+//	}
+//
+//	public void setScriptDef(ScriptDefinition script) {
+//		this.script = script;
+//	}
+//
+//	public TaskDefinition getTaskDef() {
+//		return task;
+//	}
+//
+//	public void setTaskDef(TaskDefinition task) {
+//		this.task = task;
+//	}
 
 	//	public ArrayList<String> getValue() {
 //		return value;

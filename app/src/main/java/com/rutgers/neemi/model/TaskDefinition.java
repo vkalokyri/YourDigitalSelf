@@ -2,9 +2,10 @@ package com.rutgers.neemi.model;
 
 import com.j256.ormlite.field.DatabaseField;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class TaskDefinition {
+public class TaskDefinition implements Serializable {
 
 	@DatabaseField(generatedId = true)
 	int id;
@@ -13,6 +14,9 @@ public class TaskDefinition {
 
 	ArrayList<LocalProperties> locals;
 
+	public TaskDefinition(String name){
+		this.name=name;
+	}
 	public TaskDefinition()
 	{
 		this.locals=new ArrayList<LocalProperties>();

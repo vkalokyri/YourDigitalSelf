@@ -17,11 +17,11 @@ public class FeedMessageTags implements Serializable {
 
 
     // This is a foreign object which just stores the id from the Person object in this table.
-    @DatabaseField(foreign = true, columnName = "person_id")
+    @DatabaseField(foreign = true, foreignAutoRefresh=true)
     Person tagged;
 
     // This is a foreign object which just stores the id from the Post object in this table.
-    @DatabaseField(foreign = true, columnName = "feed_id")
+    @DatabaseField(foreign = true, foreignAutoRefresh=true)
     Feed feed;
 
     public FeedMessageTags() {

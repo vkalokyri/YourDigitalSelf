@@ -182,5 +182,44 @@ public class Utilities {
 //	}
 //
 
-	
+//    public Script assignScore(Context context){
+//        ConfigReader config = new ConfigReader(context);
+//        List<Task> tasks = this.getTasks();
+//
+//        float instanceScore = this.getScore();
+//        for (Task processTask : tasks) {
+//            Object pid = processTask.getPid();
+//            float addedScore=0;
+//            if (pid instanceof Transaction ){
+//                addedScore = Float.parseFloat(config.getStr(PROPERTIES.BANK_WEIGHT));
+//            }else if (pid instanceof Email){
+//                addedScore = Float.parseFloat(config.getStr(PROPERTIES.EMAIL_WEIGHT));
+//                String from =((Email)pid).getFrom();
+//                if(((String)from).contains("member_services@opentable.com")){
+//                    addedScore = Float.parseFloat(config.getStr(PROPERTIES.OPENTABLE_WEIGHT));
+//                }
+//                else if(((String)from).contains("calendar-notification@google.com")){
+//                    addedScore = Float.parseFloat(config.getStr(PROPERTIES.GCAL_WEIGHT));
+//                }
+//
+//
+//            }else if (pid instanceof Event){
+//                addedScore = Float.parseFloat(config.getStr(PROPERTIES.GCAL_WEIGHT));
+//            }else if (pid instanceof Photo){
+//                addedScore = Float.parseFloat(config.getStr(PROPERTIES.FACEBOOK_WEIGHT));
+//            }
+//            float newScore = scoreFunction(instanceScore, addedScore);
+//            instanceScore=newScore;
+//            this.setScore(newScore);
+//        }
+//        return this;
+//
+//    }
+//
+//    public float scoreFunction(float previousScore,float addedScore){
+//        return (1-((1-previousScore)*(1-addedScore)));
+//    }
+
+
+
 }
