@@ -10,6 +10,10 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.rutgers.neemi.model.GPSLocation;
+import com.rutgers.neemi.model.Photo;
+
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
@@ -25,11 +29,15 @@ class LocationResultHelper {
     private Context mContext;
     private List<Location> mLocations;
     private NotificationManager mNotificationManager;
+    private DatabaseHelper helper;
+    final RuntimeExceptionDao<GPSLocation, String> gpsDao;
+
 
     LocationResultHelper(Context context, List<Location> locations) {
         mContext = context;
         mLocations = locations;
-
+        helper=DatabaseHelper.getHelper(mContext);
+        gpsDao = helper.getGpsLocationtRuntimeDao();
     }
 
     /**
@@ -52,6 +60,9 @@ class LocationResultHelper {
             sb.append(location.getLongitude());
             sb.append(")");
             sb.append("\n");
+            //save gps in sqlite db
+            GPSLocation gpsLocation = new GPSLocation(System.currentTimeMillis(),location.getLatitude(),location.getLongitude());
+            gpsDao.create(gpsLocation);
         }
         return sb.toString();
     }
@@ -65,6 +76,7 @@ class LocationResultHelper {
                 .putString(KEY_LOCATION_UPDATES_RESULT, getLocationResultTitle() + "\n" +
                         getLocationResultText())
                 .apply();
+
     }
 
     /**

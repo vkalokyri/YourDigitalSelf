@@ -59,14 +59,12 @@ public class LocationActivity extends FragmentActivity implements GoogleApiClien
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    // FIXME: 5/16/17
-    private static final long UPDATE_INTERVAL = 10 * 1000;
+    private static final long UPDATE_INTERVAL = 600 * 1000; //300*1000 = 5mins
 
     /**
      * The fastest rate for active location updates. Updates will never be more frequent
      * than this value, but they may be less frequent.
      */
-    // FIXME: 5/14/17
     private static final long FASTEST_UPDATE_INTERVAL = UPDATE_INTERVAL / 2;
 
     /**

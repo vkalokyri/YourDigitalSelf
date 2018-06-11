@@ -26,6 +26,7 @@ import com.rutgers.neemi.model.EventAttendees;
 import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.FeedMessageTags;
 import com.rutgers.neemi.model.FeedWithTags;
+import com.rutgers.neemi.model.GPSLocation;
 import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.ScriptDefHasLocalProperties;
 import com.rutgers.neemi.model.ScriptLocalValues;
@@ -84,6 +85,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private RuntimeExceptionDao<ScriptLocalValues, String> scriptlocalsRuntimeDao = null;
 	private RuntimeExceptionDao<TaskLocalValues, String> tasklocalsRuntimeDao = null;
 	private RuntimeExceptionDao<Subscript, String> subscriptRuntimeDao = null;
+	private RuntimeExceptionDao<GPSLocation, String> gpsLocationtRuntimeDao = null;
+
 	Context context;
 
 
@@ -95,7 +98,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	{
 		if (instance == null)
 			instance = new DatabaseHelper(context);
-
 		return instance;
 	}
 
@@ -140,7 +142,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             TableUtils.createTable(connectionSource, TaskDefinition.class);
             TableUtils.createTable(connectionSource, ScriptDefHasTaskDef.class);
             TableUtils.createTable(connectionSource, Subscript.class);
-
+			TableUtils.createTable(connectionSource, GPSLocation.class);
 			createIndexes();
 
 		} catch (SQLException e) {
@@ -198,6 +200,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, FeedMessageTags.class, true);
 			TableUtils.dropTable(connectionSource, ScriptDefHasLocalProperties.class, true);
 			TableUtils.dropTable(connectionSource, TaskDefHasLocalProperties.class, true);
+			TableUtils.dropTable(connectionSource, GPSLocation.class, true);
+
 
 
 			// after we drop the old databases, we create the new ones
@@ -413,6 +417,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		return  taskDefHasLocalPropertiesRuntimeDao;
 	}
 
+	public RuntimeExceptionDao<GPSLocation, String> getGpsLocationtRuntimeDao() {
+		if ( gpsLocationtRuntimeDao == null) {
+			gpsLocationtRuntimeDao = getRuntimeExceptionDao(GPSLocation.class);
+		}
+		return  gpsLocationtRuntimeDao;
+	}
 
 	/**
 	 * Close the database connections and clear any cached DAOs.
@@ -436,6 +446,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		categoryRuntimeDao = null;
 		transactionRuntimeDao = null;
         subscriptRuntimeDao =null;
+        gpsLocationtRuntimeDao = null;
 	}
 
 
