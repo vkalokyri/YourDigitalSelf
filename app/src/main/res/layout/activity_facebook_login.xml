@@ -1,4 +1,4 @@
-<android.support.design.widget.CoordinatorLayout
+<CoordinatorLayout
     android:theme="@style/Theme.AppCompat.Light"
     android:id="@+id/fbCoordinatorLayout"
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -9,7 +9,7 @@
     android:fitsSystemWindows="true"
     tools:context="com.rutgers.neemi.FacebookActivity">
 
-    <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
@@ -45,5 +45,5 @@
             android:textAllCaps="false"
             />
 
-    </android.support.constraint.ConstraintLayout>
-</android.support.design.widget.CoordinatorLayout>
+    </ConstraintLayout>
+</CoordinatorLayout>

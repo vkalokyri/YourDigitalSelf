@@ -211,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // For rest of the options we just show a toast on click
                     default:
-                        Toast.makeText(getApplicationContext(),"Somethings Wrong",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(),"Something is Wrong",Toast.LENGTH_SHORT).show();
                         return true;
 
                 }

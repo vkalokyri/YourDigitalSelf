@@ -12,13 +12,13 @@
         android:padding="12dp"
         android:textSize="14dp"
         android:background="@drawable/textlines"
-        android:text="Please select which data you want to include in the app:"></TextView>
+        android:text="Please select which sources you want to include in the app:"></TextView>
 
-    <ListView
-        android:id="@+id/list"
+    <ExpandableListView
+        android:id="@+id/sourcesExpList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true" >
-    </ListView>
+    </ExpandableListView>
 </LinearLayout>

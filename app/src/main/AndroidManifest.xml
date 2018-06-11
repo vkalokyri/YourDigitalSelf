@@ -58,11 +58,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.rutgers.neemi.MainActivity" />
         </activity>
-        <activity android:name=".LocationActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.rutgers.neemi.LocationActivity" />
-        </activity>
         <activity android:name=".InstagramActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -80,10 +75,23 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="com.rutgers.neemi.LocationActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.rutgers.neemi.MainActivity" />
+        </activity>
 
         <service
-            android:name=".LocationService"
-            android:process=":my_service" />
+            android:name="com.rutgers.neemi.LocationUpdatesIntentService"
+            android:exported="false" />
+
+        <receiver android:name="com.rutgers.neemi.LocationUpdatesBroadcastReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.rutgers.neemi.LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES" />
+            </intent-filter>
+        </receiver>
+
 
     </application>
 

@@ -3,10 +3,9 @@ apply plugin: 'com.android.application'
 android {
     useLibrary 'org.apache.http.legacy'
     compileSdkVersion 26
-    //buildToolsVersion "26.0.1"
     defaultConfig {
         applicationId "com.rutgers.neemi"
-        minSdkVersion 25
+        minSdkVersion 15
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
@@ -64,6 +63,7 @@ dependencies {
     compile 'com.android.support:design:26.0.1'
     compile 'com.google.android.gms:play-services-auth:11.8.0'
     compile 'com.google.android.gms:play-services-drive:11.8.0'
+    compile 'com.google.android.gms:play-services-location:11.8.0'
     compile 'pub.devrel:easypermissions:0.2.1'
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
