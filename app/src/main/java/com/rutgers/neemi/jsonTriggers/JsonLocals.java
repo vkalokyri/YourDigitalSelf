@@ -68,17 +68,24 @@ public class JsonLocals implements W5hLocals{
 					JsonValue attributeName = localObject.get(objectClass);
 					if (objectClass.equalsIgnoreCase("Email")){
 						if (attributeName.toString().equalsIgnoreCase("\"from\"")){
-							localValues.add(((Email)pid).getFrom());
+							localValues.add(((Email)pid).getFrom().getName());
 						}
-						else if (attributeName.toString().equalsIgnoreCase("\"to\"")){
-							localValues.add(((Email)pid).getTo());
-						}
-						else if (attributeName.toString().equalsIgnoreCase("\"cc\"")){
-							localValues.add(((Email)pid).getCc());
-						}
-						else if (attributeName.toString().equalsIgnoreCase("\"bcc\"")){
-							localValues.add(((Email)pid).getBcc());
-						}
+						//TODO-->
+//						else if (attributeName.toString().equalsIgnoreCase("\"to\"")){
+//							for (Person to : ((Email)pid).getTo()) {
+//								localValues.add(to.getName());
+//							}
+//						}
+//						else if (attributeName.toString().equalsIgnoreCase("\"cc\"")){
+//							for (Person to : ((Email)pid).getCc()) {
+//								localValues.add(to.getName());
+//							}
+//						}
+//						else if (attributeName.toString().equalsIgnoreCase("\"bcc\"")){
+//							for (Person to : ((Email)pid).getBcc()) {
+//								localValues.add(to.getName());
+//							}
+//						}
 						else if (attributeName.toString().equalsIgnoreCase("\"date\"")){
 							localValues.add(((Email)pid).getDate().toString());
 						}

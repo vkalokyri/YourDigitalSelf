@@ -414,7 +414,7 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
             String pageToken = null;
             Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
             DateTime now = new DateTime(cal.getTimeInMillis());
-            cal.add(Calendar.MONTH, -12); // substract 6 months
+            cal.add(Calendar.MONTH, -1); // substract 6 months
             DateTime since=new DateTime(cal.getTimeInMillis());
             System.out.println("since = "+since);
             String timestamp = null;

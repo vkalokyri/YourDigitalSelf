@@ -27,6 +27,7 @@ import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.LocalProperties;
+import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Place;
 import com.rutgers.neemi.model.Script;
@@ -298,8 +299,40 @@ public class ScriptFragment2 extends Fragment {
         final ImageView imageView = (ImageView) view.findViewById(R.id.icon);
         if(childTask.getPid() instanceof Email){
             imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.gmail_icon));
+            StringBuilder sb = new StringBuilder();
+            for (Person p: ((Email) childTask.getPid()).getTo()){
+                if(p!=null && !p.getName().isEmpty()){
+                    sb.append(p.getName());
+                    sb.append(", ");
+                }else{
+                    sb.append(p.getEmail());
+                    sb.append(", ");
+                }
+            }
+            for (Person p: ((Email) childTask.getPid()).getCc()){
+                if(p!=null && !p.getName().isEmpty()){
+                    sb.append(p.getName());
+                    sb.append(", ");
+                }else{
+                    sb.append(p.getEmail());
+                    sb.append(", ");
+                }
+            }
+            for (Person p: ((Email) childTask.getPid()).getBcc()){
+                if(p!=null && !p.getName().isEmpty()){
+                    sb.append(p.getName());
+                    sb.append(", ");
+                }else{
+                    sb.append(p.getEmail());
+                    sb.append(", ");
+                }
+            }
+
+            if(sb.length()>0) {
+                sb.delete(sb.length() - 2, sb.length() - 1);
+            }
             txtListHeader.setText(((Email) childTask.getPid()).getSubject());
-            String text = "whoSent: "+((Email) childTask.getPid()).getFrom()+" \n whoReceived: "+ ((Email) childTask.getPid()).getTo()+" \n whenSent: "+ ((Email) childTask.getPid()).getDate();
+            String text = "whoSent: "+((Email) childTask.getPid()).getFrom().getName()+" \n whoReceived: "+ sb.toString()+" \n whenSent: "+ ((Email) childTask.getPid()).getDate();
             txtListHeaderBody.setText(text);
         }else if(childTask.getPid() instanceof Transaction){
             imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.bank));

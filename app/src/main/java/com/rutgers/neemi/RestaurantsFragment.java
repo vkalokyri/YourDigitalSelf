@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.j256.ormlite.dao.GenericRawResults;
+import com.j256.ormlite.dao.RawRowMapper;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.rutgers.neemi.interfaces.Clues;
 import com.rutgers.neemi.interfaces.Triggers;
@@ -27,6 +28,7 @@ import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.LocalProperties;
+import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.ScriptLocalValues;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Place;
@@ -249,13 +251,9 @@ public class RestaurantsFragment extends Fragment {
                 }
             }
 
-
-
             ArrayList<ArrayList<Task>> tasks = mergeTasksByEventDate(tasksRunning);
             ArrayList<ArrayList<Task>> tasksThreads = mergeThreads(tasks);
             listOfScripts = createScriptPerTask(tasksThreads);
-
-
 
             CustomListAdapter adapter=new CustomListAdapter(getActivity(), listOfScripts, imgid);
             ListView list= myView.findViewById(R.id.restaurant_list);
@@ -267,7 +265,6 @@ public class RestaurantsFragment extends Fragment {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
@@ -644,7 +641,6 @@ public class RestaurantsFragment extends Fragment {
             }
         }
 
-
         for (String thread_id: mergeTasksByThread.keySet()) {
             ArrayList<Task> mergedtasks = mergeTasksByThread.get(thread_id);
             listofMergedTasks.add(mergedtasks);
@@ -811,8 +807,9 @@ public class RestaurantsFragment extends Fragment {
             GenericRawResults<Email> rawResults = helper.getEmailDao().queryRaw(query,helper.getEmailDao().getRawRowMapper());
             if (rawResults!=null) {
                 for (Email email : rawResults.getResults()) {
+                    Email emailUpdated = helper.getToCcBcc(email);
                     Task task = new Task();
-                    task.setPid(email);
+                    task.setPid(emailUpdated);
                     task.setName(subtask);
                     task.setScript(script);
                     task.setTaskDefinition(new TaskDefinition(subtask));

@@ -48,6 +48,7 @@ import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
 import com.google.api.services.gmail.model.MessagePartHeader;
 import com.j256.ormlite.android.AndroidConnectionSource;
+import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
@@ -57,6 +58,10 @@ import com.joestelmach.natty.DateGroup;
 import com.joestelmach.natty.ParseLocation;
 import com.joestelmach.natty.Parser;
 import com.rutgers.neemi.model.Email;
+import com.rutgers.neemi.model.EmailBcc;
+import com.rutgers.neemi.model.EmailCc;
+import com.rutgers.neemi.model.EmailTo;
+import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.TaskDefinition;
 
 import java.io.IOException;
@@ -464,10 +469,17 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         private int getDataFromApi() throws IOException {
             // List the next 10 events from the primary calendar.
             RuntimeExceptionDao<Email, String> emailDao = dbHelper.getEmailDao();
+            RuntimeExceptionDao<EmailTo, String> emailToDao = dbHelper.getEmailToDao();
+            RuntimeExceptionDao<EmailCc, String> emailCcDao = dbHelper.getEmailCcDao();
+            RuntimeExceptionDao<EmailBcc, String> emailBccDao = dbHelper.getEmailBccDao();
+            RuntimeExceptionDao<Person, String> personDao = dbHelper.getPersonDao();
+
+
+
             //final SQLiteDatabase db = dbHelper.getWritableDatabase();
             ConnectionSource connectionSource = new AndroidConnectionSource(dbHelper);
-            emailDao.queryRaw("delete from  Email;");
-            emailDao.queryRaw("delete from  Email_fts;");
+            //emailDao.queryRaw("delete from  Email;");
+            //emailDao.queryRaw("delete from  Email_fts;");
 //                try {
 //                    //TableUtils.clearTable(connectionSource, Email.class,false);
 //                    TableUtils.clearTable(connectionSource, Email.class);
@@ -485,7 +497,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 int totalItemsInserted = 0;
                 String pageToken = null;
                 Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                cal.add(Calendar.MONTH, -6); // substract 6 months
+                cal.add(Calendar.MONTH, -1); // substract 6 months
                 Long since = cal.getTimeInMillis() / 1000;
                 System.out.println("since = " + since);
                 String timestamp = null;
@@ -582,19 +594,61 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                             for (MessagePartHeader header : headers) {
                                 String name = header.getName();
                                 if (name.equalsIgnoreCase("From")) {
-                                    email.setFrom(header.getValue());
+                                    Person p =parsePerson(header.getValue());
+                                    Person person = dbHelper.personExistsByEmail(p.getEmail());
+                                    if (person ==null) {
+                                        personDao.create(p);
+                                        email.setFrom(p);
+                                    }else {
+                                        email.setFrom(person);
+                                    }
                                 } else if (name.equalsIgnoreCase("To")) {
-                                    email.setTo(header.getValue());
+                                    email.setTo(parsePeople(header.getValue()));
                                 } else if (name.equalsIgnoreCase("Bcc")) {
-                                    email.setBcc(header.getValue());
+                                    email.setBcc(parsePeople(header.getValue()));
                                 } else if (name.equalsIgnoreCase("Cc")) {
-                                    email.setCc(header.getValue());
-                                }else if(name.equalsIgnoreCase("subject")){
+                                    email.setCc(parsePeople(header.getValue()));
+                                } else if (name.equalsIgnoreCase("subject")) {
                                     email.setSubject(header.getValue());
                                 }
                             }
 
                             emailDao.create(email);
+
+                            if (email.getTo()!=null && !email.getTo().isEmpty()) {
+                                for (Person p:email.getTo()) {
+                                    Person person = dbHelper.personExistsByEmail(p.getEmail());
+                                    if (person ==null) {
+                                        personDao.create(p);
+                                        emailToDao.create(new EmailTo(p,email));
+                                    }else {
+                                        emailToDao.create(new EmailTo(person,email));
+                                    }
+                                }
+                            }
+                            if (email.getCc()!=null && !email.getCc().isEmpty()) {
+                                for (Person p:email.getCc()) {
+                                    Person person = dbHelper.personExistsByEmail(p.getEmail());
+                                    if (person ==null) {
+                                        personDao.create(p);
+                                        emailCcDao.create(new EmailCc(p,email));
+                                    }else {
+                                        emailCcDao.create(new EmailCc(person,email));
+                                    }
+                                }
+                            }
+                            if (email.getBcc()!=null && !email.getBcc().isEmpty()) {
+                                for (Person p:email.getBcc()) {
+                                    Person person = dbHelper.personExistsByEmail(p.getEmail());
+                                    if (person ==null) {
+                                        personDao.create(p);
+                                        emailBccDao.create(new EmailBcc(p,email));
+                                    }else {
+                                        emailBccDao.create(new EmailBcc(person,email));
+                                    }
+                                }
+                            }
+
                             totalItemsInserted++;
                             mProgress.setProgress(totalItemsInserted);
                         } catch (Exception e) {
@@ -612,6 +666,37 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         }
 
 
+        private Person parsePerson(String person){
+            Person p = new Person();
+
+            if(person.contains("<")){
+                String[] whoNames = person.split("<");
+                if (whoNames.length > 1) { //it has both email and name
+                    if (whoNames[0].contains("\"")) {
+                        p.setName(whoNames[0].substring(1, whoNames[0].length() - 2));
+                    } else {
+                        p.setName(whoNames[0]);
+                    }
+                    p.setEmail(whoNames[1].substring(0,whoNames[1].length() - 1));
+                } else {
+                    p.setEmail(whoNames[0]);
+                }
+            }else {
+                p.setEmail(person);
+            }
+
+            return p;
+        }
+
+        private ArrayList<Person> parsePeople(String persons){
+            ArrayList<Person> people = new ArrayList<>();
+            String[] whos = persons.split(",");
+            for(String who: whos){
+                people.add(parsePerson(who));
+            }
+
+            return people;
+        }
 
 
 

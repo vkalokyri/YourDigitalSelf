@@ -21,6 +21,9 @@ import com.j256.ormlite.table.TableUtils;
 import com.rutgers.neemi.model.Album;
 import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Email;
+import com.rutgers.neemi.model.EmailBcc;
+import com.rutgers.neemi.model.EmailCc;
+import com.rutgers.neemi.model.EmailTo;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.EventAttendees;
 import com.rutgers.neemi.model.Feed;
@@ -60,7 +63,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	// the DAO objects we use to access our tables
 	private RuntimeExceptionDao<Email, String> emailRuntimeDao = null;
-    private RuntimeExceptionDao<Event, String> calEventRuntimeDao = null;
+	private RuntimeExceptionDao<EmailTo, String> emailToRuntimeDao = null;
+	private RuntimeExceptionDao<EmailCc, String> emailCcRuntimeDao = null;
+	private RuntimeExceptionDao<EmailBcc, String> emailBccRuntimeDao = null;
+	private RuntimeExceptionDao<Event, String> calEventRuntimeDao = null;
 	private RuntimeExceptionDao<Person, String> personRuntimeDao = null;
 	private RuntimeExceptionDao<Photo, String> photoRuntimeDao = null;
 	private RuntimeExceptionDao<Feed, String> feedRuntimeDao = null;
@@ -117,7 +123,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			myDB=db;
 			Log.i(DatabaseHelper.class.getName(), "onCreate");
 			TableUtils.createTable(connectionSource, Email.class);
-            TableUtils.createTable(connectionSource, Event.class);
+			TableUtils.createTable(connectionSource, EmailTo.class);
+			TableUtils.createTable(connectionSource, EmailCc.class);
+			TableUtils.createTable(connectionSource, EmailBcc.class);
+			TableUtils.createTable(connectionSource, Event.class);
 			TableUtils.createTable(connectionSource, Person.class);
 			TableUtils.createTable(connectionSource, Album.class);
 			TableUtils.createTable(connectionSource, Photo.class);
@@ -175,6 +184,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		try {
 			Log.i(DatabaseHelper.class.getName(), "onUpgrade");
 			TableUtils.dropTable(connectionSource, Email.class, true);
+			TableUtils.dropTable(connectionSource, EmailBcc.class, true);
+			TableUtils.dropTable(connectionSource, EmailTo.class, true);
+			TableUtils.dropTable(connectionSource, EmailCc.class, true);
             TableUtils.dropTable(connectionSource, Event.class, true);
 			TableUtils.dropTable(connectionSource, Person.class, true);
 			TableUtils.dropTable(connectionSource, Album.class,true);
@@ -239,6 +251,27 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			emailRuntimeDao = getRuntimeExceptionDao(Email.class);
 		}
 		return emailRuntimeDao;
+	}
+
+	public RuntimeExceptionDao<EmailTo, String> getEmailToDao() {
+		if (emailToRuntimeDao == null) {
+			emailToRuntimeDao = getRuntimeExceptionDao(EmailTo.class);
+		}
+		return emailToRuntimeDao;
+	}
+
+	public RuntimeExceptionDao<EmailCc, String> getEmailCcDao() {
+		if (emailCcRuntimeDao == null) {
+			emailCcRuntimeDao = getRuntimeExceptionDao(EmailCc.class);
+		}
+		return emailCcRuntimeDao;
+	}
+
+	public RuntimeExceptionDao<EmailBcc, String> getEmailBccDao() {
+		if (emailBccRuntimeDao == null) {
+			emailBccRuntimeDao = getRuntimeExceptionDao(EmailBcc.class);
+		}
+		return emailBccRuntimeDao;
 	}
 
     public RuntimeExceptionDao<Event, String> getEventDao() {
@@ -1106,6 +1139,45 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 						});
 
 		return (ArrayList<Person>)rawResults.getResults();
+
+	}
+
+
+	public Email getToCcBcc(Email email) throws SQLException {
+		String tempQuery = "select Person.name, Person.email from Person, EmailTo where Person._id=to_id and email_id=" +email.get_id();
+		GenericRawResults<Person> to =
+				getEmailDao().queryRaw(tempQuery,
+						new RawRowMapper<Person>() {
+							public Person mapRow(String[] columnNames,
+												 String[] resultColumns) {
+								return new Person((String)resultColumns[0],(String)resultColumns[1]);
+							}
+						});
+		email.setTo((ArrayList<Person>)to.getResults());
+
+		tempQuery = "select Person.name, Person.email from Person, EmailBcc where Person._id=bcc_id and email_id=" +email.get_id();
+		GenericRawResults<Person> bcc =
+				getEmailDao().queryRaw(tempQuery,
+						new RawRowMapper<Person>() {
+							public Person mapRow(String[] columnNames,
+												 String[] resultColumns) {
+								return new Person((String)resultColumns[0],(String)resultColumns[1]);
+							}
+						});
+		email.setBcc((ArrayList<Person>)bcc.getResults());
+
+		tempQuery = "select Person.name, Person.email from Person, EmailCc where Person._id=cc_id and email_id=" +email.get_id();
+		GenericRawResults<Person> cc =
+				getEmailDao().queryRaw(tempQuery,
+						new RawRowMapper<Person>() {
+							public Person mapRow(String[] columnNames,
+												 String[] resultColumns) {
+								return new Person((String)resultColumns[0],(String)resultColumns[1]);
+							}
+						});
+		email.setCc((ArrayList<Person>)cc.getResults());
+
+		return email;
 
 	}
 

@@ -6,6 +6,7 @@ import com.j256.ormlite.table.DatabaseTable;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -27,14 +28,8 @@ public class Email implements Serializable{
         String threadId;
         @DatabaseField
         BigInteger historyId;
-        @DatabaseField
-        String from;
-        @DatabaseField
-        String to;
-        @DatabaseField
-        String cc;
-        @DatabaseField
-        String bcc;
+        @DatabaseField (foreign = true,foreignAutoRefresh = true)
+        Person from;
         @DatabaseField
         Date date;
         @DatabaseField
@@ -49,6 +44,11 @@ public class Email implements Serializable{
         Date subjectDate;
         @DatabaseField
         Date bodyDate;
+
+
+        ArrayList<Person> to = new ArrayList<>();
+        ArrayList<Person> cc= new ArrayList<>();
+        ArrayList<Person> bcc= new ArrayList<>();
 
 
 
@@ -89,35 +89,35 @@ public class Email implements Serializable{
         this.historyId = historyId;
     }
 
-    public String getFrom() {
+    public Person getFrom() {
         return from;
     }
 
-    public void setFrom(String from) {
+    public void setFrom(Person from) {
         this.from = from;
     }
 
-    public String getTo() {
+    public ArrayList<Person> getTo() {
         return to;
     }
 
-    public void setTo(String to) {
+    public void setTo(ArrayList<Person> to) {
         this.to = to;
     }
 
-    public String getCc() {
+    public ArrayList<Person> getCc() {
         return cc;
     }
 
-    public void setCc(String cc) {
+    public void setCc(ArrayList<Person> cc) {
         this.cc = cc;
     }
 
-    public String getBcc() {
+    public ArrayList<Person> getBcc() {
         return bcc;
     }
 
-    public void setBcc(String bcc) {
+    public void setBcc(ArrayList<Person> bcc) {
         this.bcc = bcc;
     }
 

@@ -37,6 +37,11 @@ public class Person implements Serializable {
         
     }
 
+    public Person(String name, String email) {
+        this.name = name;
+        this.email = email;
+    }
+
 
     public Person(String name, String email, String username, boolean isSelf) {
         this.name = name;
