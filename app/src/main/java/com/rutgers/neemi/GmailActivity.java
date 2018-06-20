@@ -43,10 +43,14 @@ import com.google.api.client.util.Base64;
 import com.google.api.client.util.Data;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.gmail.GmailScopes;
+import com.google.api.services.gmail.model.Label;
+import com.google.api.services.gmail.model.ListLabelsResponse;
 import com.google.api.services.gmail.model.ListMessagesResponse;
+import com.google.api.services.gmail.model.ListSendAsResponse;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
 import com.google.api.services.gmail.model.MessagePartHeader;
+import com.google.api.services.gmail.model.SendAs;
 import com.j256.ormlite.android.AndroidConnectionSource;
 import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.dao.GenericRawResults;
@@ -497,8 +501,10 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 int totalItemsInserted = 0;
                 String pageToken = null;
                 Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                cal.add(Calendar.MONTH, -1); // substract 6 months
-                Long since = cal.getTimeInMillis() / 1000;
+                //cal.add(Calendar.MONTH, -1); // substract 6 months
+                cal.add(Calendar.DATE, -1); // substract 1 day
+
+            Long since = cal.getTimeInMillis() / 1000;
                 System.out.println("since = " + since);
                 String timestamp = null;
 
@@ -524,29 +530,28 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 System.out.println("Since=" + since);
 
 
-                ListMessagesResponse response = gmailService.users().messages().list(user)
-                        .setPageToken(pageToken)
-                        .setQ("after:" + since)
-                        .execute();
+            ListMessagesResponse response = gmailService.users().messages().list(user)
+                    .setPageToken(pageToken)
+                    .setQ("after:" + since)
+                    .execute();
 
-                //pageToken = response.getNextPageToken();
+            //pageToken = response.getNextPageToken();
 
-                List<Message> messages = new ArrayList<Message>();
-                while (response.getMessages() != null) {
-                    messages.addAll(response.getMessages());
-                    if (response.getNextPageToken() != null) {
-                        pageToken = response.getNextPageToken();
-                        response = gmailService.users().messages().list(user)
-                                .setPageToken(pageToken)
-                                .setQ("after:" + since)
-                                .execute();
-                    } else {
-                        break;
-                    }
+            List<Message> messages = new ArrayList<Message>();
+            while (response.getMessages() != null) {
+                messages.addAll(response.getMessages());
+                if (response.getNextPageToken() != null) {
+                    pageToken = response.getNextPageToken();
+                    response = gmailService.users().messages().list(user)
+                            .setPageToken(pageToken)
+                            .setQ("after:" + since)
+                            .execute();
+                } else {
+                    break;
                 }
+            }
 
-                mProgress.setMax(messages.size());
-
+            mProgress.setMax(messages.size());
 
 //                final List<Message> messageslist = new ArrayList<Message>();
 //
@@ -579,7 +584,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
                 if (messages!=null){
                     for (int i = 0; i < messages.size(); i++) {
-                        try {
+                       // try {
                             Message msg = gmailService.users().messages().get(user, messages.get(i).get("id").toString()).execute();
                             List<MessagePart> parts = msg.getPayload().getParts();
                             List<MessagePartHeader> headers = msg.getPayload().getHeaders();
@@ -590,6 +595,17 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                             //email.setLabelIds(msg.getLabelIds());
                             email.setHistoryId(msg.getHistoryId());
                             email.setDate(new Date(msg.getInternalDate()));
+
+                            if(parts==null) {
+                                if (msg.getPayload().getMimeType().contentEquals("text/plain")) {
+                                    String s = new String(Base64.decodeBase64(msg.getPayload().getBody().getData().getBytes()));
+                                    email.setTextContent(s);
+                                }
+                                if (msg.getPayload().getMimeType().contentEquals("text/html")) {
+                                    String s = new String(Base64.decodeBase64(msg.getPayload().getBody().getData().getBytes()));
+                                    email.setHtmlContent(s);
+                                }
+                            }
 
                             for (MessagePartHeader header : headers) {
                                 String name = header.getName();
@@ -651,9 +667,9 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
                             totalItemsInserted++;
                             mProgress.setProgress(totalItemsInserted);
-                        } catch (Exception e) {
-                            System.out.println("Exception :" + e.getMessage());
-                        }
+                        //} catch (Exception e) {
+                        //    System.out.println("Exception :" + e.getMessage());
+                        //}
                     }
                 }
                 System.out.println("EmailsInserted Final = " + totalItemsInserted);
@@ -672,7 +688,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
             if(person.contains("<")){
                 String[] whoNames = person.split("<");
                 if (whoNames.length > 1) { //it has both email and name
-                    if (whoNames[0].contains("\"")) {
+                    if (whoNames[0].contains("\"") && whoNames[0].length()>2) {
                         p.setName(whoNames[0].substring(1, whoNames[0].length() - 2));
                     } else {
                         p.setName(whoNames[0]);
@@ -727,29 +743,34 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
     private Email readParts(List<MessagePart> parts){
         Email email = new Email();
-        for(MessagePart part:parts){
-            try{
-                String mime = part.getMimeType();
-                if(mime.contentEquals("text/plain")){
-                    String s = new String(Base64.decodeBase64(part.getBody().getData().getBytes()));
-                    email.setTextContent(s);
-                }else if(mime.contentEquals("text/html")){
-                    String s = new String(Base64.decodeBase64(part.getBody().getData().getBytes()));
-                    email.setHtmlContent(s);
-                }else if(mime.contentEquals("multipart/alternative")){
-                    List<MessagePart> subparts  =part.getParts();
-                    Email subreader = readParts(subparts);
-                    email.setHtmlContent(subreader.getHtmlContent());
-                    email.setTextContent(subreader.getTextContent());
-                }else if(mime.contentEquals("application/octet-stream")){
-                    email.setHasAttachments(true);
-                }
+        if(parts!=null) {
+            for (MessagePart part : parts) {
+                //try {
+                    String mime = part.getMimeType();
+                    if (mime.contentEquals("text/plain")) {
+                        String s = new String(Base64.decodeBase64(part.getBody().getData().getBytes()));
+                        email.setTextContent(s);
+                    } else if (mime.contentEquals("text/html")) {
+                        String s = new String(Base64.decodeBase64(part.getBody().getData().getBytes()));
+                        email.setHtmlContent(s);
+                    } else if (mime.contentEquals("multipart/alternative") || mime.contentEquals("multipart/related") || mime.contentEquals("multipart/mixed")) {
+                        List<MessagePart> subparts = part.getParts();
+                        Email subreader = readParts(subparts);
+                        email.setHtmlContent(subreader.getHtmlContent());
+                        email.setTextContent(subreader.getTextContent());
+                    } else if (mime.contentEquals("application/octet-stream")) {
+                        email.setHasAttachments(true);
+                    }else{
+                        System.err.println("Mime-type = "+mime);
+                    }
 
-            }catch(Exception e){
-                System.err.println("Error on reading email parts" +e);// get file here
+               // } catch (Exception e) {
+               //     System.err.println("Error on reading email parts" + e);// get file here
 
+               // }
             }
-
+        }else{
+            System.err.println("Parts are null!!!");
         }
         return email;
     }

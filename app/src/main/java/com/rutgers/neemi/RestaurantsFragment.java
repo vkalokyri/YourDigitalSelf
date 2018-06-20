@@ -55,6 +55,8 @@ import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -255,6 +257,14 @@ public class RestaurantsFragment extends Fragment {
             ArrayList<ArrayList<Task>> tasksThreads = mergeThreads(tasks);
             listOfScripts = createScriptPerTask(tasksThreads);
 
+            //sort them
+            Collections.sort(listOfScripts, new Comparator<Script>() {
+                @Override public int compare(Script p1, Script p2) {
+                    return Float.compare(p2.getScore(),p1.getScore()); // Ascending
+                }
+
+            });
+
             CustomListAdapter adapter=new CustomListAdapter(getActivity(), listOfScripts, imgid);
             ListView list= myView.findViewById(R.id.restaurant_list);
             list.setAdapter(adapter);
@@ -361,8 +371,8 @@ public class RestaurantsFragment extends Fragment {
 
             Script mergedScript = mergeScripts(scriptList);
 
+            mergedScript.assignScore(getContext());
 
-            // script.assignScore(getContext());
             scripts.add(mergedScript);
 
         }
@@ -648,13 +658,6 @@ public class RestaurantsFragment extends Fragment {
 
 		System.err.println("Total processes running after threading ="+listofMergedTasks.size());
 
-//		Collections.sort(listOfScripts, new Comparator<Script>() {
-//	        @Override public int compare(Script p1, Script p2) {
-//	            return Float.compare(p2.getScore(),p1.getScore()); // Ascending
-//	        }
-//
-//	    });
-
         return listofMergedTasks;
 	}
 
@@ -747,7 +750,7 @@ public class RestaurantsFragment extends Fragment {
 
                                                 } else {
                                                     whereClause = whereClause + " " + andOrKey;
-                                                    if (andOrKey.contains("Transaction") || andOrKey.contains("Category") || andOrKey.contains("Feed")){
+                                                    if (andOrKey.contains("Transaction") || andOrKey.contains("Category") || andOrKey.contains("Feed") || andOrKey.contains("Person")){
                                                         whereClause = whereClause + " = " + andOrValue.toString().replace("\"", "");
                                                     }else {
                                                         //System.out.println("Clue value = " + andOrValue.toString().replace("\"", ""));
@@ -775,7 +778,9 @@ public class RestaurantsFragment extends Fragment {
                             query=query.substring(0,query.length()-4) +");";
                             System.out.println("QUERY = " + query);
                             try {
-                                tasksRunning.addAll(queryDatabase(query,fromClause,subtask,script));
+                                List<Task> tasksFound = queryDatabase(query,fromClause,subtask,script);
+                                System.out.println(tasksFound.size());
+                                tasksRunning.addAll(tasksFound);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -909,9 +914,31 @@ public class RestaurantsFragment extends Fragment {
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
-
-
                     }
+                }else if (fromTable.contains("Person")){
+
+                    for (String[] tuple:rawResults.getResults()) {
+                        Email email = new Email();
+                        email.setId(tuple[0]);
+
+                        String tempQuery = "select * from `Email` where `_id`=" + tuple[0];
+
+
+                        GenericRawResults<Email> emailResults = helper.getEmailDao().queryRaw(tempQuery, helper.getEmailDao().getRawRowMapper());
+                        if (emailResults != null) {
+                            for (Email fullEmail : emailResults.getResults()) {
+                                Email emailUpdated = helper.getToCcBcc(fullEmail);
+                                Task task = new Task();
+                                task.setPid(emailUpdated);
+                                task.setName(subtask);
+                                task.setScript(script);
+                                task.setTaskDefinition(new TaskDefinition(subtask));
+                                tasks.add(task);
+                            }
+                        }
+                    }
+
+
                 }
           //  }
         }

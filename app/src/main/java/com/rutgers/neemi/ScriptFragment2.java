@@ -301,30 +301,36 @@ public class ScriptFragment2 extends Fragment {
             imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.gmail_icon));
             StringBuilder sb = new StringBuilder();
             for (Person p: ((Email) childTask.getPid()).getTo()){
-                if(p!=null && !p.getName().isEmpty()){
-                    sb.append(p.getName());
-                    sb.append(", ");
-                }else{
-                    sb.append(p.getEmail());
-                    sb.append(", ");
+                if(p!=null && p.getName()!=null ) {
+                    if (!p.getName().isEmpty()) {
+                        sb.append(p.getName());
+                        sb.append(", ");
+                    } else {
+                        sb.append(p.getEmail());
+                        sb.append(", ");
+                    }
                 }
             }
             for (Person p: ((Email) childTask.getPid()).getCc()){
-                if(p!=null && !p.getName().isEmpty()){
-                    sb.append(p.getName());
-                    sb.append(", ");
-                }else{
-                    sb.append(p.getEmail());
-                    sb.append(", ");
+                if(p!=null && p.getName()!=null ) {
+                    if (!p.getName().isEmpty()) {
+                        sb.append(p.getName());
+                        sb.append(", ");
+                    } else {
+                        sb.append(p.getEmail());
+                        sb.append(", ");
+                    }
                 }
             }
             for (Person p: ((Email) childTask.getPid()).getBcc()){
-                if(p!=null && !p.getName().isEmpty()){
-                    sb.append(p.getName());
-                    sb.append(", ");
-                }else{
-                    sb.append(p.getEmail());
-                    sb.append(", ");
+                if(p!=null && p.getName()!=null ) {
+                    if (!p.getName().isEmpty()) {
+                        sb.append(p.getName());
+                        sb.append(", ");
+                    } else {
+                        sb.append(p.getEmail());
+                        sb.append(", ");
+                    }
                 }
             }
 

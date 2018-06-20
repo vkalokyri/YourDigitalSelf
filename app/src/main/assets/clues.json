@@ -2,10 +2,11 @@
 	"makeReservation": {
 		"restaurant": [{
 			"AccessReservationApp": {
-				"from": "Email",
+				"from": ["Email","Person"],
 				"where":{
 					"and": {
-						"`from`": "member_services@opentable.com"
+						"email": ["member_services@opentable.com", "no-reply@comms.opentable.com", "no-reply@opentable.com"],
+						"Person._id":"from_id"
 					}
 				}
 			}

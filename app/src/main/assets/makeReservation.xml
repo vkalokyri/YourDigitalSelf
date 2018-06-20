@@ -4,7 +4,7 @@ xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
 targetNamespace="http://www.activiti.org/bpmn2.0">
 
 
-<process binding="Process" isExecutable="true" id="MakeReservation">
+<process binding="Process" isExecutable="true" id="makeReservation">
 <locals>
 <who name="whoMadeTheReservation"/>
 <who name="forWhoIsTheReservation "/>
