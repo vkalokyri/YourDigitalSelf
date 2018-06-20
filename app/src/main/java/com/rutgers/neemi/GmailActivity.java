@@ -501,8 +501,8 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 int totalItemsInserted = 0;
                 String pageToken = null;
                 Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                //cal.add(Calendar.MONTH, -1); // substract 6 months
-                cal.add(Calendar.DATE, -1); // substract 1 day
+                cal.add(Calendar.MONTH, -3); // substract 6 months
+                //cal.add(Calendar.DATE, -1); // substract 1 day
 
             Long since = cal.getTimeInMillis() / 1000;
                 System.out.println("since = " + since);
@@ -586,6 +586,11 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                     for (int i = 0; i < messages.size(); i++) {
                        // try {
                             Message msg = gmailService.users().messages().get(user, messages.get(i).get("id").toString()).execute();
+                            List<String> labels =  msg.getLabelIds();
+                            if(labels.contains("CATEGORY_PROMOTIONS")){
+                                continue;
+                            }
+
                             List<MessagePart> parts = msg.getPayload().getParts();
                             List<MessagePartHeader> headers = msg.getPayload().getHeaders();
                             Email email = readParts(parts);
@@ -745,7 +750,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         Email email = new Email();
         if(parts!=null) {
             for (MessagePart part : parts) {
-                //try {
+                try {
                     String mime = part.getMimeType();
                     if (mime.contentEquals("text/plain")) {
                         String s = new String(Base64.decodeBase64(part.getBody().getData().getBytes()));
@@ -758,19 +763,16 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                         Email subreader = readParts(subparts);
                         email.setHtmlContent(subreader.getHtmlContent());
                         email.setTextContent(subreader.getTextContent());
-                    } else if (mime.contentEquals("application/octet-stream")) {
+                    } else if (mime.contains("application") || mime.contains("image")) {
                         email.setHasAttachments(true);
                     }else{
                         System.err.println("Mime-type = "+mime);
                     }
 
-               // } catch (Exception e) {
-               //     System.err.println("Error on reading email parts" + e);// get file here
-
-               // }
+                } catch (Exception e) {
+                    System.err.println("Error on reading email parts" + e);// get file here
+                }
             }
-        }else{
-            System.err.println("Parts are null!!!");
         }
         return email;
     }

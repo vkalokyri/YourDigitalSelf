@@ -240,7 +240,6 @@ public class RestaurantsFragment extends Fragment {
                         ArrayList<String> localValue = locals.getLocals(w5h.getW5h_value(), pid, getContext());
                         if (localValue.size()>0) {
                             for (String lValue:localValue) {
-
                                 TaskLocalValues w5hInfo = new TaskLocalValues();
                                 w5hInfo.setLocalProperties(w5h);
                                 w5hInfo.setLocal_value(lValue);
@@ -353,6 +352,7 @@ public class RestaurantsFragment extends Fragment {
                     }
 
                 }
+
                 taskScriptDefinition.addTaskMap(task.getName(), task.getTaskDefinition());
                 script.setScriptDefinition(helper.getScriptDefinition(taskScriptDefinition.getId(), taskScriptDefinition));
 

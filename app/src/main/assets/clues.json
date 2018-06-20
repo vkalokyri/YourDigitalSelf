@@ -1,7 +1,7 @@
 {
 	"makeReservation": {
 		"restaurant": [{
-			"AccessReservationApp": {
+			"ReceiveConfirmationEmail": {
 				"from": ["Email","Person"],
 				"where":{
 					"and": {

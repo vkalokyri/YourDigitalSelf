@@ -76,6 +76,10 @@
 	},
 	"whereWasPosted":{
 		"Feed":"place_id"
-	}
-
+	},
+	"whoMadeTheReservation":"whoReceivedEmail",
+	"whenWasTheReservationMade":"whenWasSent",
+	"whoInitiatedTheConversation":"whoSentEmail",
+	"whoWasIncludedInTheConversation":["whoReceivedEmail","whoWasCCed","whoWasBCCed"],
+	"whenWasTheConversationInitiated":"whenWasSent"
 }

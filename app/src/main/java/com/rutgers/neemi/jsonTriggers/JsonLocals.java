@@ -70,22 +70,39 @@ public class JsonLocals implements W5hLocals{
 						if (attributeName.toString().equalsIgnoreCase("\"from\"")){
 							localValues.add(((Email)pid).getFrom().getName());
 						}
-						//TODO-->
-//						else if (attributeName.toString().equalsIgnoreCase("\"to\"")){
-//							for (Person to : ((Email)pid).getTo()) {
-//								localValues.add(to.getName());
-//							}
-//						}
-//						else if (attributeName.toString().equalsIgnoreCase("\"cc\"")){
-//							for (Person to : ((Email)pid).getCc()) {
-//								localValues.add(to.getName());
-//							}
-//						}
-//						else if (attributeName.toString().equalsIgnoreCase("\"bcc\"")){
-//							for (Person to : ((Email)pid).getBcc()) {
-//								localValues.add(to.getName());
-//							}
-//						}
+						else if (attributeName.toString().equalsIgnoreCase("\"to\"")){
+							for (Person to : ((Email)pid).getTo()) {
+								if(to!=null) {
+									if (to.getName()!=null && !to.getName().isEmpty()) {
+										localValues.add(to.getName());
+									} else if (to.getEmail()!=null && !to.getEmail().isEmpty()){
+										localValues.add(to.getEmail());
+									}
+								}
+							}
+						}
+						else if (attributeName.toString().equalsIgnoreCase("\"cc\"")){
+							for (Person to : ((Email)pid).getCc()) {
+								if(to!=null) {
+									if (to.getName()!=null && !to.getName().isEmpty()) {
+										localValues.add(to.getName());
+									} else if (to.getEmail()!=null && !to.getEmail().isEmpty()){
+										localValues.add(to.getEmail());
+									}
+								}
+							}
+						}
+						else if (attributeName.toString().equalsIgnoreCase("\"bcc\"")){
+							for (Person to : ((Email)pid).getBcc()) {
+								if(to!=null) {
+									if (to.getName()!=null && !to.getName().isEmpty()) {
+										localValues.add(to.getName());
+									} else if (to.getEmail()!=null && !to.getEmail().isEmpty()){
+										localValues.add(to.getEmail());
+									}
+								}
+							}
+						}
 						else if (attributeName.toString().equalsIgnoreCase("\"date\"")){
 							localValues.add(((Email)pid).getDate().toString());
 						}

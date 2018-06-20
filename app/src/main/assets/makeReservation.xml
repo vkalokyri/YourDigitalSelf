@@ -22,7 +22,16 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <inclusiveGateway gatewayDirection="Converging" name="" id="AfterFindingHowToMakeTheReservation"/>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="MakeTheReservation" id="MakeTheReservation"/>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="WasReservationSuccessful"/>
-<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceiveConfirmationEmail" id="ReceiveConfirmationEmail"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ReceiveConfirmationEmail" id="ReceiveConfirmationEmail">
+<locals>
+    <who name="whoSentEmail"/>
+    <who name="whoReceivedEmail"/>
+    <who name="whoWasCCed"/>
+    <who name="whoWasBCCed"/>
+    <what name="whatAbout"/>
+    <when name="whenWasSent"/>
+</locals>
+</task>
 <sequenceFlow sourceRef="SubProcessStart" targetRef="selectFromWhereToDoTheReservation" name="" id=""/>
 <sequenceFlow sourceRef="selectFromWhereToDoTheReservation" targetRef="VisitStoreWebPage_" name="" id=""/>
 <sequenceFlow sourceRef="selectFromWhereToDoTheReservation" targetRef="AccessReservationApp" name="" id=""/>
