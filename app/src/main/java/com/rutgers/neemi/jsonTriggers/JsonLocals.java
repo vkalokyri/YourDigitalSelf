@@ -131,6 +131,9 @@ public class JsonLocals implements W5hLocals{
 						else if (attributeName.toString().equalsIgnoreCase("\"date\"")){
 							localValues.add(((Email)pid).getDate().toString());
 						}
+						else if (attributeName.toString().equalsIgnoreCase("\"subject\"")){
+							localValues.add(((Email)pid).getSubject().toString());
+						}
 					}else if (objectClass.equalsIgnoreCase("Transaction")){
 						if (attributeName.toString().equalsIgnoreCase("\"merchant_name\"")){
 							localValues.add(((Transaction)pid).getMerchant_name());

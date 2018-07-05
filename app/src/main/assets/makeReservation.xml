@@ -24,12 +24,13 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <exclusiveGateway gatewayDirection="Diverging" name="" id="WasReservationSuccessful"/>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="ReceiveConfirmationEmail" id="ReceiveConfirmationEmail">
 <locals>
-    <who name="whoSentEmail"/>
     <who name="whoReceivedEmail"/>
     <who name="whoWasCCed"/>
     <who name="whoWasBCCed"/>
     <what name="whatAbout"/>
     <when name="whenWasSent"/>
+    <when name="whenWasEvent"/>
+    <where name="whereWasTheReservation"/>
 </locals>
 </task>
 <sequenceFlow sourceRef="SubProcessStart" targetRef="selectFromWhereToDoTheReservation" name="" id=""/>

@@ -373,27 +373,31 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 e.printStackTrace();
                 //return false;
             }
-            int count=0;
+            //int count=0;
             try {
                 for (Email email : results) {
-                    Date extractedDate;
-                    count++;
-                    if(count>475) {
-                        Log.e(TAG, String.valueOf(count));
-                        if (email.getTextContent() != null) {
-                            extractedDate = extractTime(email.getTextContent(), email.getDate());
-                            if (extractedDate != null) {
-                                email.setBodyDate(extractedDate);
-                            }
+                    Date extractedDate=null;
+                    //Log.e(TAG, String.valueOf(count));
+                    if (email.getTextContent() != null) {
+                        extractedDate = extractTime(email.getTextContent(), email.getDate());
+                        if (extractedDate != null) {
+                            email.setBodyDate(extractedDate);
                         }
-                        if (email.getSubject() != null) {
-                            extractedDate = extractTime(email.getSubject(), email.getDate());
-                            if (extractedDate != null) {
-                                email.setSubjectDate(extractedDate);
-                            }
-                        }
-                        emailDao.update(email);
                     }
+                    if (email.getTextContent() == null || extractedDate==null){
+                        extractedDate = extractTime(email.getSnippet(), email.getDate());
+                        if (extractedDate != null) {
+                            email.setBodyDate(extractedDate);
+                        }
+                    }
+                    if (email.getSubject() != null) {
+                        extractedDate = extractTime(email.getSubject(), email.getDate());
+                        if (extractedDate != null) {
+                            email.setSubjectDate(extractedDate);
+                        }
+                    }
+                    emailDao.update(email);
+
                 }
             }catch (Exception e){
                 e.printStackTrace();
@@ -597,6 +601,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                             email.setTimestamp(System.currentTimeMillis() / 1000);
                             email.setId(msg.getId());
                             email.setThreadId(msg.getThreadId());
+                            email.setSnippet(msg.getSnippet());
                             //email.setLabelIds(msg.getLabelIds());
                             email.setHistoryId(msg.getHistoryId());
                             email.setDate(new Date(msg.getInternalDate()));

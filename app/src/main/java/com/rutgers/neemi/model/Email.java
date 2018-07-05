@@ -33,6 +33,8 @@ public class Email implements Serializable{
         @DatabaseField
         Date date;
         @DatabaseField
+        String snippet;
+        @DatabaseField
         String textContent;
         @DatabaseField
         String htmlContent;
@@ -185,8 +187,11 @@ public class Email implements Serializable{
         this.bodyDate = bodyDate;
     }
 
+    public String getSnippet() {
+        return snippet;
+    }
 
-
-
-
+    public void setSnippet(String snippet) {
+        this.snippet = snippet;
+    }
 }

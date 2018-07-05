@@ -111,9 +111,7 @@ public class RestaurantsFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
 
         super.onActivityCreated(savedInstanceState);
-        ConfigReader config = new ConfigReader(getContext());
-
-
+//        ConfigReader config = new ConfigReader(getContext());
 //        helper=DatabaseHelper.getHelper(getActivity());
 //        PersonParser personParser = new PersonParser(helper);
 //        ArrayList<ArrayList<KeyValuePair>> keyValues = personParser.parse();
@@ -162,35 +160,35 @@ public class RestaurantsFragment extends Fragment {
 //            e.printStackTrace();
 //        }
 
-        try {
-            FileInputStream fis = getActivity().openFileInput(config.getStr(PROPERTIES.OutputFile));
-            XmlPullParser parser = Xml.newPullParser();
-            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-            parser.setInput(fis, null);
-            parser.nextTag();
-            parser.nextTag();
+//        try {
+//            FileInputStream fis = getActivity().openFileInput(config.getStr(PROPERTIES.OutputFile));
+//            XmlPullParser parser = Xml.newPullParser();
+//            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+//            parser.setInput(fis, null);
+//            parser.nextTag();
+//            parser.nextTag();
+//
+//            parser.require(XmlPullParser.START_TAG, null, parser.getName());
+//            int eventType = parser.getEventType();
+//            while(eventType!=XmlPullParser.END_DOCUMENT ) {//|| !parser.getName().equals("definitions")){
+//                //System.out.println("XMLPARSING = "+name);
+//                // Starts by looking for the process
+//                if (eventType != XmlPullParser.END_TAG) {
+//                    parseRecord(parser);
+//                    parser.nextTag();
+//
+//                }
+//            }
+//
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } catch (XmlPullParserException e) {
+//            e.printStackTrace();
+//        }
 
-            parser.require(XmlPullParser.START_TAG, null, parser.getName());
-            int eventType = parser.getEventType();
-            while(eventType!=XmlPullParser.END_DOCUMENT ) {//|| !parser.getName().equals("definitions")){
-                //System.out.println("XMLPARSING = "+name);
-                // Starts by looking for the process
-                if (eventType != XmlPullParser.END_TAG) {
-                    parseRecord(parser);
-                    parser.nextTag();
 
-                }
-            }
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-        }
-
-
-        // findScriptInstances();
+         findScriptInstances();
 
     }
 

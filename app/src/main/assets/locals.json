@@ -80,6 +80,9 @@
 	"whenIsTheProposedEvent":{
 		"Email":"subject_date"
 	},
+	"whereWasTheReservation":{
+		"Email":"from"
+	},
 	"whoMadeTheReservation":"whoReceivedEmail",
 	"whenWasTheReservationMade":"whenWasSent",
 	"whoInitiatedTheConversation":"whoSentEmail",
