@@ -32,6 +32,10 @@ public class ConfigReader {
 		}
 	}
 
+	public Properties getProperties() {
+		return properties;
+	}
+
 	private ConfigReader() {
 
 	}

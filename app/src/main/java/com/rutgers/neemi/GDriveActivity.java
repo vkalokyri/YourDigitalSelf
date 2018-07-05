@@ -316,7 +316,7 @@ public class GDriveActivity extends Activity {
                 // [START_EXCLUDE]
                 // [START read_as_string]
                 GeoApiContext geoApiContext = new GeoApiContext.Builder()
-                        .apiKey("AIzaSyC2c-DGrPjl947J-8mTE7bRZT_OO-F3Dno")
+                        .apiKey("AIzaSyDe8nWbXFA6ESFS6GnQtYPPsXzYmLz3Lf0")
                         .build();
 
                 try (BufferedReader reader = new BufferedReader(

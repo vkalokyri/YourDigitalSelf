@@ -184,4 +184,9 @@ public class Email implements Serializable{
     public void setBodyDate(Date bodyDate) {
         this.bodyDate = bodyDate;
     }
+
+
+
+
+
 }

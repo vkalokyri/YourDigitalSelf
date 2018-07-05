@@ -30,7 +30,12 @@ public enum PROPERTIES {
 	INSTAGRAM_CLIENT_ID("instagram_API"),
 	INSTAGRAM_REDIRECT_URI("instagram_redirect_url"),
 	PLAID_CLIENT_ID("plaid_client_id"),
-	PLAID_SECRET("plaid_secret");
+	PLAID_SECRET("plaid_secret"),
+	File_Source("FileSource"),
+	OutputFile("OutputFile"),
+	MatcherMerger("MatcherMerger"),
+	EmailThreshold("EmailThreshold"),
+	NameThreshold("NameThreshold");
 
 	
 	private String strVal;

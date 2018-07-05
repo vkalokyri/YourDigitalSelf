@@ -174,7 +174,7 @@ public class FacebookActivity extends AppCompatActivity {
                             public void onCompleted(GraphResponse response) {
 
                                 GeoApiContext geoApiContext = new GeoApiContext.Builder()
-                                        .apiKey("AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE")
+                                        .apiKey("AIzaSyDe8nWbXFA6ESFS6GnQtYPPsXzYmLz3Lf0")
                                         .build();
 
 

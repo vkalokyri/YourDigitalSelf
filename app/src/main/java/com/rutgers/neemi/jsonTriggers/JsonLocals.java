@@ -33,6 +33,9 @@ import com.rutgers.neemi.parser.TriggersFactory;
 import com.rutgers.neemi.util.ConfigReader;
 import com.rutgers.neemi.util.PROPERTIES;
 
+import org.apache.poi.util.SystemOutLogger;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 public class JsonLocals implements W5hLocals{
@@ -51,6 +54,28 @@ public class JsonLocals implements W5hLocals{
 	        } catch (Exception e) {
 	            e.printStackTrace();
 	        }
+	}
+
+    public ArrayList<String> getConstraints(String local, Context context, Object pid) throws IOException {
+		this.fis = context.getAssets().open(config.getStr(PROPERTIES.LOCALS_FILE));
+		this.jsonReader = Json.createReader(fis);
+		JsonObject jsonObject = jsonReader.readObject();
+		ArrayList<String> localValues = new ArrayList<String>();
+		JsonValue localObject = jsonObject.get(local);
+		if (localObject != null) {
+			if (localObject instanceof JsonObject){
+				localValues = getLocals(local, pid, context);
+			}
+			if (localObject instanceof JsonArray) {
+				for (int j = 0; j < ((JsonArray) localObject).size(); j++) {
+					JsonValue stringValue = ((JsonArray) localObject).get(j);
+					localValues.add(stringValue.toString().replace("\"",""));
+				}
+			} else if(localObject instanceof JsonString) {
+				localValues.add(localObject.toString().replace("\"",""));
+			}
+		}
+        return  localValues;
 	}
 
 

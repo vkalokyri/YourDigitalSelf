@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ import com.rutgers.neemi.interfaces.W5hLocals;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Feed;
+import com.rutgers.neemi.model.KeyValuePair;
 import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.ScriptLocalValues;
@@ -40,11 +42,19 @@ import com.rutgers.neemi.model.ScriptDefHasTaskDef;
 import com.rutgers.neemi.model.Subscript;
 import com.rutgers.neemi.model.Task;
 import com.rutgers.neemi.model.TaskDefinition;
+import com.rutgers.neemi.parser.PersonParser;
 import com.rutgers.neemi.parser.TriggersFactory;
 import com.rutgers.neemi.util.ConfigReader;
+import com.rutgers.neemi.util.ER;
 import com.rutgers.neemi.util.PROPERTIES;
+import com.rutgers.neemi.util.XMLifyData;
+
+import org.xml.sax.SAXException;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,8 +73,13 @@ import java.util.HashSet;
 import java.util.List;
 
 import javax.json.JsonString;
+import javax.xml.parsers.ParserConfigurationException;
 
 import static com.rutgers.neemi.parser.InitiateScript.JsonTriggerFactory;
+import static com.rutgers.neemi.parser.InitiateScript.config;
+
+import serf.*;
+import serf.test.TestException;
 
 
 public class RestaurantsFragment extends Fragment {
@@ -91,6 +106,116 @@ public class RestaurantsFragment extends Fragment {
             R.drawable.restaurant
     };
 
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+
+        super.onActivityCreated(savedInstanceState);
+        ConfigReader config = new ConfigReader(getContext());
+
+
+//        helper=DatabaseHelper.getHelper(getActivity());
+//        PersonParser personParser = new PersonParser(helper);
+//        ArrayList<ArrayList<KeyValuePair>> keyValues = personParser.parse();
+//
+//        XMLifyData xmlData = null;
+//        try {
+//            xmlData = new XMLifyData("people.xml", getContext());
+//            XMLifyData.serializeRecord(keyValues, xmlData.fw);
+//            xmlData.parseEnd();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        try {
+//            ER er = new ER(getContext());
+//        } catch (TestException e) {
+//            e.printStackTrace();
+//        } catch (ClassNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (ParserConfigurationException e) {
+//            e.printStackTrace();
+//        } catch (SAXException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+//
+//        /*get the keywords to search in the documents*/
+//        Class matcherMerger = null;
+//
+//        try {
+//            matcherMerger = matcherMerger = Class.forName(getContext().getAssets().open(config.getStr(PROPERTIES.MatcherMerger));
+//            if (matcherMerger == null) {
+//                throw new Exception("No MatcherMerger Class specified!");
+//            } else if (!serf.ER.checkMatcherMergerInterface(matcherMerger)) {
+//                throw new Exception("Given MatcherMerger class does not implement SimpleMatcherMerger interface!");
+//            } else {
+//                er.runRSwoosh();
+//            }
+//        } catch (ClassNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
+        try {
+            FileInputStream fis = getActivity().openFileInput(config.getStr(PROPERTIES.OutputFile));
+            XmlPullParser parser = Xml.newPullParser();
+            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+            parser.setInput(fis, null);
+            parser.nextTag();
+            parser.nextTag();
+
+            parser.require(XmlPullParser.START_TAG, null, parser.getName());
+            int eventType = parser.getEventType();
+            while(eventType!=XmlPullParser.END_DOCUMENT ) {//|| !parser.getName().equals("definitions")){
+                //System.out.println("XMLPARSING = "+name);
+                // Starts by looking for the process
+                if (eventType != XmlPullParser.END_TAG) {
+                    parseRecord(parser);
+                    parser.nextTag();
+
+                }
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        }
+
+
+        // findScriptInstances();
+
+    }
+
+    public void parseAttributes(XmlPullParser parser) throws IOException, XmlPullParserException{
+        int eventType = parser.getEventType();
+        if (eventType==XmlPullParser.START_TAG && parser.getName().equals("attribute")) {
+            while (eventType != XmlPullParser.END_TAG && !parser.getName().equals("record")) {
+                String attributeName = parser.getAttributeValue(null, "name");
+                System.out.println("attributeName = " + attributeName);
+                parser.nextTag();
+                while (parser.getName().equals("value")) {
+                    String attributeValue = parser.nextText();
+                    System.out.println("Value = " + attributeValue);
+                    parser.nextTag();
+                }
+                parser.nextTag();
+            }
+        }
+    }
+
+    public void parseRecord(XmlPullParser parser) throws IOException, XmlPullParserException {
+        parser.require(XmlPullParser.START_TAG, null, "record");
+        parser.nextTag();
+        parseAttributes(parser);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -276,19 +401,14 @@ public class RestaurantsFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
 
-        super.onActivityCreated(savedInstanceState);
-        findScriptInstances();
 
-    }
-
-    public ArrayList<Script> createScriptPerTask(ArrayList<ArrayList<Task>> taskThreads) throws SQLException {
+    public ArrayList<Script> createScriptPerTask(ArrayList<ArrayList<Task>> taskThreads) throws SQLException, IOException {
         ArrayList<Script> scripts = new ArrayList<Script>();
 
         for(ArrayList<Task> tasksRunning:taskThreads) {
             //put all tasks local values under the abstract who, what, where dimensions
+
             HashMap<String, HashSet<String>> map = new HashMap<String, HashSet<String>>();
 
             ArrayList<Script> scriptList = new ArrayList<Script>();
@@ -301,7 +421,8 @@ public class RestaurantsFragment extends Fragment {
                 HashSet<String> values = null;
                 //Get Task's localValues e.g. whenPaid, wherePaymentOccured and put them under when, where, who etc.
                 for (TaskLocalValues taskLocalValues : task.getLocalValues()) {
-                    String w5hLabel = taskLocalValues.getLocalProperties().getW5h_label();
+                    String w5hLabel = taskLocalValues.getLocalProperties().getW5h_value();
+                   // String w5hLabel = taskLocalValues.getLocalProperties().getW5h_label();
                     if (map.containsKey(w5hLabel)) {
                         values = map.get(w5hLabel);
                     } else {
@@ -398,18 +519,23 @@ public class RestaurantsFragment extends Fragment {
     }
 
 
-    public Script setLocalValuesInSuperscripts(Script script, HashMap<String, HashSet<String>> map, Task task){
+    public Script setLocalValuesInSuperscripts(Script script, HashMap<String, HashSet<String>> map, Task task) throws IOException {
+
+        W5hLocals locals = JsonTriggerFactory.getLocals(getContext());
 
 
         for (LocalProperties localProp : script.getScriptDefinition().getLocalProperties()) {
-            HashSet<String> localvalues = map.get(localProp.getW5h_label());
-            if (localvalues != null) {
-                for (String value : localvalues) {
-                    ScriptLocalValues scriptLocalValues = new ScriptLocalValues();
-                    scriptLocalValues.setLocalProperties(localProp);
-                    //scriptLocalValues.setTask(task);
-                    scriptLocalValues.setLocal_value(value);
-                    script.addLocalValue(scriptLocalValues);
+            ArrayList<String> constraints = locals.getConstraints(localProp.getW5h_value(), getContext(), task.getPid());
+            for (String constraint: constraints) {
+                HashSet<String> localvalues = map.get(constraint);
+                if (localvalues != null) {
+                    for (String value : localvalues) {
+                        ScriptLocalValues scriptLocalValues = new ScriptLocalValues();
+                        scriptLocalValues.setLocalProperties(localProp);
+                        //scriptLocalValues.setTask(task);
+                        scriptLocalValues.setLocal_value(value);
+                        script.addLocalValue(scriptLocalValues);
+                    }
                 }
             }
         }
@@ -429,6 +555,38 @@ public class RestaurantsFragment extends Fragment {
 
         return script;
     }
+
+//    public Script setLocalValuesInSuperscripts(Script script, HashMap<String, HashSet<String>> map, Task task){
+//
+//
+//        for (LocalProperties localProp : script.getScriptDefinition().getLocalProperties()) {
+//            HashSet<String> localvalues = map.get(localProp.getW5h_label());
+//            if (localvalues != null) {
+//                for (String value : localvalues) {
+//                    ScriptLocalValues scriptLocalValues = new ScriptLocalValues();
+//                    scriptLocalValues.setLocalProperties(localProp);
+//                    //scriptLocalValues.setTask(task);
+//                    scriptLocalValues.setLocal_value(value);
+//                    script.addLocalValue(scriptLocalValues);
+//                }
+//            }
+//        }
+//
+//        ArrayList<ScriptDefinition> scriptDefinitionList = script.getScriptDefinition().getSubscripts();
+//
+//        if (scriptDefinitionList.size()>0) {
+//            for (ScriptDefinition subscriptDef : scriptDefinitionList) {
+//                Script subscript = new Script();
+//                subscript.setScriptDefinition(subscriptDef);
+//                subscript = setLocalValuesInSuperscripts(subscript, map, task);
+//                script.addSubscript(subscript);
+//            }
+//        }else{
+//            script.addTask(task);
+//        }
+//
+//        return script;
+//    }
 
 
     public ArrayList<ArrayList<Task>> mergeTasksByEventDate(List<Task> tasks){

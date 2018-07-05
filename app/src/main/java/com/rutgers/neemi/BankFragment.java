@@ -223,7 +223,7 @@ public class BankFragment extends Fragment {
                 String accessToken = params[0];
 
                 GeoApiContext context = new GeoApiContext.Builder()
-                        .apiKey("AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE")
+                        .apiKey("AIzaSyDe8nWbXFA6ESFS6GnQtYPPsXzYmLz3Lf0")
                         .build();
 
                 try {

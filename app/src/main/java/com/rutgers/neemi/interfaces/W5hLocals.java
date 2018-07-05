@@ -13,5 +13,6 @@ import java.util.Map;
 public interface W5hLocals {
 
 	ArrayList<String> getLocals(String local, Object pid, Context context) throws IOException;
+    ArrayList<String> getConstraints(String local, Context context, Object pid) throws IOException;
 	
 }

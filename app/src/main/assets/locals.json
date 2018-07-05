@@ -77,9 +77,15 @@
 	"whereWasPosted":{
 		"Feed":"place_id"
 	},
+	"whenIsTheProposedEvent":{
+		"Email":"subject_date"
+	},
 	"whoMadeTheReservation":"whoReceivedEmail",
 	"whenWasTheReservationMade":"whenWasSent",
 	"whoInitiatedTheConversation":"whoSentEmail",
 	"whoWasIncludedInTheConversation":["whoReceivedEmail","whoWasCCed","whoWasBCCed"],
-	"whenWasTheConversationInitiated":"whenWasSent"
+	"whenWasTheConversationInitiated":"whenWasSent",
+	"whoAttended":["whoSentEmail","whoReceivedEmail","whoWasCCed","whoWasBCCed"],
+	"whenEatingOccurred": ["whenIsTheProposedEvent","whenPaid"],
+	"whereEatingOccurred":"wherePaymentOccured"
 }
