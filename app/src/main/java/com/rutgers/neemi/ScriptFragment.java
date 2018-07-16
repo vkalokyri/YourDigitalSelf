@@ -36,6 +36,7 @@ import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Place;
 import com.rutgers.neemi.model.ScriptLocalValues;
+import com.rutgers.neemi.model.TaskLocalValues;
 import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.Script;
 import com.rutgers.neemi.model.ScriptDefinition;
@@ -301,7 +302,14 @@ public class ScriptFragment extends Fragment {
                 if(childTask.getPid() instanceof Email){
                     imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.gmail_icon));
                     txtListHeader.setText(((Email) childTask.getPid()).getSubject());
-                    String text = "whoSent: "+((Email) childTask.getPid()).getFrom()+" \n whoReceived: "+ ((Email) childTask.getPid()).getTo()+" \n whenSent: "+ ((Email) childTask.getPid()).getDate();
+                    StringBuilder text = new StringBuilder();
+                    for(TaskLocalValues taskLocalValues : childTask.getLocalValues()){
+                        text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                        text.append(": ");
+                        text.append(taskLocalValues.getLocal_value());
+                        text.append("\n");
+                    }
+                   // String text = "whoSent: "+((Email) childTask.getPid()).getFrom()+" \n whoReceived: "+ ((Email) childTask.getPid()).getTo()+" \n whenSent: "+ ((Email) childTask.getPid()).getDate();
                     txtListHeaderBody.setText(text);
                 }else if(childTask.getPid() instanceof Transaction){
                     imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.bank));
@@ -309,7 +317,14 @@ public class ScriptFragment extends Fragment {
                     Date extractedDate = new Date(((Transaction) childTask.getPid()).getDate());
                     Format format = new SimpleDateFormat("yyyy-MM-dd");
                     String parsedDate = format.format(extractedDate);
-                    String text = "whenPaid: "+parsedDate+" \n howMuchWasPaid: $"+((Transaction) childTask.getPid()).getAmount() ;
+                    //String text = "whenPaid: "+parsedDate+" \n howMuchWasPaid: $"+((Transaction) childTask.getPid()).getAmount() ;
+                    StringBuilder text = new StringBuilder();
+                    for(TaskLocalValues taskLocalValues : childTask.getLocalValues()){
+                        text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                        text.append(": ");
+                        text.append(taskLocalValues.getLocal_value());
+                        text.append("\n");
+                    }
                     txtListHeaderBody.setText(text);
                 }else if(childTask.getPid() instanceof Calendar){
                     imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.google_calendar));
@@ -322,12 +337,19 @@ public class ScriptFragment extends Fragment {
                     Date extractedDate = new Date(((Feed) childTask.getPid()).getCreated_time());
                     Format format = new SimpleDateFormat("yyyy-MM-dd");
                     String parsedDate = format.format(extractedDate);
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("whenWasPosted: "+parsedDate+"\n");
-                    sb.append("whereWasPosted: "+((Feed) childTask.getPid()).getPlace().getName()+"\n"+"whatWasPosted: ");
+                    StringBuilder text = new StringBuilder();
+                    for(TaskLocalValues taskLocalValues : childTask.getLocalValues()){
+                        text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                        text.append(": ");
+                        text.append(taskLocalValues.getLocal_value());
+                        text.append("\n");
+                    }
+//                    StringBuilder sb = new StringBuilder();
+//                    sb.append("whenWasPosted: "+parsedDate+"\n");
+//                    sb.append("whereWasPosted: "+((Feed) childTask.getPid()).getPlace().getName()+"\n"+"whatWasPosted: ");
                     final SpannableString myString = new SpannableString(((Feed) childTask.getPid()).getLink());
-                    sb.append(myString);
-                    String allTheString = sb.toString();
+                    text.append(myString);
+                    String allTheString = text.toString();
                     final int i1 = allTheString.indexOf(myString.toString());
                     txtListHeaderBody.setMovementMethod(LinkMovementMethod.getInstance());
                     txtListHeaderBody.setText(allTheString, TextView.BufferType.SPANNABLE);

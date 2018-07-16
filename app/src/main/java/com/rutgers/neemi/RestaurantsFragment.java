@@ -49,6 +49,7 @@ import com.rutgers.neemi.util.ER;
 import com.rutgers.neemi.util.PROPERTIES;
 import com.rutgers.neemi.util.XMLifyData;
 
+import org.apache.poi.hpsf.wellknown.SectionIDMap;
 import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -378,6 +379,7 @@ public class RestaurantsFragment extends Fragment {
             ArrayList<ArrayList<Task>> tasks = mergeTasksByEventDate(tasksRunning);
             ArrayList<ArrayList<Task>> tasksThreads = mergeThreads(tasks);
             listOfScripts = createScriptPerTask(tasksThreads);
+            listOfScripts = mergeScriptsByWhenAndWhere(listOfScripts);
 
             //sort them
             Collections.sort(listOfScripts, new Comparator<Script>() {
@@ -449,13 +451,14 @@ public class RestaurantsFragment extends Fragment {
                             Date extractedDate = null;
                             String parsedDate = null;
                             System.err.println(localValue);
+                           // values.add(localValue);
                             try {
-                                extractedDate = new Date(Long.parseLong(localValue));
+                                extractedDate = new Date(localValue);
                                 Format format = new SimpleDateFormat("yyyy-MM-dd");
                                 parsedDate = format.format(extractedDate);
                             } catch (Exception e) {
                                 e.printStackTrace();
-                                extractedDate = new Date(localValue);
+                                extractedDate = new Date(Long.parseLong(localValue));
                                 Format format = new SimpleDateFormat("yyyy-MM-dd");
                                 parsedDate = format.format(extractedDate);
                             }
@@ -588,7 +591,7 @@ public class RestaurantsFragment extends Fragment {
 
 
     public ArrayList<ArrayList<Task>> mergeTasksByEventDate(List<Task> tasks){
-        Log.d(TAG,"SIZE OF PROCESSES: " +tasks.size());
+        Log.d(TAG,"SIZE OF tasks: " +tasks.size());
         ArrayList<ArrayList<Task>> listofMergedTasks = new ArrayList<ArrayList<Task>>();
         HashMap<Date, ArrayList<Task>> hashMap = new HashMap<Date, ArrayList<Task>>();
 
@@ -697,67 +700,51 @@ public class RestaurantsFragment extends Fragment {
     }
 
 
-    public void mergeScriptsByEventDate(List<Script> listOfScripts){
-        Log.d(TAG,"SIZE OF PROCESSES: " +listOfScripts.size());
-        HashMap<Date, List<Script>> hashMap = new HashMap<Date, List<Script>>();
+    public ArrayList<Script> mergeScriptsByWhenAndWhere(List<Script> scripts){
+        Log.d(TAG,"SIZE OF scripts: " +scripts.size());
+        ArrayList<Script> listofMergedScripts = new ArrayList<Script>();
+        HashMap<String, ArrayList<Script>> hashMap = new HashMap<String, ArrayList<Script>>();
 
-		for (Script process:listOfScripts){
-        	for (Task task:process.getTasks()){
-                Date extractedDate=null;
-                if (task.getPid() instanceof Transaction){
-                    try {
-                        extractedDate = sdf.parse(sdf.format(((Transaction) task.getPid()).getDate()));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                }else if (task.getPid() instanceof Email){
-                    if (((Email) task.getPid()).getSubjectDate()!=null) {
-                        try {
-                            extractedDate = sdf.parse(sdf.format(((Email) task.getPid()).getSubjectDate()));
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-                    }else{
-
-                    }
-                }else if (task.getPid() instanceof Event){
-                    try {
-                        extractedDate = sdf.parse(sdf.format(((Event) task.getPid()).getStartTime()));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
+        for (Script script:scripts){
+            String when=null;
+            String where=null;
+            for (ScriptLocalValues scriptLocalValues:script.getLocalValues()) {
+                String label = scriptLocalValues.getLocalProperties().getW5h_label();
+                if (label.equals("when")) {
+                    when = scriptLocalValues.getLocal_value();
+                } else if (label.equals("where")) {
+                    where = scriptLocalValues.getLocal_value();
                 }
+            }
 
-                if(extractedDate!=null) {
-                    if (!hashMap.containsKey(extractedDate)) {
-                        List<Script> list = new ArrayList<Script>();
-                        list.add(process);
-                        hashMap.put(extractedDate, list);
-                    } else {
-                        hashMap.get(extractedDate).add(process);
-                    }
+            if (when != null && where !=null) {
+                String whenAndWhere = when+where;
+                if (!hashMap.containsKey(whenAndWhere)) {
+                    ArrayList<Script> list = new ArrayList<Script>();
+                    list.add(script);
+                    hashMap.put(whenAndWhere, list);
+                } else {
+                    hashMap.get(whenAndWhere).add(script);
                 }
-        	}
-        }
-
-        for (Date date: hashMap.keySet()){
-            List<Script> mergedScripts = hashMap.get(date);
+            } else {
+                //not mergedScript
+                listofMergedScripts.add(script);
+            }
         }
 
 
-//        Log.d(TAG,"SIZE OF PROCESSES after: " +hashMap.size());
-//        for (Map.Entry entry : hashMap.entrySet()) {
-//            Log.d(TAG,"Date: " +entry.getKey());
-//            for (Task t:(List<Task>)entry.getValue()){
-//                if (t.getPid() instanceof Event) {
-//                    Log.d(TAG,"Event = " + ((Event) t.getPid()).getDescription());
-//                }else if (t.getPid() instanceof Email){
-//                    Log.d(TAG, "Email = "+((Email) t.getPid()).getSubject());
-//                }else if (t.getPid() instanceof Transaction){
-//                    Log.d(TAG,"Transaction = "+((Transaction) t.getPid()).getName());
-//                }
-//            }
-//        }
+        for (String whenAndWhere: hashMap.keySet()) {
+            Script mergedScript;
+            mergedScript = hashMap.get(whenAndWhere).get(0);
+            for (int i=1; i< hashMap.get(whenAndWhere).size();i++) {
+                mergedScript.merge(hashMap.get(whenAndWhere).get(i));
+            }
+            listofMergedScripts.add(mergedScript);
+        }
+
+        Log.d(TAG,"SIZE OF scripts: " +listofMergedScripts.size());
+
+        return listofMergedScripts;
 
     }
 

@@ -83,12 +83,17 @@
 	"whereWasTheReservation":{
 		"Email":"from"
 	},
+	"whenWasEvent":{
+		"Email":"bodyDate"
+	},
 	"whoMadeTheReservation":"whoReceivedEmail",
 	"whenWasTheReservationMade":"whenWasSent",
+	"whereWasTheReservationMade":"whereWasTheReservation",
 	"whoInitiatedTheConversation":"whoSentEmail",
 	"whoWasIncludedInTheConversation":["whoReceivedEmail","whoWasCCed","whoWasBCCed"],
 	"whenWasTheConversationInitiated":"whenWasSent",
 	"whoAttended":["whoSentEmail","whoReceivedEmail","whoWasCCed","whoWasBCCed"],
-	"whenEatingOccurred": ["whenIsTheProposedEvent","whenPaid"],
-	"whereEatingOccurred":"wherePaymentOccured"
+	"whenEatingOccurred": ["whenIsTheProposedEvent","whenPaid", "whenWasEvent"],
+	"whereEatingOccurred":["wherePaymentOccured","whereWasTheReservation"],
+	"whenWasTheReservationScheduled":"whenWasEvent"
 }

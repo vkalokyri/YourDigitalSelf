@@ -154,6 +154,7 @@ public class Script implements Serializable {
 			}else{
 				this.getSubscripts().addAll(b.getSubscripts());
 			}
+			this.getTasks().addAll(b.getTasks());
 		}
 	}
 
@@ -172,7 +173,7 @@ public class Script implements Serializable {
 			}else if (pid instanceof Email){
 				addedScore = Float.parseFloat(config.getStr(PROPERTIES.EMAIL_WEIGHT));
 				String from =((Email)pid).getFrom().email;
-				if(((String)from).contains("member_services@opentable.com")){
+				if(((String)from).contains("opentable.com")){
 					addedScore = Float.parseFloat(config.getStr(PROPERTIES.OPENTABLE_WEIGHT));
 				}
 				else if(((String)from).contains("calendar-notification@google.com")){
