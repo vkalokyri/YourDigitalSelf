@@ -114,15 +114,15 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         dbHelper=DatabaseHelper.getHelper(this);
 
         //Google widgets
-        gmailButton = (SignInButton) findViewById(R.id.gmailApiButton);
-        gmailButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gmailButton.setEnabled(false);
-                getResultsFromApi();
-                gmailButton.setEnabled(true);
-            }
-        });
+//        gmailButton = (SignInButton) findViewById(R.id.gmailApiButton);
+//        gmailButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                gmailButton.setEnabled(false);
+//                getResultsFromApi();
+//                gmailButton.setEnabled(true);
+//            }
+//        });
 
 
 
@@ -135,6 +135,8 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         mCredential = GoogleAccountCredential.usingOAuth2(
                 this, Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
+
+        getResultsFromApi();
     }
 
 
@@ -820,7 +822,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
                     startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
-                            GcalFragment.REQUEST_AUTHORIZATION);
+                            GmailActivity.REQUEST_AUTHORIZATION);
                 } else {
                     mLastError.printStackTrace();
                     Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "Something went wrong.. ", Snackbar.LENGTH_LONG ).show();

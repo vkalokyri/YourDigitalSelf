@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.rutgers.neemi.GcalFragment">
+    tools:context="com.rutgers.neemi.GcalActivity">
 
     <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -19,7 +19,7 @@
             layout="@layout/tool_bar"
             />
 
-        <com.google.android.gms.common.SignInButton
+        <!--<com.google.android.gms.common.SignInButton
             android:id="@+id/gcalApiButton"
             android:layout_width="111dp"
             android:layout_height="48dp"
@@ -30,7 +30,7 @@
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginTop="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="8dp" />-->
 
     </android.support.constraint.ConstraintLayout>
 </android.support.design.widget.CoordinatorLayout>

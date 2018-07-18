@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         if (!prefs.getBoolean("firstTime", false)) {
             // <---- run your one time code here
             ApplicationManager appManager = new ApplicationManager();
-            appManager.initScript(helper,getApplicationContext());
+            appManager.initScript(helper, getApplicationContext());
 
             // mark first time has runned.
             SharedPreferences.Editor editor = prefs.edit();
@@ -76,11 +76,6 @@ public class MainActivity extends AppCompatActivity {
 
         if (key!=null) {
             if (key.equalsIgnoreCase("facebook")) {
-                SettingsFragment settingsfragment = new SettingsFragment();
-                android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                setfragmentTransaction.add(R.id.frame, settingsfragment);
-                setfragmentTransaction.addToBackStack(null);
-                setfragmentTransaction.commit();
                 if (items == 0) {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No facebook data fetched.", Snackbar.LENGTH_LONG).show();
                 } else {
@@ -89,11 +84,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
             if (key.equalsIgnoreCase("instagram")) {
-                SettingsFragment settingsfragment = new SettingsFragment();
-                android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                setfragmentTransaction.add(R.id.frame, settingsfragment);
-                setfragmentTransaction.addToBackStack(null);
-                setfragmentTransaction.commit();
                 if (items == 0) {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No instagram photos fetched.", Snackbar.LENGTH_LONG).show();
                 } else {
@@ -102,11 +92,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
             if (key.equalsIgnoreCase("gcal")) {
-                SettingsFragment settingsfragment = new SettingsFragment();
-                android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                setfragmentTransaction.add(R.id.frame, settingsfragment);
-                setfragmentTransaction.addToBackStack(null);
-                setfragmentTransaction.commit();
                 if (items == 0) {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No calendar events fetched.", Snackbar.LENGTH_LONG ).show();
                 } else {
@@ -115,11 +100,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
             if (key.equalsIgnoreCase("gmail")) {
-                SettingsFragment settingsfragment = new SettingsFragment();
-                android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                setfragmentTransaction.add(R.id.frame, settingsfragment);
-                setfragmentTransaction.addToBackStack(null);
-                setfragmentTransaction.commit();
                 if (items == 0) {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_LONG ).show();
                 } else {
@@ -128,11 +108,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
             if (key.equalsIgnoreCase("bank")) {
-                SettingsFragment settingsfragment = new SettingsFragment();
-                android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                setfragmentTransaction.add(R.id.frame, settingsfragment);
-                setfragmentTransaction.addToBackStack(null);
-                setfragmentTransaction.commit();
                 if (items == 0) {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No financial transactions fetched.", Snackbar.LENGTH_LONG).show();
                 } else {
@@ -141,17 +116,15 @@ public class MainActivity extends AppCompatActivity {
 
             }
             if (key.equalsIgnoreCase("gdrive")) {
-                SettingsFragment settingsfragment = new SettingsFragment();
-                android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                setfragmentTransaction.add(R.id.frame, settingsfragment);
-                setfragmentTransaction.addToBackStack(null);
-                setfragmentTransaction.commit();
                 if (items == 0) {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No financial transactions fetched.", Snackbar.LENGTH_LONG).show();
                 } else {
                     Snackbar.make(findViewById(R.id.mainCoordinatorLayout),  items+" financial transactions fetched.", Snackbar.LENGTH_LONG).show();
                 }
             }
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.frame, new SettingsFragment2())
+                    .commit();
 
         }
 
@@ -188,11 +161,9 @@ public class MainActivity extends AppCompatActivity {
 
                     //Replacing the main content with ContentFragment Which is our Inbox View;
                     case R.id.action_settings:
-                        SettingsFragment settingsfragment = new SettingsFragment();
-                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                        setfragmentTransaction.add(R.id.frame,settingsfragment);
-                        setfragmentTransaction.addToBackStack(null);
-                        setfragmentTransaction.commit();
+                        getFragmentManager().beginTransaction()
+                                .replace(R.id.frame, new SettingsFragment2())
+                                .commit();
                         return true;
                     case R.id.trips:
                         ContentFragment fragment = new ContentFragment();

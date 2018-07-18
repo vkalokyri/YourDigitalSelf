@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="com.rutgers.neemi.InstagramActivity">
 
-    <Button
+    <!--<Button
         android:id="@+id/btn_get_access_token"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -14,7 +14,6 @@
         android:background="#5196E9"
         android:drawableLeft="@drawable/insta_logo2"
         android:gravity="left|center_vertical"
-        android:onClick="onClick"
         android:padding="6dp"
         android:text="Continue with Instagram"
         android:textColor="#ffffff"
@@ -27,6 +26,6 @@
         android:layout_marginTop="2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="2dp"
-        android:textAllCaps="false" />
+        android:textAllCaps="false" />-->
 
 </android.support.constraint.ConstraintLayout>

@@ -48,17 +48,20 @@ public class InstagramActivity extends AppCompatActivity implements Authenticati
         mProgress.setMessage("Getting your recent instagram photos. Please wait ...");
 
 
+        auth_dialog = new AuthenticationDialog(InstagramActivity.this, InstagramActivity.this);
+        auth_dialog.setCancelable(true);
+        auth_dialog.show();
 
-        btn_get_access_token = (Button) findViewById(R.id.btn_get_access_token);
+        //btn_get_access_token = (Button) findViewById(R.id.btn_get_access_token);
 
-        btn_get_access_token.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                auth_dialog = new AuthenticationDialog(InstagramActivity.this, InstagramActivity.this);
-                auth_dialog.setCancelable(true);
-                auth_dialog.show();
-            }
-        });
+        //tn_get_access_token.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                auth_dialog = new AuthenticationDialog(InstagramActivity.this, InstagramActivity.this);
+//                auth_dialog.setCancelable(true);
+//                auth_dialog.show();
+//            }
+//        });
     }
 
     @Override

@@ -119,17 +119,16 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
 
         helper=DatabaseHelper.getHelper(this);
 
-
         //Google widgets
-        gcalButton = (SignInButton) findViewById(R.id.gcalApiButton);
-        gcalButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gcalButton.setEnabled(false);
-                getResultsFromApi();
-                gcalButton.setEnabled(true);
-            }
-        });
+        //gcalButton = (SignInButton) findViewById(R.id.gcalApiButton);
+        //gcalButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                gcalButton.setEnabled(false);
+//                getResultsFromApi();
+//                gcalButton.setEnabled(true);
+//            }
+//        });
 
 
         mProgress = new ProgressDialog(this);
@@ -138,6 +137,10 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
         mCredential = GoogleAccountCredential.usingOAuth2(
                 this, Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
+
+
+        getResultsFromApi();
+
 
 
     }

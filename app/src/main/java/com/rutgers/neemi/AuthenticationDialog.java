@@ -28,7 +28,7 @@ public class AuthenticationDialog extends Dialog {
 
     private final String url;
 
-    public AuthenticationDialog(@NonNull Context context, AuthenticationListener listener) {
+    public AuthenticationDialog(Context context, AuthenticationListener listener) {
         super(context);
         this.context = context;
         this.listener = listener;
@@ -40,20 +40,21 @@ public class AuthenticationDialog extends Dialog {
                 + "&redirect_uri="
                 + config.getStr(PROPERTIES.INSTAGRAM_REDIRECT_URI)
                 + "&response_type=token"
-                + "&display=touch&scope=public_content";
+                + "&display=touch";
 
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         this.setContentView(R.layout.auth_dialog);
+        super.onCreate(savedInstanceState);
         initializeWebView();
     }
 
     private void initializeWebView() {
         web_view = (WebView) findViewById(R.id.web_view);
-        web_view.loadUrl(url);
+        web_view.getSettings().setJavaScriptEnabled(true);
+        web_view.getSettings().setDomStorageEnabled(true);
         web_view.setWebViewClient(new WebViewClient() {
 
             boolean authComplete = false;
@@ -84,5 +85,7 @@ public class AuthenticationDialog extends Dialog {
                 }
             }
         });
+        web_view.loadUrl(url);
+
     }
 }

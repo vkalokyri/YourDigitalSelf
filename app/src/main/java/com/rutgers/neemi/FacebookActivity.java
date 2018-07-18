@@ -60,7 +60,7 @@ import javax.json.Json;
 public class FacebookActivity extends AppCompatActivity {
 
     // Custom button
-    private Button fbbutton;
+    // private Button fbbutton;
     ProgressDialog mProgress;
     // Creating Facebook CallbackManager Value
     public static CallbackManager callbackmanager;
@@ -82,21 +82,22 @@ public class FacebookActivity extends AppCompatActivity {
         helper=DatabaseHelper.getHelper(this);
 
         // Initialize layout button
-        fbbutton = (Button) findViewById(R.id.login_button);
+        //fbbutton = (Button) findViewById(R.id.login_button);
         mProgress = new ProgressDialog(this);
         mProgress.setMessage("Getting your facebook data. Please wait ...");
+        getResultsFromApi();
 
-        fbbutton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                getResultsFromApi();
-            }
-        });
+//        fbbutton.setOnClickListener(new View.OnClickListener() {
+//
+//            @Override
+//            public void onClick(View v) {
+//                getResultsFromApi();
+//            }
+//        });
     }
 
     // Private method to handle Facebook login and callback
-    private void getResultsFromApi() {
+    public void getResultsFromApi() {
 
 
         callbackmanager = CallbackManager.Factory.create();
@@ -593,302 +594,307 @@ public class FacebookActivity extends AppCompatActivity {
                         //GET FACEBOOK FEED
                         new GraphRequest(AccessToken.getCurrentAccessToken(),
                                 "/me/feed",params,HttpMethod.GET, new GraphRequest.Callback() {
-                                    public void onCompleted(GraphResponse response) {
+                            public void onCompleted(GraphResponse response) {
 
-                                        GeoApiContext geoApiContext = new GeoApiContext.Builder()
-                                                .apiKey("AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE")
-                                                .build();
+                                GeoApiContext geoApiContext = new GeoApiContext.Builder()
+                                        .apiKey("AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE")
+                                        .build();
 
-                                        if (response.getError() != null) {
-                                            // handle error
-                                            System.out.println("ERROR in facebook response");
-                                            System.out.println(response.getRawResponse());
-                                        } else {
-                                            System.out.println("Success");
-                                            JSONArray rawFeedData = null;
-                                            System.out.println("Post response = " + response.getRawResponse());
-                                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH);
-                                           // int totalItemsInserted = 0;
+                                if (response.getError() != null) {
+                                    // handle error
+                                    System.out.println("ERROR in facebook response");
+                                    System.out.println(response.getRawResponse());
+                                } else {
+                                    System.out.println("Success");
+                                    JSONArray rawFeedData = null;
+                                    System.out.println("Post response = " + response.getRawResponse());
+                                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH);
+                                    // int totalItemsInserted = 0;
+                                    try {
+                                        rawFeedData = response.getJSONObject().getJSONArray("data");
+                                        for (int j = 0; j < rawFeedData.length(); j++) {
+                                            //save whatever data you want from the result
+                                            Feed feed = new Feed();
+                                            System.out.println(totalItemsInserted+": "+rawFeedData.get(j));
+                                            feed.setId((String) ((JSONObject) rawFeedData.get(j)).get("id"));
+
+                                            if (((JSONObject) rawFeedData.get(j)).has("message")) {
+                                                feed.setMessage((String) ((JSONObject) rawFeedData.get(j)).get("message"));
+                                                System.out.println(totalItemsInserted+": "+(String) ((JSONObject) rawFeedData.get(j)).get("message"));
+
+                                            }
+
+                                            if (((JSONObject) rawFeedData.get(j)).has("link")) {
+                                                feed.setLink((String) ((JSONObject) rawFeedData.get(j)).get("link"));
+                                            }
+
                                             try {
-                                                rawFeedData = response.getJSONObject().getJSONArray("data");
-                                                for (int j = 0; j < rawFeedData.length(); j++) {
-                                                    //save whatever data you want from the result
-                                                    Feed feed = new Feed();
-                                                    System.out.println(totalItemsInserted+": "+rawFeedData.get(j));
-                                                    feed.setId((String) ((JSONObject) rawFeedData.get(j)).get("id"));
+                                                feed.setCreated_time(dateFormat.parse((String) ((JSONObject) rawFeedData.get(j)).get("created_time")).getTime());
+                                            } catch (ParseException e) {
+                                                e.printStackTrace();
+                                            }
+                                            if (((JSONObject) rawFeedData.get(j)).has("picture")) {
+                                                feed.setPicture((String) ((JSONObject) rawFeedData.get(j)).get("picture"));
+                                            }
 
-                                                    if (((JSONObject) rawFeedData.get(j)).has("message")) {
-                                                        feed.setMessage((String) ((JSONObject) rawFeedData.get(j)).get("message"));
-                                                        System.out.println(totalItemsInserted+": "+(String) ((JSONObject) rawFeedData.get(j)).get("message"));
-
-                                                    }
-
-                                                    if (((JSONObject) rawFeedData.get(j)).has("link")) {
-                                                        feed.setLink((String) ((JSONObject) rawFeedData.get(j)).get("link"));
-                                                    }
-
-                                                    try {
-                                                        feed.setCreated_time(dateFormat.parse((String) ((JSONObject) rawFeedData.get(j)).get("created_time")).getTime());
-                                                    } catch (ParseException e) {
-                                                        e.printStackTrace();
-                                                    }
-                                                    if (((JSONObject) rawFeedData.get(j)).has("picture")) {
-                                                        feed.setPicture((String) ((JSONObject) rawFeedData.get(j)).get("picture"));
-                                                    }
-
-                                                    if (((JSONObject) rawFeedData.get(j)).has("place")) {
-                                                        JSONObject placeJson = (JSONObject) ((JSONObject) rawFeedData.get(j)).get("place");
+                                            if (((JSONObject) rawFeedData.get(j)).has("place")) {
+                                                JSONObject placeJson = (JSONObject) ((JSONObject) rawFeedData.get(j)).get("place");
+                                                if (placeJson.has("id")) {
+                                                    Place place = helper.placeExistsById((String) placeJson.get("id"));
+                                                    if (place == null) {
+                                                        Place newPlace = new Place();
+                                                        newPlace.setId((String) placeJson.get("id"));
+                                                        if (placeJson.has("name")) {
+                                                            newPlace.setName((String) placeJson.get("name"));
+                                                        }
                                                         if (placeJson.has("id")) {
-                                                            Place place = helper.placeExistsById((String) placeJson.get("id"));
-                                                            if (place == null) {
-                                                                Place newPlace = new Place();
-                                                                newPlace.setId((String) placeJson.get("id"));
-                                                                if (placeJson.has("name")) {
-                                                                    newPlace.setName((String) placeJson.get("name"));
-                                                                }
-                                                                if (placeJson.has("id")) {
-                                                                    newPlace.setId((String) placeJson.get("id"));
-                                                                }
-                                                                if (placeJson.has("location")) {
-                                                                    JSONObject locationJson = (JSONObject) placeJson.get("location");
-                                                                    if (locationJson.has("city")) {
-                                                                        newPlace.setCity((String) locationJson.get("city"));
-                                                                    }
-                                                                    if (locationJson.has("country")) {
-                                                                        newPlace.setCountry((String) locationJson.get("country"));
-                                                                    }
-                                                                    if (locationJson.has("latitude")) {
-                                                                        newPlace.setLatitude((double) locationJson.get("latitude"));
-                                                                    }
-                                                                    if (locationJson.has("longitude")) {
-                                                                        newPlace.setLongitude((double) locationJson.get("longitude"));
-                                                                    }
-                                                                    if (locationJson.has("state")) {
-                                                                        newPlace.setState((String) locationJson.get("state"));
-                                                                    }
-                                                                    if (locationJson.has("street")) {
-                                                                        newPlace.setStreet((String) locationJson.get("street"));
-                                                                    }
-                                                                    if (locationJson.has("region")) {
-                                                                        newPlace.setRegion((String) locationJson.get("region"));
-                                                                    }
-                                                                    if (locationJson.has("zip")) {
-                                                                        newPlace.setZip((String) locationJson.get("zip"));
-                                                                    }
+                                                            newPlace.setId((String) placeJson.get("id"));
+                                                        }
+                                                        if (placeJson.has("location")) {
+                                                            JSONObject locationJson = (JSONObject) placeJson.get("location");
+                                                            if (locationJson.has("city")) {
+                                                                newPlace.setCity((String) locationJson.get("city"));
+                                                            }
+                                                            if (locationJson.has("country")) {
+                                                                newPlace.setCountry((String) locationJson.get("country"));
+                                                            }
+                                                            if (locationJson.has("latitude")) {
+                                                                newPlace.setLatitude((double) locationJson.get("latitude"));
+                                                            }
+                                                            if (locationJson.has("longitude")) {
+                                                                newPlace.setLongitude((double) locationJson.get("longitude"));
+                                                            }
+                                                            if (locationJson.has("state")) {
+                                                                newPlace.setState((String) locationJson.get("state"));
+                                                            }
+                                                            if (locationJson.has("street")) {
+                                                                newPlace.setStreet((String) locationJson.get("street"));
+                                                            }
+                                                            if (locationJson.has("region")) {
+                                                                newPlace.setRegion((String) locationJson.get("region"));
+                                                            }
+                                                            if (locationJson.has("zip")) {
+                                                                newPlace.setZip((String) locationJson.get("zip"));
+                                                            }
 
 
-                                                                    LatLng location = new LatLng(newPlace.getLatitude(),newPlace.getLongitude());
-                                                                    try {
-                                                                        PlacesSearchResponse gmapsResponse = PlacesApi.nearbySearchQuery(geoApiContext, location)
-                                                                                .radius(100)
-                                                                                .keyword(newPlace.getName())
-                                                                                .name(newPlace.getName())
-                                                                                .await();
-                                                                        if (gmapsResponse.results!=null){
-                                                                            if (gmapsResponse.results.length>0) {
-                                                                                for (String placeCategory : gmapsResponse.results[0].types) {
-                                                                                    if (gmapsResponse.results[0].photos!=null) {
-                                                                                        com.google.maps.model.Photo photoFound=null;
-                                                                                        for (com.google.maps.model.Photo p: gmapsResponse.results[0].photos){
-                                                                                            if (p.width>750) {
-                                                                                                photoFound=p;
-                                                                                                break;
-                                                                                            }
-
-                                                                                        }
-                                                                                        if (photoFound!=null){
-                                                                                            PhotoResult photoResult = PlacesApi.photo(geoApiContext,photoFound.photoReference).maxWidth(1600).await();
-                                                                                            byte[] image = photoResult.imageData;
-                                                                                            newPlace.setImage(image);
-                                                                                        }else{
-                                                                                            PhotoResult photoResult = PlacesApi.photo(geoApiContext,gmapsResponse.results[0].photos[0].photoReference).maxWidth(1600).await();
-                                                                                            byte[] image = photoResult.imageData;
-                                                                                            newPlace.setImage(image);
-                                                                                        }
-
-
+                                                            LatLng location = new LatLng(newPlace.getLatitude(),newPlace.getLongitude());
+                                                            try {
+                                                                PlacesSearchResponse gmapsResponse = PlacesApi.nearbySearchQuery(geoApiContext, location)
+                                                                        .radius(100)
+                                                                        .keyword(newPlace.getName())
+                                                                        .name(newPlace.getName())
+                                                                        .await();
+                                                                if (gmapsResponse.results!=null){
+                                                                    if (gmapsResponse.results.length>0) {
+                                                                        for (String placeCategory : gmapsResponse.results[0].types) {
+                                                                            if (gmapsResponse.results[0].photos!=null) {
+                                                                                com.google.maps.model.Photo photoFound=null;
+                                                                                for (com.google.maps.model.Photo p: gmapsResponse.results[0].photos){
+                                                                                    if (p.width>750) {
+                                                                                        photoFound=p;
+                                                                                        break;
                                                                                     }
 
-                                                                                    placeDao.create(newPlace);
-                                                                                    feed.setPlace(newPlace);
-                                                                                    Category categoryExists = helper.placeCategoryExists(placeCategory);
-                                                                                    if (categoryExists == null) {
-                                                                                        Category newCategory = new Category();
-                                                                                        newCategory.setCategoryName(placeCategory);
-                                                                                        helper.getCategoryDao().create(newCategory);
-                                                                                        PlaceHasCategory placeHasCategories = new PlaceHasCategory(newPlace, newCategory);
-                                                                                        helper.getPlaceHasCategoryRuntimeDao().create(placeHasCategories);
-                                                                                    } else {
-                                                                                        PlaceHasCategory trans_categories = new PlaceHasCategory(newPlace, categoryExists);
-                                                                                        helper.getPlaceHasCategoryRuntimeDao().create(trans_categories);
-                                                                                    }
                                                                                 }
+                                                                                if (photoFound!=null){
+                                                                                    PhotoResult photoResult = PlacesApi.photo(geoApiContext,photoFound.photoReference).maxWidth(1600).await();
+                                                                                    byte[] image = photoResult.imageData;
+                                                                                    newPlace.setImage(image);
+                                                                                }else{
+                                                                                    PhotoResult photoResult = PlacesApi.photo(geoApiContext,gmapsResponse.results[0].photos[0].photoReference).maxWidth(1600).await();
+                                                                                    byte[] image = photoResult.imageData;
+                                                                                    newPlace.setImage(image);
+                                                                                }
+
+
                                                                             }
-                                                                        }else{
+
                                                                             placeDao.create(newPlace);
                                                                             feed.setPlace(newPlace);
+                                                                            Category categoryExists = helper.placeCategoryExists(placeCategory);
+                                                                            if (categoryExists == null) {
+                                                                                Category newCategory = new Category();
+                                                                                newCategory.setCategoryName(placeCategory);
+                                                                                helper.getCategoryDao().create(newCategory);
+                                                                                PlaceHasCategory placeHasCategories = new PlaceHasCategory(newPlace, newCategory);
+                                                                                helper.getPlaceHasCategoryRuntimeDao().create(placeHasCategories);
+                                                                            } else {
+                                                                                PlaceHasCategory trans_categories = new PlaceHasCategory(newPlace, categoryExists);
+                                                                                helper.getPlaceHasCategoryRuntimeDao().create(trans_categories);
+                                                                            }
                                                                         }
-                                                                    } catch (ApiException e) {
-                                                                        placeDao.create(newPlace);
-                                                                        feed.setPlace(newPlace);
-                                                                        e.printStackTrace();
-                                                                    } catch (InterruptedException e) {
-                                                                        placeDao.create(newPlace);
-                                                                        feed.setPlace(newPlace);
-                                                                        e.printStackTrace();
-                                                                    } catch (IOException e) {
-                                                                        placeDao.create(newPlace);
-                                                                        feed.setPlace(newPlace);
-                                                                        e.printStackTrace();
                                                                     }
-
-                                                                }
-                                                            } else {
-                                                                feed.setPlace(place);
-                                                            }
-                                                        }
-                                                    }
-
-                                                    if (((JSONObject) rawFeedData.get(j)).has("from")) {
-                                                        //Person creator = new Person();
-                                                        JSONObject from = ((JSONObject) rawFeedData.get(j)).getJSONObject("from");
-                                                        if(from.has("id")) {
-                                                            Person personExists = helper.personExistsById((String)from.get("id"));
-                                                            if (personExists ==null) {
-                                                                Person newPerson = new Person();
-                                                                newPerson.setId((String)from.get("id"));
-                                                                if ( from.has("name")) {
-                                                                    newPerson.setName((String)from.get("name"));
-                                                                }
-                                                                if(from.has("email")) {
-                                                                    newPerson.setEmail((String)from.get("email"));
-                                                                }
-                                                                personDao.create(newPerson);
-                                                                feed.setCreator(newPerson);
-                                                            }else{
-                                                                feed.setCreator(personExists);
-                                                            }
-                                                        }
-                                                    }
-
-                                                    if (((JSONObject) rawFeedData.get(j)).has("description")) {
-                                                        feed.setDescription((String) ((JSONObject) rawFeedData.get(j)).get("description"));
-                                                    }
-
-                                                    if (((JSONObject) rawFeedData.get(j)).has("object_id")) {
-                                                        feed.setObject_id((String) ((JSONObject) rawFeedData.get(j)).get("object_id"));
-                                                    }
-
-                                                    if (((JSONObject) rawFeedData.get(j)).has("story")) {
-                                                        feed.setStory((String) ((JSONObject) rawFeedData.get(j)).get("story"));
-                                                    }
-
-                                                    if (((JSONObject) rawFeedData.get(j)).has("type")) {
-                                                        feed.setType((String) ((JSONObject) rawFeedData.get(j)).get("type"));
-                                                    }
-
-
-                                                    feed.setTimestamp(System.currentTimeMillis() / 1000);
-                                                    feed.setSource("facebook");
-                                                    feedDao.create(feed);
-
-                                                    List<Person> taggedList = new ArrayList<Person>();
-                                                    if (((JSONObject) rawFeedData.get(j)).has("with_tags")) {
-                                                        JSONObject tagsJson = (JSONObject) ((JSONObject) rawFeedData.get(j)).get("with_tags");
-                                                        if (tagsJson.has("data")) {
-                                                            JSONArray tagsArray = tagsJson.getJSONArray("data");
-                                                            for (int k = 0; k < tagsArray.length(); k++) {
-                                                                //save whatever data you want from the result
-                                                                System.out.println((JSONObject) tagsArray.get(k));
-                                                                Person person = helper.personExistsById((String) ((JSONObject) tagsArray.get(k)).get("id"));
-                                                                if (person ==null) {
-                                                                    Person newPerson = new Person();
-                                                                    newPerson.setId((String) ((JSONObject) tagsArray.get(k)).get("id"));
-                                                                    if ( ((JSONObject) tagsArray.get(k)).has("name")) {
-                                                                        newPerson.setName((String) ((JSONObject) tagsArray.get(k)).get("name"));
-                                                                    }
-                                                                    if(((JSONObject) tagsArray.get(k)).has("email")) {
-                                                                        newPerson.setEmail((String) ((JSONObject) tagsArray.get(k)).get("email"));
-                                                                    }
-                                                                    personDao.create(newPerson);
-                                                                    taggedList.add(newPerson);
-
                                                                 }else{
-                                                                    FeedWithTags taggedPeople = new FeedWithTags(person, feed);
-                                                                    feedWithTagsDao.create(taggedPeople);
+                                                                    placeDao.create(newPlace);
+                                                                    feed.setPlace(newPlace);
                                                                 }
+                                                            } catch (ApiException e) {
+                                                                placeDao.create(newPlace);
+                                                                feed.setPlace(newPlace);
+                                                                e.printStackTrace();
+                                                            } catch (InterruptedException e) {
+                                                                placeDao.create(newPlace);
+                                                                feed.setPlace(newPlace);
+                                                                e.printStackTrace();
+                                                            } catch (IOException e) {
+                                                                placeDao.create(newPlace);
+                                                                feed.setPlace(newPlace);
+                                                                e.printStackTrace();
                                                             }
-                                                        }
-                                                    }
-                                                    for(Person tagged:taggedList) {
-                                                        FeedWithTags taggedPeople = new FeedWithTags(tagged, feed);
-                                                        feedWithTagsDao.create(taggedPeople);
-                                                    }
 
-                                                    taggedList = new ArrayList<Person>();
-                                                    if (((JSONObject) rawFeedData.get(j)).has("message_tags")) {
-                                                        JSONArray tagsArray = ((JSONObject) rawFeedData.get(j)).getJSONArray("message_tags");
+                                                        }
+                                                    } else {
+                                                        feed.setPlace(place);
+                                                    }
+                                                }
+                                            }
+
+                                            if (((JSONObject) rawFeedData.get(j)).has("from")) {
+                                                //Person creator = new Person();
+                                                JSONObject from = ((JSONObject) rawFeedData.get(j)).getJSONObject("from");
+                                                if(from.has("id")) {
+                                                    Person personExists = helper.personExistsById((String)from.get("id"));
+                                                    if (personExists ==null) {
+                                                        Person newPerson = new Person();
+                                                        newPerson.setId((String)from.get("id"));
+                                                        if ( from.has("name")) {
+                                                            newPerson.setName((String)from.get("name"));
+                                                        }
+                                                        if(from.has("email")) {
+                                                            newPerson.setEmail((String)from.get("email"));
+                                                        }
+                                                        personDao.create(newPerson);
+                                                        feed.setCreator(newPerson);
+                                                    }else{
+                                                        feed.setCreator(personExists);
+                                                    }
+                                                }
+                                            }
+
+                                            if (((JSONObject) rawFeedData.get(j)).has("description")) {
+                                                feed.setDescription((String) ((JSONObject) rawFeedData.get(j)).get("description"));
+                                            }
+
+                                            if (((JSONObject) rawFeedData.get(j)).has("object_id")) {
+                                                feed.setObject_id((String) ((JSONObject) rawFeedData.get(j)).get("object_id"));
+                                            }
+
+                                            if (((JSONObject) rawFeedData.get(j)).has("story")) {
+                                                feed.setStory((String) ((JSONObject) rawFeedData.get(j)).get("story"));
+                                            }
+
+                                            if (((JSONObject) rawFeedData.get(j)).has("type")) {
+                                                feed.setType((String) ((JSONObject) rawFeedData.get(j)).get("type"));
+                                            }
+
+
+                                            feed.setTimestamp(System.currentTimeMillis() / 1000);
+                                            feed.setSource("facebook");
+                                            feedDao.create(feed);
+
+                                            List<Person> taggedList = new ArrayList<Person>();
+                                            if (((JSONObject) rawFeedData.get(j)).has("with_tags")) {
+                                                JSONArray tagsArray = new JSONArray();
+                                                if (((JSONObject) rawFeedData.get(j)).get("with_tags") instanceof JSONArray){
+                                                    ;
+                                                }else {
+                                                    JSONObject tagsJson = (JSONObject) ((JSONObject) rawFeedData.get(j)).get("with_tags");
+                                                    if (tagsJson.has("data")) {
+                                                        tagsArray = tagsJson.getJSONArray("data");
                                                         for (int k = 0; k < tagsArray.length(); k++) {
                                                             //save whatever data you want from the result
                                                             System.out.println((JSONObject) tagsArray.get(k));
                                                             Person person = helper.personExistsById((String) ((JSONObject) tagsArray.get(k)).get("id"));
-                                                            if (person ==null) {
+                                                            if (person == null) {
                                                                 Person newPerson = new Person();
                                                                 newPerson.setId((String) ((JSONObject) tagsArray.get(k)).get("id"));
-                                                                if ( ((JSONObject) tagsArray.get(k)).has("name")) {
+                                                                if (((JSONObject) tagsArray.get(k)).has("name")) {
                                                                     newPerson.setName((String) ((JSONObject) tagsArray.get(k)).get("name"));
                                                                 }
-                                                                if(((JSONObject) tagsArray.get(k)).has("email")) {
+                                                                if (((JSONObject) tagsArray.get(k)).has("email")) {
                                                                     newPerson.setEmail((String) ((JSONObject) tagsArray.get(k)).get("email"));
                                                                 }
                                                                 personDao.create(newPerson);
                                                                 taggedList.add(newPerson);
 
-                                                            }else{
-                                                                FeedMessageTags taggedPeople = new FeedMessageTags(person, feed);
-                                                                feedMessageTagsDao.create(taggedPeople);
+                                                            } else {
+                                                                FeedWithTags taggedPeople = new FeedWithTags(person, feed);
+                                                                feedWithTagsDao.create(taggedPeople);
                                                             }
                                                         }
-
                                                     }
-                                                    for(Person tagged:taggedList) {
-                                                        FeedMessageTags taggedPeople = new FeedMessageTags(tagged, feed);
+                                                }
+                                            }
+                                            for(Person tagged:taggedList) {
+                                                FeedWithTags taggedPeople = new FeedWithTags(tagged, feed);
+                                                feedWithTagsDao.create(taggedPeople);
+                                            }
+
+                                            taggedList = new ArrayList<Person>();
+                                            if (((JSONObject) rawFeedData.get(j)).has("message_tags")) {
+                                                JSONArray tagsArray = ((JSONObject) rawFeedData.get(j)).getJSONArray("message_tags");
+                                                for (int k = 0; k < tagsArray.length(); k++) {
+                                                    //save whatever data you want from the result
+                                                    System.out.println((JSONObject) tagsArray.get(k));
+                                                    Person person = helper.personExistsById((String) ((JSONObject) tagsArray.get(k)).get("id"));
+                                                    if (person ==null) {
+                                                        Person newPerson = new Person();
+                                                        newPerson.setId((String) ((JSONObject) tagsArray.get(k)).get("id"));
+                                                        if ( ((JSONObject) tagsArray.get(k)).has("name")) {
+                                                            newPerson.setName((String) ((JSONObject) tagsArray.get(k)).get("name"));
+                                                        }
+                                                        if(((JSONObject) tagsArray.get(k)).has("email")) {
+                                                            newPerson.setEmail((String) ((JSONObject) tagsArray.get(k)).get("email"));
+                                                        }
+                                                        personDao.create(newPerson);
+                                                        taggedList.add(newPerson);
+
+                                                    }else{
+                                                        FeedMessageTags taggedPeople = new FeedMessageTags(person, feed);
                                                         feedMessageTagsDao.create(taggedPeople);
                                                     }
-
-
-                                                    totalItemsInserted++;
-                                                    System.out.println("FbPostsInserted = " + totalItemsInserted);
                                                 }
-                                            } catch (JSONException e) {
-                                                System.out.println("EXCEPTION ON json");
-                                                e.printStackTrace();
+
+                                            }
+                                            for(Person tagged:taggedList) {
+                                                FeedMessageTags taggedPeople = new FeedMessageTags(tagged, feed);
+                                                feedMessageTagsDao.create(taggedPeople);
                                             }
 
-                                            //get next batch of results of exists
-                                            GraphRequest nextRequest = response.getRequestForPagedResults(GraphResponse.PagingDirection.NEXT);
-                                            if (nextRequest != null) {
-                                                nextRequest.setCallback(this);
-                                                nextRequest.executeAsync();
-                                            }
 
-                                            mProgress.dismiss();
-
-
-                                            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-                                            myIntent.putExtra("key", "facebook");
-                                            myIntent.putExtra("items", totalItemsInserted);
-                                            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                            startActivity(myIntent);
-
+                                            totalItemsInserted++;
+                                            System.out.println("FbPostsInserted = " + totalItemsInserted);
                                         }
-
-
+                                    } catch (JSONException e) {
+                                        System.out.println("EXCEPTION ON json");
+                                        e.printStackTrace();
                                     }
 
+                                    //get next batch of results of exists
+                                    GraphRequest nextRequest = response.getRequestForPagedResults(GraphResponse.PagingDirection.NEXT);
+                                    if (nextRequest != null) {
+                                        nextRequest.setCallback(this);
+                                        nextRequest.executeAsync();
+                                    }
 
+                                    mProgress.dismiss();
+
+
+                                    Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                    myIntent.putExtra("key", "facebook");
+                                    myIntent.putExtra("items", totalItemsInserted);
+                                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(myIntent);
 
                                 }
+
+
+                            }
+
+
+
+                        }
                         ).executeAsync();
 
 
@@ -925,4 +931,3 @@ public class FacebookActivity extends AppCompatActivity {
 
 
 }
-
