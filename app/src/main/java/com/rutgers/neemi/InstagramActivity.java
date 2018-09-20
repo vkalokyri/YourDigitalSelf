@@ -1,9 +1,16 @@
 package com.rutgers.neemi;
 
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -20,6 +27,7 @@ import com.rutgers.neemi.model.PhotoTags;
 import com.rutgers.neemi.model.Place;
 import com.rutgers.neemi.rest.RestClient;
 import com.rutgers.neemi.AuthenticationDialog;
+import com.rutgers.neemi.util.ObscuredSharedPreferences;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,47 +43,148 @@ public class InstagramActivity extends AppCompatActivity implements Authenticati
 
 
     private AuthenticationDialog auth_dialog;
-    private Button btn_get_access_token;
     private DatabaseHelper helper;
     private ProgressDialog mProgress;
+    SharedPreferences prefs ;
+    AlertDialog.Builder builder;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_instagram);
         helper=DatabaseHelper.getHelper(this);
-        mProgress = new ProgressDialog(this);
-        mProgress.setMessage("Getting your recent instagram photos. Please wait ...");
 
 
-        auth_dialog = new AuthenticationDialog(InstagramActivity.this, InstagramActivity.this);
-        auth_dialog.setCancelable(true);
-        auth_dialog.show();
+        Intent i = getIntent();
+        String permissionType = i.getStringExtra("action");
 
-        //btn_get_access_token = (Button) findViewById(R.id.btn_get_access_token);
+        if(permissionType.equals("grant")){
+            grantPermissions();
 
-        //tn_get_access_token.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                auth_dialog = new AuthenticationDialog(InstagramActivity.this, InstagramActivity.this);
-//                auth_dialog.setCancelable(true);
-//                auth_dialog.show();
-//            }
-//        });
+            //getResultsFromApi();
+
+        }else{
+            revokePermissions();
+            Intent myIntent = new Intent(this, MainActivity.class);
+            myIntent.putExtra("key", "facebook");
+            myIntent.putExtra("items", 0);
+            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(myIntent);
+
+        }
+
+
+    }
+
+
+    public void revokePermissions(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(this);
+        }
+        builder.setTitle("Revoke Permissions")
+                .setMessage("To revoke the app's access to your Instagram account, do the following: \n" +
+                        "Log in to instagram.com\n" +
+                        "Click your username and select \"Edit Profile\" in the drop-down menu\n" +
+                        "Click on \"Manage Applications\" in the side menu\n" +
+                        "Find YourDigitalSelf app in the list (you may have more than one)\n" +
+                        "Click the \"Revoke Access\" button in the top right corner")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+
+
+    }
+
+    public void grantPermissions(){
+        prefs = new ObscuredSharedPreferences(
+                this, this.getSharedPreferences("preferences", Context.MODE_PRIVATE) );
+        String instagramToken = prefs.getString("instagram", null);
+        if (instagramToken!=null){
+            Toast.makeText(getApplicationContext(), "Instagram is already authenticated!", Toast.LENGTH_SHORT).show();
+            Log.i("InstagramAPI" , "AlreadyAuthenticated!");
+            Log.i("InstagramAPI" , instagramToken);
+
+            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+            myIntent.putExtra("key", "instagram");
+            myIntent.putExtra("items", 0);
+            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(myIntent);
+
+        }else {
+
+            mProgress = new ProgressDialog(this);
+            mProgress.setMessage("Trying to authenticate ...");
+            auth_dialog = new AuthenticationDialog(InstagramActivity.this, InstagramActivity.this);
+            auth_dialog.setCancelable(true);
+            auth_dialog.show();
+
+        }
     }
 
     @Override
-    public void onCodeReceived(String access_token) {
+    public void onCodeReceived(final String access_token) {
         if (access_token == null) {
             auth_dialog.dismiss();
+            mProgress.setMessage("Sorry, Instagram couldn't be authenticated.");
             mProgress.show();
+
+        }else{
+            Log.i("InstagramAPI" , "Authenticated!");
+            prefs.edit().putString("instagram",access_token).commit();
+            Log.i("InstagramAPI" , "AuthToken stored!");
+            auth_dialog.dismiss();
+
+            AlertDialog.Builder builder;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+            } else {
+                builder = new AlertDialog.Builder(this);
+            }
+
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            preferences.edit().putBoolean("instagram", true).apply();
+
+
+
+            builder.setTitle("Instagram was successfully authorized!")
+                    .setMessage("Do you want the app to get your past month's data or start collecting data from today?")
+                    .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            fetchData(access_token);
+                            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                            myIntent.putExtra("key", "instagram");
+                            myIntent.putExtra("items", 0);
+                            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(myIntent);
+
+                        }
+                    })
+                    .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                            myIntent.putExtra("key", "instagram");
+                            myIntent.putExtra("items", 0);
+                            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(myIntent);
+
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_info)
+                    .show();
+
+
         }
 
-        fetchData(access_token);
+
+       //fetchData(access_token);
     }
 
 
-    public void fetchData(String access_token) {
+     public void fetchData(String access_token) {
+
         final RuntimeExceptionDao<Person, String> personDao = helper.getPersonDao();
         final RuntimeExceptionDao<Photo, String> photoDao = helper.getPhotoDao();
         final RuntimeExceptionDao<Place, String> placeDao = helper.getPlaceDao();
@@ -98,15 +207,19 @@ public class InstagramActivity extends AppCompatActivity implements Authenticati
         Call<InstagramResponse> call=null;
 
         if (id!=null) {
-             call = RestClient.getRetrofitService().getRecentMediaAfterID(access_token,id);
+            call = RestClient.getRetrofitService().getRecentMediaAfterID(access_token,id);
         }else{
             call = RestClient.getRetrofitService().getRecentMedia(access_token);
 
         }
 
+
         call.enqueue(new Callback<InstagramResponse>() {
             @Override
             public void onResponse(Call<InstagramResponse> call, Response<InstagramResponse> response) {
+
+                Log.d("Instagram", response.message());
+
 
                 if (response.body() != null) {
                     int photosReceived =response.body().getData().length;
@@ -143,16 +256,29 @@ public class InstagramActivity extends AppCompatActivity implements Authenticati
                         photoDao.create(photo);
 
                         for (Data.UsersTagged taggedUser: inst_photo.getUsers_in_photo()){
-                            Person taggedPerson = helper.personExistsById(taggedUser.getUser().getId());
-                            if(taggedPerson==null){
-                                taggedPerson=new Person();
-                                taggedPerson.setId(taggedUser.getUser().getId());
-                                taggedPerson.setName(taggedUser.getUser().getFull_name());
-                                taggedPerson.setUsername(taggedUser.getUser().getUsername());
-                                personDao.create(taggedPerson);
+                            if(taggedUser.getUser().getId()!=null) {
+                                Person taggedPerson = helper.personExistsById(taggedUser.getUser().getId());
+                                if (taggedPerson == null) {
+                                    taggedPerson = new Person();
+                                    taggedPerson.setId(taggedUser.getUser().getId());
+                                    taggedPerson.setName(taggedUser.getUser().getFull_name());
+                                    taggedPerson.setUsername(taggedUser.getUser().getUsername());
+                                    personDao.create(taggedPerson);
+                                }
+                                PhotoTags taggedPeople = new PhotoTags(taggedPerson, photo);
+                                photoTagsDao.create(taggedPeople);
+                            }else if(taggedUser.getUser().getUsername()!=null) {
+                                Person taggedPerson = helper.personExistsByUsername(taggedUser.getUser().getUsername());
+                                if (taggedPerson == null) {
+                                    taggedPerson = new Person();
+                                    taggedPerson.setUsername(taggedUser.getUser().getUsername());
+                                    taggedPerson.setName(taggedUser.getUser().getFull_name());
+                                    personDao.create(taggedPerson);
+                                }
+                                PhotoTags taggedPeople = new PhotoTags(taggedPerson, photo);
+                                photoTagsDao.create(taggedPeople);
+
                             }
-                            PhotoTags taggedPeople = new PhotoTags(taggedPerson, photo);
-                            photoTagsDao.create(taggedPeople);
                         }
                     }
                     mProgress.dismiss();
@@ -171,11 +297,11 @@ public class InstagramActivity extends AppCompatActivity implements Authenticati
             }
         });
 
-        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-        myIntent.putExtra("key", "instagram");
-        myIntent.putExtra("items", 0);
-        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(myIntent);
+//        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+//        myIntent.putExtra("key", "instagram");
+//        myIntent.putExtra("items", 0);
+//        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//        startActivity(myIntent);
     }
 
 

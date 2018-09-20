@@ -17,9 +17,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-    <uses-permission
-        android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
 
     <application
         android:allowBackup="true"
@@ -28,16 +26,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-
-        <activity android:name=".SplashActivity" android:theme="@style/SplashTheme">
+        <activity
+            android:name=".SplashActivity"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
-
             </intent-filter>
-
         </activity>
-
         <activity
             android:name=".GDriveActivity"
             android:exported="true"
@@ -95,27 +92,32 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.rutgers.neemi.LocationActivity">
+        <activity android:name=".LocationActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.rutgers.neemi.MainActivity" />
         </activity>
 
         <service
-            android:name="com.rutgers.neemi.LocationUpdatesIntentService"
+            android:name=".LocationUpdatesIntentService"
             android:exported="false" />
 
-        <receiver android:name="com.rutgers.neemi.LocationUpdatesBroadcastReceiver"
+        <receiver
+            android:name=".LocationUpdatesBroadcastReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.rutgers.neemi.LocationUpdatesBroadcastReceiver.ACTION_PROCESS_UPDATES" />
             </intent-filter>
         </receiver>
 
-        <service android:name="com.rutgers.neemi.rest.DownloadJobService"
-            android:permission="android.permission.BIND_JOB_SERVICE" ></service>
+        <service
+            android:name=".rest.DownloadJobService"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
 
-
+        <activity
+            android:name=".IntroActivity"
+            android:label="@string/title_activity_intro"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"></activity>
     </application>
 
 </manifest>

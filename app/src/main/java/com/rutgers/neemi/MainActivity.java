@@ -1,7 +1,11 @@
 package com.rutgers.neemi;
 
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -15,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.rutgers.neemi.rest.DownloadJobService;
 import com.rutgers.neemi.util.ApplicationManager;
 
 public class MainActivity extends AppCompatActivity {
@@ -29,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         DatabaseHelper helper= DatabaseHelper.getHelper(this);
+        setContentView(R.layout.activity_main);
+
 
 //        ConnectionSource connectionSource = new AndroidConnectionSource(helper);
 //        RuntimeExceptionDao<Subscript, String> subScriptDao = helper.getSubScriptDao();
@@ -56,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
 //                }
 
 
+
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (!prefs.getBoolean("firstTime", false)) {
             // <---- run your one time code here
@@ -66,154 +75,194 @@ public class MainActivity extends AppCompatActivity {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putBoolean("firstTime", true);
             editor.commit();
-        }
 
-        setContentView(R.layout.activity_main);
+            Intent myIntent = new Intent(this, IntroActivity.class);
+            startActivity(myIntent);
 
-        Intent i = getIntent();
-        String key = i.getStringExtra("key");
-        int items = i.getIntExtra("items",0);
-
-        if (key!=null) {
-            if (key.equalsIgnoreCase("facebook")) {
-                if (items == 0) {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No facebook data fetched.", Snackbar.LENGTH_LONG).show();
-                } else {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " facebook objects fetched.", Snackbar.LENGTH_LONG).show();
-                }
-
-            }
-            if (key.equalsIgnoreCase("instagram")) {
-                if (items == 0) {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No instagram photos fetched.", Snackbar.LENGTH_LONG).show();
-                } else {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " instagram photos fetched.", Snackbar.LENGTH_LONG).show();
-                }
-
-            }
-            if (key.equalsIgnoreCase("gcal")) {
-                if (items == 0) {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No calendar events fetched.", Snackbar.LENGTH_LONG ).show();
-                } else {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items+" calendar events fetched.", Snackbar.LENGTH_LONG ).show();
-                }
-
-            }
-            if (key.equalsIgnoreCase("gmail")) {
-                if (items == 0) {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_LONG ).show();
-                } else {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items+" emails fetched.", Snackbar.LENGTH_LONG ).show();
-                }
-
-            }
-            if (key.equalsIgnoreCase("bank")) {
-                if (items == 0) {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No financial transactions fetched.", Snackbar.LENGTH_LONG).show();
-                } else {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout),  items+" financial transactions fetched.", Snackbar.LENGTH_LONG).show();
-                }
-
-            }
-            if (key.equalsIgnoreCase("gdrive")) {
-                if (items == 0) {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No financial transactions fetched.", Snackbar.LENGTH_LONG).show();
-                } else {
-                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout),  items+" financial transactions fetched.", Snackbar.LENGTH_LONG).show();
-                }
-            }
             getFragmentManager().beginTransaction()
-                    .replace(R.id.frame, new SettingsFragment2())
-                    .commit();
+                .replace(R.id.frame, new SettingsFragment2())
+                .addToBackStack(null)
+                .commit();
+
 
         }
 
-        // Initializing Toolbar and setting it as the actionbar
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+//            boolean gmailPermission = prefs.getBoolean("gmail", true);
+//
+//            PersistableBundle pb = new PersistableBundle();
+//            pb.putBoolean("gmailPermission" , gmailPermission);
+//
+//
+//            JobScheduler jobScheduler = (JobScheduler)getApplicationContext().getSystemService(JOB_SCHEDULER_SERVICE);
+//            ComponentName componentName = new ComponentName(this,DownloadJobService.class);
+//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+//                JobInfo jobInfoObj = new JobInfo.Builder(1, componentName)
+//                        .setPeriodic(300000)
+//                        .setRequiresBatteryNotLow(true)
+//                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
+//                        .setRequiresDeviceIdle(true)
+//                        .setRequiresCharging(true)
+//                        .setRequiresStorageNotLow(true)
+//                        .setBackoffCriteria(3600000, JobInfo.BACKOFF_POLICY_LINEAR)
+//                        .setExtras(pb).build();
+//                jobScheduler.schedule(jobInfoObj);
+//
+//            }else{
+//                JobInfo jobInfoObj = new JobInfo.Builder(1, componentName)
+//                        .setPeriodic(600000)
+//                        .setRequiresCharging(true)
+//                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
+//                        .setRequiresDeviceIdle(true)
+//                        .setBackoffCriteria(3600000, JobInfo.BACKOFF_POLICY_LINEAR)
+//                        .setExtras(pb).build();
+//                jobScheduler.schedule(jobInfoObj);
+//            }
 
-        //Initializing NavigationView
-        navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        navigationView.setItemIconTintList(null);
+            Intent i = getIntent();
+            String key = i.getStringExtra("key");
+            int items = i.getIntExtra("items", 0);
 
+            if (key != null) {
+                if (key.equalsIgnoreCase("facebook")) {
 
-
-        //Setting Navigation View Item Selected Listener to handle the item click of the navigation menu
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-
-            // This method will trigger on item Click of navigation menu
-            @Override
-            public boolean onNavigationItemSelected(MenuItem menuItem) {
-
-
-                //Checking if the item is in checked state or not, if not make it in checked state
-                if(menuItem.isChecked())
-                    menuItem.setChecked(false);
-                else menuItem.setChecked(true);
-
-
-                //Closing drawer on item click
-                drawerLayout.closeDrawers();
-
-                //Check to see which item was being clicked and perform appropriate action
-                switch (menuItem.getItemId()){
-
-
-                    //Replacing the main content with ContentFragment Which is our Inbox View;
-                    case R.id.action_settings:
-                        getFragmentManager().beginTransaction()
-                                .replace(R.id.frame, new SettingsFragment2())
-                                .commit();
-                        return true;
-                    case R.id.trips:
-                        ContentFragment fragment = new ContentFragment();
-                        android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                        fragmentTransaction.add(R.id.frame,fragment);
-                        fragmentTransaction.addToBackStack(null);
-                        fragmentTransaction.commit();
-                        return true;
-                    case R.id.restaurants:
-                        RestaurantsFragment restFragment = new RestaurantsFragment();
-                        android.support.v4.app.FragmentTransaction restaurantsfragmentTrans = getSupportFragmentManager().beginTransaction();
-                        restaurantsfragmentTrans.add(R.id.frame,restFragment);
-                        restaurantsfragmentTrans.addToBackStack(null);
-                        restaurantsfragmentTrans.commit();
-                        return true;
-
-                    // For rest of the options we just show a toast on click
-                    default:
-                        Toast.makeText(getApplicationContext(),"Something is Wrong",Toast.LENGTH_SHORT).show();
-                        return true;
+//                if (items == 0) {
+//                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No facebook data fetched.", Snackbar.LENGTH_LONG).show();
+//                } else {
+//                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " facebook objects fetched.", Snackbar.LENGTH_LONG).show();
+//                }
 
                 }
+                if (key.equalsIgnoreCase("instagram")) {
+//                    if (items == 0) {
+//                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No instagram photos fetched.", Snackbar.LENGTH_LONG).show();
+//                    } else {
+//                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " instagram photos fetched.", Snackbar.LENGTH_LONG).show();
+//                    }
+
+                }
+                if (key.equalsIgnoreCase("gcal")) {
+                    if (items == 0) {
+                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No calendar events fetched.", Snackbar.LENGTH_LONG).show();
+                    } else {
+                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " calendar events fetched.", Snackbar.LENGTH_LONG).show();
+                    }
+
+                }
+                if (key.equalsIgnoreCase("gmail")) {
+//                if (items == 0) {
+//                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_LONG ).show();
+//                } else {
+//                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items+" emails fetched.", Snackbar.LENGTH_LONG ).show();
+//                }
+
+                }
+                if (key.equalsIgnoreCase("bank")) {
+                    if (items == 0) {
+                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No financial transactions fetched.", Snackbar.LENGTH_LONG).show();
+                    } else {
+                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " financial transactions fetched.", Snackbar.LENGTH_LONG).show();
+                    }
+
+                }
+                if (key.equalsIgnoreCase("gdrive")) {
+                    if (items == 0) {
+                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No financial transactions fetched.", Snackbar.LENGTH_LONG).show();
+                    } else {
+                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " financial transactions fetched.", Snackbar.LENGTH_LONG).show();
+                    }
+                }
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.frame, new SettingsFragment2())
+                        .commit();
+
             }
-        });
 
-        // Initializing Drawer Layout and ActionBarToggle
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
-        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this,drawerLayout,toolbar,R.string.openDrawer, R.string.closeDrawer){
+            // Initializing Toolbar and setting it as the actionbar
+            toolbar = (Toolbar) findViewById(R.id.toolbar);
+            setSupportActionBar(toolbar);
 
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                // Code here will be triggered once the drawer closes as we dont want anything to happen so we leave this blank
-                super.onDrawerClosed(drawerView);
-            }
+            //Initializing NavigationView
+            navigationView = (NavigationView) findViewById(R.id.navigation_view);
+            navigationView.setItemIconTintList(null);
 
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                // Code here will be triggered once the drawer open as we dont want anything to happen so we leave this blank
 
-                super.onDrawerOpened(drawerView);
-            }
-        };
+            //Setting Navigation View Item Selected Listener to handle the item click of the navigation menu
+            navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
 
-        //Setting the actionbarToggle to drawer layout
-        drawerLayout.setDrawerListener(actionBarDrawerToggle);
+                // This method will trigger on item Click of navigation menu
+                @Override
+                public boolean onNavigationItemSelected(MenuItem menuItem) {
 
-        //calling sync state is necessay or else your hamburger icon wont show up
-        actionBarDrawerToggle.syncState();
 
-        //setFirstItemNavigationView();
+                    //Checking if the item is in checked state or not, if not make it in checked state
+                    if (menuItem.isChecked())
+                        menuItem.setChecked(false);
+                    else menuItem.setChecked(true);
+
+
+                    //Closing drawer on item click
+                    drawerLayout.closeDrawers();
+
+                    //Check to see which item was being clicked and perform appropriate action
+                    switch (menuItem.getItemId()) {
+
+
+                        //Replacing the main content with ContentFragment Which is our Inbox View;
+                        case R.id.action_settings:
+                            getFragmentManager().beginTransaction()
+                                    .replace(R.id.frame, new SettingsFragment2())
+                                    .addToBackStack(null)
+                                    .commit();
+                            return true;
+                        case R.id.trips:
+                            ContentFragment fragment = new ContentFragment();
+                            android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                            fragmentTransaction.add(R.id.frame, fragment);
+                            fragmentTransaction.addToBackStack(null);
+                            fragmentTransaction.commit();
+                            return true;
+                        case R.id.restaurants:
+                            RestaurantsFragment restFragment = new RestaurantsFragment();
+                            android.support.v4.app.FragmentTransaction restaurantsfragmentTrans = getSupportFragmentManager().beginTransaction();
+                            restaurantsfragmentTrans.add(R.id.frame, restFragment);
+                            restaurantsfragmentTrans.addToBackStack(null);
+                            restaurantsfragmentTrans.commit();
+                            return true;
+
+                        // For rest of the options we just show a toast on click
+                        default:
+                            Toast.makeText(getApplicationContext(), "Something is Wrong", Toast.LENGTH_SHORT).show();
+                            return true;
+
+                    }
+                }
+            });
+
+            // Initializing Drawer Layout and ActionBarToggle
+            drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+            ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.openDrawer, R.string.closeDrawer) {
+
+                @Override
+                public void onDrawerClosed(View drawerView) {
+                    // Code here will be triggered once the drawer closes as we dont want anything to happen so we leave this blank
+                    super.onDrawerClosed(drawerView);
+                }
+
+                @Override
+                public void onDrawerOpened(View drawerView) {
+                    // Code here will be triggered once the drawer open as we dont want anything to happen so we leave this blank
+
+                    super.onDrawerOpened(drawerView);
+                }
+            };
+
+            //Setting the actionbarToggle to drawer layout
+            drawerLayout.setDrawerListener(actionBarDrawerToggle);
+
+            //calling sync state is necessay or else your hamburger icon wont show up
+            actionBarDrawerToggle.syncState();
+
+            //setFirstItemNavigationView();
 
 
 

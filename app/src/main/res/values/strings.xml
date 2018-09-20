@@ -136,6 +136,8 @@
     </plurals>
 
     <string name="default_channel">Default channel</string>
+    <string name="title_activity_intro">IntroActivity</string>
+    <string name="section_format">Hello World from section: %1$d</string>
 
 
 </resources>

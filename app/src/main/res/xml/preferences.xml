@@ -6,66 +6,70 @@
     android:background="@color/white">
     <PreferenceCategory
         android:title="Social Media"
-        android:key="social_media"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <CheckBoxPreference
             android:key="facebook"
             android:title="@string/facebook"
             android:defaultValue="false"
+            android:persistent="true"
             android:icon="@drawable/fb_logo"
-            android:summary="This option if selected will allow the application to check for facebook updates.">
+            android:summaryOn="YourDigitalSelf was authorized to access your Facebook account."
+            android:summaryOff="This option if selected will authorize the application to check for facebook updates.">
         </CheckBoxPreference>
         <CheckBoxPreference
             android:key="instagram"
             android:title="Instagram"
+            android:persistent="true"
             android:icon="@drawable/insta_logo"
-            android:summary="This option if selected will allow the application to check for instagram updates."/>
+            android:summaryOn="YourDigitalSelf was authorized to access your Instagram account. If you want to revoke access please go to: www.instagram.com>Settings>AuthorizedApps and select Revoke Access"
+            android:summaryOff="This option if selected will authorize the application to check for instagram updates" />
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Email"
-        android:key="email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <CheckBoxPreference android:title="Gmail"
             android:defaultValue="false"
+            android:persistent="true"
             android:summary="This option if selected will allow the application to check for latest versions."
             android:key="gmail"
             android:icon="@drawable/gmail_icon" />
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Calendar"
-        android:key="calendar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <CheckBoxPreference android:title="Google Calendar"
             android:defaultValue="false"
+            android:persistent="true"
             android:summary="This option if selected will allow the application to check for latest versions."
             android:key="gcal"
             android:icon="@drawable/google_calendar" />
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Bank Transactions"
-        android:key="bank"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <CheckBoxPreference android:title="Plaid"
             android:defaultValue="false"
             android:summary="This option if selected will allow the application to check for latest versions."
             android:key="plaid"
+            android:persistent="true"
             android:icon="@drawable/plaid" />
         <ListPreference android:title="GoogleDrive"
             android:defaultValue="false"
             android:summary="This option if selected will ask you to upload a .csv file with your bank transactions with headers: Date, Description, Amount, Category"
             android:key="gdrive"
+            android:persistent="true"
             android:icon="@drawable/gdrive_icon" />
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Location services"
-        android:key="bank"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <CheckBoxPreference android:title="GPS"
+            android:persistent="true"
             android:defaultValue="false"
             android:summary="This option if selected will allow the application to access your location data."
             android:key="gps"

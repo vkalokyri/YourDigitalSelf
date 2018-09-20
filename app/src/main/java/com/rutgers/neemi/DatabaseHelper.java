@@ -546,6 +546,26 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		return null;
 	}
 
+	public Person personExistsByUsername(String username) {
+
+		RuntimeExceptionDao<Person, String> personDao = this.getPersonDao();
+
+		QueryBuilder<Person, String> queryBuilder =
+				personDao.queryBuilder();
+		Where<Person, String> where = queryBuilder.where();
+		try {
+			where.eq(Person.FIELD_USERNAME, username);
+			List<Person> results = queryBuilder.query();
+			if (results.size()!=0){
+				return results.get(0);
+			}else
+				return null;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public Place placeExistsById(String id) {
 
 		RuntimeExceptionDao<Place, String> placeDao = this.getPlaceDao();

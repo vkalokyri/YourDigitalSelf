@@ -1,14 +1,19 @@
 package com.rutgers.neemi;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
+import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -21,8 +26,6 @@ import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.google.api.client.util.DateTime;
 import com.google.maps.GeoApiContext;
-import com.google.maps.PhotoRequest;
-import com.google.maps.PlaceAutocompleteRequest;
 import com.google.maps.PlacesApi;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.LatLng;
@@ -55,13 +58,11 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-import javax.json.Json;
-
 public class FacebookActivity extends AppCompatActivity {
 
     // Custom button
     // private Button fbbutton;
-    ProgressDialog mProgress;
+     ProgressDialog mProgress;
     // Creating Facebook CallbackManager Value
     public static CallbackManager callbackmanager;
     DatabaseHelper helper;
@@ -85,7 +86,29 @@ public class FacebookActivity extends AppCompatActivity {
         //fbbutton = (Button) findViewById(R.id.login_button);
         mProgress = new ProgressDialog(this);
         mProgress.setMessage("Getting your facebook data. Please wait ...");
-        getResultsFromApi();
+
+        Intent i = getIntent();
+        String permissionType = i.getStringExtra("action");
+
+        if(permissionType.equals("grant")){
+            grantPermissions();
+            //getResultsFromApi();
+
+        }else{
+            revokePermissions();
+            Intent myIntent = new Intent(this, MainActivity.class);
+            myIntent.putExtra("key", "facebook");
+            myIntent.putExtra("items", 0);
+            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(myIntent);
+
+        }
+
+
+
+        //getResultsFromApi();
+
+
 
 //        fbbutton.setOnClickListener(new View.OnClickListener() {
 //
@@ -94,6 +117,134 @@ public class FacebookActivity extends AppCompatActivity {
 //                getResultsFromApi();
 //            }
 //        });
+    }
+
+    public void revokePermissions(){
+        System.out.println("Revoke fb permissions");
+
+        GraphRequest.Callback graphCallback = new GraphRequest.Callback() {
+            @Override
+            public void onCompleted(GraphResponse response) {
+                System.out.println("OnRevokePermissionsCompleted : " +response.getRawResponse());
+
+            }
+        };
+
+        new GraphRequest(AccessToken.getCurrentAccessToken(),
+                "me/permissions",null, HttpMethod.DELETE, graphCallback).executeAsync();
+    }
+
+    public void grantPermissions(){
+
+        callbackmanager = CallbackManager.Factory.create();
+        final List<String> permissions = new ArrayList<String>();
+        permissions.add("email");
+        permissions.add("user_photos");
+        permissions.add("user_events");
+        permissions.add("user_posts");
+        permissions.add("user_tagged_places");
+        permissions.add("user_friends");
+
+        LoginManager.getInstance().logInWithReadPermissions(this, permissions);
+
+        LoginManager.getInstance().registerCallback(callbackmanager,
+                new FacebookCallback<LoginResult>() {
+                    @Override
+                    public void onSuccess(LoginResult loginResult) {
+
+                        if(loginResult.getAccessToken().isExpired()){
+                            Toast.makeText(getApplicationContext(), "Facebook access token has expired!", Toast.LENGTH_SHORT).show();
+                            System.out.println("OnGrantPermissionsSuccess : TokenHasExpired");
+                            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                            preferences.edit().putBoolean("facebook", false).apply();
+                            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                            myIntent.putExtra("key", "facebook");
+                            myIntent.putExtra("token", "expired");
+                            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(myIntent);
+                        }else {
+                            if(loginResult.getAccessToken().getToken().contains("ACCESS_TOKEN_REMOVED")){
+                                Toast.makeText(getApplicationContext(), "Facebook access token was removed.", Toast.LENGTH_SHORT).show();
+                                System.out.println("OnGrantPermissionsSuccess : ACCESS_TOKEN_REMOVED");
+                                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                                preferences.edit().putBoolean("facebook", false).apply();
+                                Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                myIntent.putExtra("key", "facebook");
+                                myIntent.putExtra("token", "removed");
+                                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(myIntent);
+
+                            }else {
+
+                                System.out.println("OnGrantPermissionsSuccess : " + loginResult.getAccessToken().getToken());
+
+
+                                AlertDialog.Builder builder;
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                    builder = new AlertDialog.Builder(FacebookActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+                                } else {
+                                    builder = new AlertDialog.Builder(FacebookActivity.this);
+                                }
+
+
+
+                                builder.setTitle("Facebook was successfully authorized!")
+                                        .setMessage("Do you want the app to get your past month's data or start collecting data from today?")
+                                        .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int which) {
+
+                                                getResultsFromApi();
+
+                                            }
+                                        })
+                                        .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                                myIntent.putExtra("key", "facebook");
+                                                myIntent.putExtra("items", 0);
+                                                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                startActivity(myIntent);
+
+                                            }
+                                        })
+                                        .setIcon(android.R.drawable.ic_dialog_info)
+                                        .show();
+
+
+                                //Toast.makeText(getApplicationContext(), "Facebook was successfully authorized!", Toast.LENGTH_SHORT).show();
+
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancel() {
+
+                        Log.d("CANCEL", "On cancel");
+                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                        preferences.edit().putBoolean("facebook", false).apply();
+
+                        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                        myIntent.putExtra("key", "facebook");
+                        myIntent.putExtra("items", 0);
+                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(myIntent);
+
+                    }
+
+                    @Override
+                    public void onError(FacebookException error) {
+                        Log.d("ERROR", error.toString());
+                        Toast.makeText(getApplicationContext(), "An unexpected error has occured!", Toast.LENGTH_SHORT).show();
+                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                        preferences.edit().putBoolean("facebook", false).apply();
+                        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                        myIntent.putExtra("key", "facebook");
+                        myIntent.putExtra("items", 0);
+                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(myIntent);
+                    }
+                });
     }
 
     // Private method to handle Facebook login and callback
@@ -118,7 +269,7 @@ public class FacebookActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
 
-                        mProgress.show();
+                       // mProgress.show();
                         System.out.println("Success");
 
                         final RuntimeExceptionDao<Photo, String> photoDao = helper.getPhotoDao();
@@ -183,7 +334,6 @@ public class FacebookActivity extends AppCompatActivity {
                                     // handle error
                                     System.out.println("ERROR in facebook response");
                                 } else {
-                                    System.out.println("Success");
                                     System.out.println("Hellohello = " + response.getRawResponse());
                                     JSONArray rawPhotosData = null;
                                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH);
@@ -556,7 +706,7 @@ public class FacebookActivity extends AppCompatActivity {
 
                         /* POSTTTTT*/
                         cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                        cal.add(Calendar.MONTH, -12); // substract 6 months
+                        cal.add(Calendar.MONTH, -1); // substract 6 months
                         since=new DateTime(cal.getTimeInMillis());
                         System.out.println("since = "+since);
                         timestamp = null;
@@ -589,7 +739,7 @@ public class FacebookActivity extends AppCompatActivity {
 
 
                         params.putString("fields", "message,link,place,message_tags,with_tags,description,created_time,from,object_id,picture,story,type");
-                        params.putString("since", "1490471395");//since.toString());
+                        params.putString("since", since.toString());
 
                         //GET FACEBOOK FEED
                         new GraphRequest(AccessToken.getCurrentAccessToken(),
@@ -887,6 +1037,9 @@ public class FacebookActivity extends AppCompatActivity {
                                     myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                     startActivity(myIntent);
 
+
+
+
                                 }
 
 
@@ -897,22 +1050,30 @@ public class FacebookActivity extends AppCompatActivity {
                         }
                         ).executeAsync();
 
-
-
-
-
-
-
                     }
 
                     @Override
                     public void onCancel() {
                         Log.d("CANCEL", "On cancel");
+                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                        preferences.edit().putBoolean("facebook", false).apply();
+                        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                        myIntent.putExtra("key", "facebook");
+                        myIntent.putExtra("items", 0);
+                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(myIntent);
                     }
 
                     @Override
                     public void onError(FacebookException error) {
                         Log.d("ERROR", error.toString());
+                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                        preferences.edit().putBoolean("facebook", false).apply();
+                        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                        myIntent.putExtra("key", "facebook");
+                        myIntent.putExtra("items", 0);
+                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(myIntent);
                     }
                 });
     }

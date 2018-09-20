@@ -7,66 +7,53 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
+import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.BooleanResult;
 import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.googleapis.batch.BatchRequest;
-import com.google.api.client.googleapis.batch.json.JsonBatchCallback;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.client.googleapis.json.GoogleJsonError;
-import com.google.api.client.http.HttpHeaders;
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestFactory;
+import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.Base64;
-import com.google.api.client.util.Data;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.gmail.GmailScopes;
-import com.google.api.services.gmail.model.Label;
-import com.google.api.services.gmail.model.ListLabelsResponse;
 import com.google.api.services.gmail.model.ListMessagesResponse;
-import com.google.api.services.gmail.model.ListSendAsResponse;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
 import com.google.api.services.gmail.model.MessagePartHeader;
-import com.google.api.services.gmail.model.SendAs;
 import com.j256.ormlite.android.AndroidConnectionSource;
-import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.support.ConnectionSource;
-import com.j256.ormlite.table.TableUtils;
 import com.joestelmach.natty.DateGroup;
-import com.joestelmach.natty.ParseLocation;
 import com.joestelmach.natty.Parser;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.EmailBcc;
 import com.rutgers.neemi.model.EmailCc;
 import com.rutgers.neemi.model.EmailTo;
 import com.rutgers.neemi.model.Person;
-import com.rutgers.neemi.model.TaskDefinition;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -75,17 +62,14 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
-import static android.app.Activity.RESULT_OK;
-
 
 public class GmailActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
 
-    GoogleAccountCredential mCredential;
+    public static GoogleAccountCredential mCredential;
     private SignInButton gmailButton;
     ProgressDialog mProgress;
     private static final String TAG = "GmailActivity";
@@ -96,6 +80,8 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
     private static final String PREF_ACCOUNT_NAME = "accountName";
     private static final String[] SCOPES = {GmailScopes.GMAIL_READONLY};
+    HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+
     DatabaseHelper dbHelper;
 
     @Override
@@ -112,6 +98,10 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
 
         dbHelper=DatabaseHelper.getHelper(this);
+        mProgress = new ProgressDialog(this);
+        mProgress.setMessage("Getting your emails ...");
+        mProgress.setIndeterminate(false);
+        mProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 
         //Google widgets
 //        gmailButton = (SignInButton) findViewById(R.id.gmailApiButton);
@@ -125,18 +115,99 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 //        });
 
 
-
-        mProgress = new ProgressDialog(this);
-        mProgress.setMessage("Getting your emails ...");
-        mProgress.setIndeterminate(false);
-        mProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-
-
+        Intent i = getIntent();
+        String permissionType = i.getStringExtra("action");
         mCredential = GoogleAccountCredential.usingOAuth2(
                 this, Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
-        getResultsFromApi();
+        if(permissionType.equals("grant")){
+            getResultsFromApi();
+        }else{
+            if (mCredential.getSelectedAccountName() == null) {
+                if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
+                    String accountName = getPreferences(Context.MODE_PRIVATE)
+                            .getString(PREF_ACCOUNT_NAME, null);
+                    if (accountName != null) {
+                        mCredential.setSelectedAccountName(accountName);
+                    } else {
+                        // Start a dialog from which the user can choose an account
+                        startActivityForResult(
+                                mCredential.newChooseAccountIntent(),
+                                REQUEST_ACCOUNT_PICKER);
+                    }
+                } else {
+                    // Request the GET_ACCOUNTS permission via a user dialog
+                    EasyPermissions.requestPermissions(
+                            this,
+                            "This app needs to access your Google account (via Contacts).",
+                            REQUEST_PERMISSION_GET_ACCOUNTS,
+                            Manifest.permission.GET_ACCOUNTS);
+                }
+            } else if (!isDeviceOnline()) {
+                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No network connection available", Snackbar.LENGTH_SHORT).show();
+            }
+
+
+
+                AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+
+                    @Override
+                    protected Boolean doInBackground(Void... params) {
+                        String token = null;
+                        HttpRequestFactory factory = HTTP_TRANSPORT.createRequestFactory();
+                        GenericUrl url = null;
+
+                        try {
+                            token = mCredential.getToken();
+                            url = new GenericUrl("https://accounts.google.com/o/oauth2/revoke?token=" + token);
+                            HttpRequest request = factory.buildGetRequest(url);
+                            HttpResponse response = request.execute();
+                            if (response.getStatusCode() == RESULT_OK) {
+                                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                                preferences.edit().putBoolean("gmail", false).apply();
+                                preferences.edit().putBoolean("gdrive", false).apply();
+                                preferences.edit().putBoolean("gcal", false).apply();
+                               return true;
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (GoogleAuthException e) {
+                            e.printStackTrace();
+                        }
+
+                        return false;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Boolean output) {
+
+                        if (output) {
+                            Log.d(TAG,"All permissions were revoked");
+                        } else {
+                            Log.e(TAG,"There was an error while revoking permissions");
+                        }
+                    }
+                };
+                task.execute();
+
+
+
+
+
+        }
+
+
+
+
+
+
+
+       // mCredential = GoogleAccountCredential.usingOAuth2(
+       //         this, Arrays.asList(SCOPES))
+       //         .setBackOff(new ExponentialBackOff());
+
+        //getResultsFromApi();
     }
 
 
@@ -165,7 +236,22 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                         editor.apply();
                         mCredential.setSelectedAccountName(accountName);
                         getResultsFromApi();
+                    }else{
+                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                        preferences.edit().putBoolean("gmail", false).apply();
+                        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                        myIntent.putExtra("key", "gmail");
+                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(myIntent);
                     }
+                }else if (resultCode == RESULT_CANCELED){
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    preferences.edit().putBoolean("gmail", false).apply();
+                    Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                    myIntent.putExtra("key", "gmail");
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(myIntent);
+
                 }
                 break;
             case REQUEST_AUTHORIZATION:
@@ -192,8 +278,14 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         } else if (!isDeviceOnline()) {
             Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No network connection available", Snackbar.LENGTH_SHORT ).show();
         } else {
-            new MakeRequestTask(mCredential).execute();
+           // new MakeRequestTask(mCredential).execute();
+           // Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+          //  myIntent.putExtra("key", "gmail");
+          //  myIntent.putExtra("items", 0);
+          //  myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+          //  startActivity(myIntent);
         }
+        //return false;
     }
 
 
@@ -209,8 +301,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
      */
     @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
     private void chooseAccount() {
-        if (EasyPermissions.hasPermissions(
-                this, Manifest.permission.GET_ACCOUNTS)) {
+        if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
             String accountName = getPreferences(Context.MODE_PRIVATE)
                     .getString(PREF_ACCOUNT_NAME, null);
             if (accountName != null) {
@@ -261,7 +352,15 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
      */
     @Override
     public void onPermissionsGranted(int requestCode, List<String> list) {
-        // Do nothing.
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        preferences.edit().putBoolean("gmail", true).apply();
+        getFragmentManager().popBackStackImmediate();
+
+//        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+//        myIntent.putExtra("key", "gmail");
+//        myIntent.putExtra("items", 0);
+//        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//        startActivity(myIntent);
     }
 
 
@@ -275,7 +374,14 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
      */
     @Override
     public void onPermissionsDenied(int requestCode, List<String> list) {
-        // Do nothing.
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        preferences.edit().putBoolean("gmail", false).apply();
+
+        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+        myIntent.putExtra("key", "gmail");
+        myIntent.putExtra("items", 0);
+        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(myIntent);
     }
 
     /**
@@ -335,6 +441,12 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 REQUEST_GOOGLE_PLAY_SERVICES);
         dialog.show();
     }
+
+
+
+
+
+
 
 
     private class ExtractTimeTask extends AsyncTask<Void, Void, Boolean> {
@@ -440,12 +552,12 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
      * An asynchronous task that handles the Google Calendar API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
-    private class MakeRequestTask extends AsyncTask<Void, Void, Integer> {
+    public class MakeRequestTask extends AsyncTask<Void, Void, Integer> {
 
         private com.google.api.services.gmail.Gmail gmailService = null;
         private Exception mLastError = null;
 
-        MakeRequestTask(GoogleAccountCredential credential) {
+        public MakeRequestTask(GoogleAccountCredential credential) {
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             gmailService = new com.google.api.services.gmail.Gmail.Builder(
@@ -462,7 +574,8 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         @Override
         protected Integer doInBackground(Void... params) {
             try {
-                return getDataFromApi();
+                return 0;
+                //getDataFromApi();
             } catch (Exception e) {
                 mLastError = e;
                 cancel(true);
@@ -476,7 +589,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
          * @return List of Strings describing returned emails.
          * @throws IOException
          */
-        private int getDataFromApi() throws IOException {
+        public int getDataFromApi() throws IOException {
             // List the next 10 events from the primary calendar.
             RuntimeExceptionDao<Email, String> emailDao = dbHelper.getEmailDao();
             RuntimeExceptionDao<EmailTo, String> emailToDao = dbHelper.getEmailToDao();
