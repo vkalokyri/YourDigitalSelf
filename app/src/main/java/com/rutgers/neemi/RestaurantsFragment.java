@@ -219,6 +219,7 @@ public class RestaurantsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
+
         myView = inflater.inflate(R.layout.fragment_restaurants, container, false);
         ListView list1 =  (ListView) myView.findViewById(R.id.restaurant_list);
 

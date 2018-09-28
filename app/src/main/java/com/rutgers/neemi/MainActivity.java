@@ -124,20 +124,19 @@ public class MainActivity extends AppCompatActivity {
 
             if (key != null) {
                 if (key.equalsIgnoreCase("facebook")) {
-
-//                if (items == 0) {
-//                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No facebook data fetched.", Snackbar.LENGTH_LONG).show();
-//                } else {
-//                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " facebook objects fetched.", Snackbar.LENGTH_LONG).show();
-//                }
+                if (items == 0) {
+                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No facebook data fetched.", Snackbar.LENGTH_LONG).show();
+                } else {
+                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " facebook objects fetched.", Snackbar.LENGTH_LONG).show();
+                }
 
                 }
                 if (key.equalsIgnoreCase("instagram")) {
-//                    if (items == 0) {
-//                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No instagram photos fetched.", Snackbar.LENGTH_LONG).show();
-//                    } else {
-//                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " instagram photos fetched.", Snackbar.LENGTH_LONG).show();
-//                    }
+                    if (items == 0) {
+                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No instagram photos fetched.", Snackbar.LENGTH_LONG).show();
+                    } else {
+                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " instagram photos fetched.", Snackbar.LENGTH_LONG).show();
+                    }
 
                 }
                 if (key.equalsIgnoreCase("gcal")) {
@@ -149,19 +148,19 @@ public class MainActivity extends AppCompatActivity {
 
                 }
                 if (key.equalsIgnoreCase("gmail")) {
-//                if (items == 0) {
-//                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_LONG ).show();
-//                } else {
-//                    Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items+" emails fetched.", Snackbar.LENGTH_LONG ).show();
-//                }
+                    if (items == 0) {
+                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_LONG ).show();
+                    } else {
+                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items+" emails fetched.", Snackbar.LENGTH_LONG ).show();
+                    }
 
                 }
                 if (key.equalsIgnoreCase("bank")) {
-                    if (items == 0) {
-                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No financial transactions fetched.", Snackbar.LENGTH_LONG).show();
-                    } else {
-                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " financial transactions fetched.", Snackbar.LENGTH_LONG).show();
-                    }
+//                    if (items == 0) {
+//                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No financial transactions fetched.", Snackbar.LENGTH_LONG).show();
+//                    } else {
+//                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " financial transactions fetched.", Snackbar.LENGTH_LONG).show();
+//                    }
 
                 }
                 if (key.equalsIgnoreCase("gdrive")) {

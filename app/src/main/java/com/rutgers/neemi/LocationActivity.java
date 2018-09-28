@@ -97,12 +97,14 @@ public class LocationActivity extends FragmentActivity implements GoogleApiClien
         mRemoveUpdatesButton = (Button) findViewById(R.id.remove_updates_button);
         mLocationUpdatesResultView = (TextView) findViewById(R.id.location_updates_result);
 
+
+
         // Check if the user revoked runtime permissions.
         if (!checkPermissions()) {
             requestPermissions();
         }
-
         buildGoogleApiClient();
+
     }
 
     @Override
@@ -324,6 +326,12 @@ public class LocationActivity extends FragmentActivity implements GoogleApiClien
             LocationRequestHelper.setRequesting(this, true);
             LocationServices.FusedLocationApi.requestLocationUpdates(
                     mGoogleApiClient, mLocationRequest, getPendingIntent());
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            preferences.edit().putBoolean("gps", true).apply();
+            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+            myIntent.putExtra("key", "gps");
+            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(myIntent);
         } catch (SecurityException e) {
            LocationRequestHelper.setRequesting(this, false);
             e.printStackTrace();
@@ -338,6 +346,12 @@ public class LocationActivity extends FragmentActivity implements GoogleApiClien
         LocationRequestHelper.setRequesting(this, false);
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,
                 getPendingIntent());
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        preferences.edit().putBoolean("gps", false).apply();
+        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+        myIntent.putExtra("key", "gps");
+        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(myIntent);
     }
 
     /**

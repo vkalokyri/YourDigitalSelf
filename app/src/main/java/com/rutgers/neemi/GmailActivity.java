@@ -5,16 +5,19 @@ import android.accounts.AccountManager;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -84,6 +87,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
     DatabaseHelper dbHelper;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +96,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
+
 
         // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
@@ -256,7 +261,37 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 break;
             case REQUEST_AUTHORIZATION:
                 if (resultCode == RESULT_OK) {
-                    getResultsFromApi();
+                    AlertDialog.Builder builder;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        builder = new AlertDialog.Builder(GmailActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+                    } else {
+                        builder = new AlertDialog.Builder(GmailActivity.this);
+                    }
+
+                    builder.setTitle("Gmail was successfully authorized!")
+                            .setMessage("Do you want the app to get your past month's Gmail data or start collecting data from today?")
+                            .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    getResultsFromApi();
+
+                                }
+                            })
+                            .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                    myIntent.putExtra("key", "gmail");
+                                    myIntent.putExtra("items", 0);
+                                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(myIntent);
+
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_info)
+                            .show();
+
+
+
                 }
                 break;
         }
@@ -277,8 +312,33 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
             chooseAccount();
         } else if (!isDeviceOnline()) {
             Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No network connection available", Snackbar.LENGTH_SHORT ).show();
-        } else {
-           // new MakeRequestTask(mCredential).execute();
+        } else{
+//            AlertDialog.Builder builder;
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                builder = new AlertDialog.Builder(GmailActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+//            } else {
+//                builder = new AlertDialog.Builder(GmailActivity.this);
+//            }
+//            builder.setTitle("Gmail was successfully authorized!")
+//                    .setMessage("Do you want the app to get your past month's Gmail data or start collecting data from today?")
+//                    .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            new MakeRequestTask(mCredential).execute();
+//                        }
+//                    })
+//                    .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+//                            myIntent.putExtra("key", "gmail");
+//                            myIntent.putExtra("items", 0);
+//                            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                            startActivity(myIntent);
+//                        }
+//                    })
+//                    .setIcon(android.R.drawable.ic_dialog_info)
+//                    .show();
+
+             new MakeRequestTask(mCredential).execute();
            // Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
           //  myIntent.putExtra("key", "gmail");
           //  myIntent.putExtra("items", 0);
@@ -354,7 +414,9 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
     public void onPermissionsGranted(int requestCode, List<String> list) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         preferences.edit().putBoolean("gmail", true).apply();
-        getFragmentManager().popBackStackImmediate();
+
+
+        //getFragmentManager().popBackStackImmediate();
 
 //        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
 //        myIntent.putExtra("key", "gmail");
@@ -549,7 +611,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
     }
 
     /**
-     * An asynchronous task that handles the Google Calendar API call.
+     * An asynchronous task that handles the Gmail  API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
     public class MakeRequestTask extends AsyncTask<Void, Void, Integer> {
@@ -564,6 +626,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                     transport, jsonFactory, credential)
                     .setApplicationName("Gmail API Android")
                     .build();
+
         }
 
         /**
@@ -574,8 +637,8 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         @Override
         protected Integer doInBackground(Void... params) {
             try {
-                return 0;
-                //getDataFromApi();
+                return getDataFromApi();
+
             } catch (Exception e) {
                 mLastError = e;
                 cancel(true);
@@ -616,14 +679,15 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 //            helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\",\"subject\" from Email");
 //            helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\",\"subject\" from Email order by \"_id\" desc");
 
+
                 String user = "me";
                 int totalItemsInserted = 0;
                 String pageToken = null;
                 Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                cal.add(Calendar.MONTH, -3); // substract 6 months
+                cal.add(Calendar.MONTH, -1); // substract 6 months
                 //cal.add(Calendar.DATE, -1); // substract 1 day
 
-            Long since = cal.getTimeInMillis() / 1000;
+                Long since = cal.getTimeInMillis() / 1000;
                 System.out.println("since = " + since);
                 String timestamp = null;
 
@@ -799,7 +863,9 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 }
                 System.out.println("EmailsInserted Final = " + totalItemsInserted);
 
-                loadEmailIndex(totalItemsInserted);
+                if (totalItemsInserted>1) {
+                    loadEmailIndex(totalItemsInserted);
+                }
                 //db.setTransactionSuccessful();
                 //db.endTransaction();
                 return totalItemsInserted;
@@ -900,13 +966,15 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
     @Override
         protected void onPreExecute() {
-            mProgress.show();
+            //mProgress.show();
         }
 
         @Override
         protected void onPostExecute(Integer output) {
-            mProgress.dismiss();
-            new ExtractTimeTask().execute();
+            //mProgress.dismiss();
+            if (output>1) {
+                new ExtractTimeTask().execute();
+            }
 
             Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
             myIntent.putExtra("key", "gmail");
@@ -915,10 +983,11 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
             startActivity(myIntent);
 
             if (output == 0) {
-                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_LONG ).show();
+                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_LONG).show();
             } else {
-                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), output+" emails fetched.", Snackbar.LENGTH_LONG ).show();
+                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), output + " emails fetched.", Snackbar.LENGTH_LONG).show();
             }
+
 
 
         }

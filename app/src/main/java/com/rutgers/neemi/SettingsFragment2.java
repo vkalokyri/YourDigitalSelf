@@ -1,34 +1,18 @@
 package com.rutgers.neemi;
 
-import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
-import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseExpandableListAdapter;
-import android.widget.ExpandableListView;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.rutgers.neemi.util.ObscuredSharedPreferences;
-
-import java.util.ArrayList;
 
 
 public class SettingsFragment2 extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -104,6 +88,12 @@ public class SettingsFragment2 extends PreferenceFragment implements SharedPrefe
 //            }
 //    };
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+        view.setBackgroundColor(getResources().getColor(android.R.color.white));
+        return view;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -120,10 +110,15 @@ public class SettingsFragment2 extends PreferenceFragment implements SharedPrefe
 
         fbPreference = (CheckBoxPreference) getPreferenceScreen().findPreference("facebook");
         gmailPreference = (CheckBoxPreference) getPreferenceScreen().findPreference("gmail");
-        gdrivePreference = (ListPreference) getPreferenceScreen().findPreference("gdrive");
         gcalPreference = (CheckBoxPreference) getPreferenceScreen().findPreference("gcal");
         plaidPreference = (CheckBoxPreference) getPreferenceScreen().findPreference("plaid");
         gpsPreference = (CheckBoxPreference) getPreferenceScreen().findPreference("gps");
+        gdrivePreference = (ListPreference) getPreferenceScreen().findPreference("gdrive");
+        String[] array={"Please select a .csv file with your bank transactions with headers: Date, Description, Amount, Category"};
+        gdrivePreference.setEntries(array);
+        gdrivePreference.setEntryValues(array);
+
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
@@ -151,6 +146,7 @@ public class SettingsFragment2 extends PreferenceFragment implements SharedPrefe
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
         if (key.equals("instagram")) {
             if (instagramPreference.isChecked()) {
                 Intent myIntent = new Intent(getActivity(), InstagramActivity.class);
@@ -191,29 +187,10 @@ public class SettingsFragment2 extends PreferenceFragment implements SharedPrefe
             }
         }else if (key.equals("gmail")) {
             if (gmailPreference.isChecked()) {
-                builder.setTitle("Grant Permissions")
-                        .setMessage("If you grant permissions for the Gmail, access to Google Calendar will be granted as well. \n Are you sure you want to grant these permissions?")
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                Intent myIntent = new Intent(getActivity(), GmailActivity.class);
-                                myIntent.putExtra("action", "grant");
-                                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                startActivity(myIntent);
-                            }
-                        })
-                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                gmailPreference.setChecked(false);
-                                Intent myIntent = new Intent(getActivity(), MainActivity.class);
-                                myIntent.putExtra("key", "gmail");
-                                myIntent.putExtra("items", 0);
-                                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                startActivity(myIntent);
-                            }
-                        })
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
-
+                Intent myIntent = new Intent(getActivity(), GmailActivity.class);
+                myIntent.putExtra("action", "grant");
+                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(myIntent);
             } if (!gmailPreference.isChecked()) {
                 builder.setTitle("Revoke Permissions")
                         .setMessage("If you revoke your permissions from Gmail, access to ALL Google apps will be revoked simultaneously. \n Are you sure you want to revoke all permissions?")
@@ -240,28 +217,10 @@ public class SettingsFragment2 extends PreferenceFragment implements SharedPrefe
             }
         }else if (key.equals("gcal")) {
             if (gcalPreference.isChecked()) {
-                builder.setTitle("Grant Permissions")
-                        .setMessage("If you grant permissions for Google Calendar, access to Gmail will be granted as well. \n Are you sure you want to grant these permissions?")
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                Intent myIntent = new Intent(getActivity(), GcalActivity.class);
-                                myIntent.putExtra("action", "grant");
-                                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                startActivity(myIntent);
-                            }
-                        })
-                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                gcalPreference.setChecked(false);
-                                Intent myIntent = new Intent(getActivity(), MainActivity.class);
-                                myIntent.putExtra("key", "gmail");
-                                myIntent.putExtra("items", 0);
-                                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                startActivity(myIntent);
-                            }
-                        })
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
+                Intent myIntent = new Intent(getActivity(), GcalActivity.class);
+                myIntent.putExtra("action", "grant");
+                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(myIntent);
             } if (!gcalPreference.isChecked()) {
                 builder.setTitle("Revoke Permissions")
                         .setMessage("If you revoke your permissions from Google calendar, access to ALL Google apps will be revoked simultaneously. \n Are you sure you want to revoke all permissions?")
@@ -286,8 +245,57 @@ public class SettingsFragment2 extends PreferenceFragment implements SharedPrefe
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .show();
             }
-        }
+        }else if (key.equals("plaid")) {
+            if (plaidPreference.isChecked()) {
+                Intent myIntent = new Intent(getActivity(), PlaidActivity.class);
+                myIntent.putExtra("action", "grant");
+                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(myIntent);
+            }else if (!plaidPreference.isChecked()) {
+                builder.setTitle("Revoke Permissions")
+                        .setMessage("Are you sure you want to revoke all permissions?")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent myIntent = new Intent(getActivity(), PlaidActivity.class);
+                                myIntent.putExtra("action", "revoke");
+                                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(myIntent);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                plaidPreference.setChecked(true);
+                                Intent myIntent = new Intent(getActivity(), MainActivity.class);
+                                myIntent.putExtra("key", "bank");
+                                myIntent.putExtra("items", 0);
+                                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(myIntent);
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            }
+        }else if (key.equals("gdrive")) {
+            if (gdrivePreference.isEnabled()) {
+                Intent myIntent = new Intent(getActivity(), GDriveActivity.class);
+                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(myIntent);
+            }
+        }else if (key.equals("gps")) {
+            if (gpsPreference.isChecked()) {
+                System.err.println("clickedGPS");
+                Intent myIntent = new Intent(getActivity(), LocationActivity.class);
+                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(myIntent);
+            }
+            if (!gpsPreference.isChecked()) {
+                System.err.println("clickedGPS");
+                Intent myIntent = new Intent(getActivity(), LocationActivity.class);
+                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(myIntent);
+            }
 
+        }
 
     }
 

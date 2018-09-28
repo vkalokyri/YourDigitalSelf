@@ -85,6 +85,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.rutgers.neemi.MainActivity" />
         </activity>
+        <activity android:name=".PlaidActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.rutgers.neemi.MainActivity" />
+        </activity>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

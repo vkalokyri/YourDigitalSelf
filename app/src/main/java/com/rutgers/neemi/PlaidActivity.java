@@ -3,11 +3,14 @@ package com.rutgers.neemi;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -57,8 +60,9 @@ public class PlaidActivity extends AppCompatActivity {
 
     PlaidClient plaidClient = PlaidClient.newBuilder()
             .clientIdAndSecret(client_id, secret)
-            .publicKey("0ea8ed7c85e1c6d8aa4695cb156c97") // optional. only needed to call endpoints that require a public key
-            .developmentBaseUrl() // or equivalent, depending on which environment you're calling into
+            .publicKey("0ea8ed7c85e1c6d8aa4695cb156c97")
+            .sandboxBaseUrl()// optional. only needed to call endpoints that require a public key
+            //.developmentBaseUrl() // or equivalent, depending on which environment you're calling into
             .build();
 
     ProgressDialog mProgress;
@@ -77,13 +81,38 @@ public class PlaidActivity extends AppCompatActivity {
         ActionBar ab = getSupportActionBar();
 
         // Enable the Up button
-        ab.setDisplayHomeAsUpEnabled(true);
+       // ab.setDisplayHomeAsUpEnabled(true);
 
         helper=DatabaseHelper.getHelper(this);
+
+
+        Intent i = getIntent();
+        String permissionType = i.getStringExtra("action");
+
+        if(permissionType.equals("grant")){
+            grantPermissions();
+            //getResultsFromApi();
+
+        }else{
+            revokePermissions();
+            Intent myIntent = new Intent(this, MainActivity.class);
+            myIntent.putExtra("key", "bank");
+            myIntent.putExtra("items", 0);
+            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(myIntent);
+
+        }
+
+
 
         mProgress = new ProgressDialog(this);
         mProgress.setMessage("Getting your financial transactions. Please wait ...");
 
+
+    }
+
+
+    public void grantPermissions(){
         // Initialize Link
         HashMap<String, String> linkInitializeOptions = new HashMap<String,String>();
         linkInitializeOptions.put("key", "0ea8ed7c85e1c6d8aa4695cb156c97");
@@ -93,8 +122,9 @@ public class PlaidActivity extends AppCompatActivity {
         //linkInitializeOptions.put("product", "auth");
         linkInitializeOptions.put("product", "transactions");
         linkInitializeOptions.put("selectAccount", "true");
-        linkInitializeOptions.put("env", "development");
-        linkInitializeOptions.put("clientName", "Neemi");
+        linkInitializeOptions.put("env", "sandbox");
+        //linkInitializeOptions.put("env", "development");
+        linkInitializeOptions.put("clientName", "YourDigitalSelf");
         linkInitializeOptions.put("webhook", "http://requestb.in");
         linkInitializeOptions.put("baseUrl", "https://cdn.plaid.com/link/v2/stable/link.html");
         // If initializing Link in PATCH / update mode, also provide the public_token
@@ -141,8 +171,39 @@ public class PlaidActivity extends AppCompatActivity {
                         account_name = linkData.get("account_name");
 
 
+                        AlertDialog.Builder builder;
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            builder = new AlertDialog.Builder(PlaidActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+                        } else {
+                            builder = new AlertDialog.Builder(PlaidActivity.this);
+                        }
 
-                       new RetrieveTransactionsTask(getApplicationContext()).execute(linkData.get("public_token"));
+
+
+                        builder.setTitle("Plaid was successfully authorized!")
+                                .setMessage("Do you want the app to get your past month's financial data or start collecting data from today?")
+                                .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+
+                                        new RetrieveTransactionsTask(getApplicationContext()).execute(linkData.get("public_token"));
+
+                                    }
+                                })
+                                .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                        myIntent.putExtra("key", "bank");
+                                        myIntent.putExtra("items", 0);
+                                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                        startActivity(myIntent);
+
+                                    }
+                                })
+                                .setIcon(android.R.drawable.ic_dialog_info)
+                                .show();
+
+
+
 
 
                     } else if (action.equals("exit")) {
@@ -150,11 +211,11 @@ public class PlaidActivity extends AppCompatActivity {
                         // linkData may contain information about the user's status in the Link flow,
                         // the institution selected, information about any error encountered,
                         // and relevant API request IDs.
-                      //  Log.d("User status in flow: ", linkData.get("status"));
+                        //  Log.d("User status in flow: ", linkData.get("status"));
                         // The requet ID keys may or may not exist depending on when the user exited
                         // the Link flow.
-                       // Log.d("Link request ID: ", linkData.get("link_request_id"));
-                       // Log.d("API request ID: ", linkData.get("plaid_api_request_id"));
+                        // Log.d("Link request ID: ", linkData.get("link_request_id"));
+                        // Log.d("API request ID: ", linkData.get("plaid_api_request_id"));
 
                         // Reload Link in the Webview
                         // You will likely want to transition the view at this point.
@@ -181,6 +242,9 @@ public class PlaidActivity extends AppCompatActivity {
     }
 
 
+    public void revokePermissions(){
+
+    }
 
 
     // Generate a Link initialization URL based on a set of configuration options
@@ -341,7 +405,7 @@ public class PlaidActivity extends AppCompatActivity {
 
                     String timestamp = null;
 
-                    GenericRawResults<String[]> rawResults = transactionDao.queryRaw("select max(timestamp) from Transaction where account_id='"+accountId+"';");
+                    GenericRawResults<String[]> rawResults = transactionDao.queryRaw("select max(timestamp) from `Transaction` where account_id='"+accountId+"';");
                     List<String[]> results = null;
                     try {
                         results = rawResults.getResults();

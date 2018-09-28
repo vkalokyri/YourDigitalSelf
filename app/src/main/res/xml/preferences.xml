@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white">
+    android:background="@color/red">
     <PreferenceCategory
         android:title="Social Media"
         android:layout_width="match_parent"
@@ -22,8 +22,8 @@
             android:title="Instagram"
             android:persistent="true"
             android:icon="@drawable/insta_logo"
-            android:summaryOn="YourDigitalSelf was authorized to access your Instagram account. If you want to revoke access please go to: www.instagram.com>Settings>AuthorizedApps and select Revoke Access"
-            android:summaryOff="This option if selected will authorize the application to check for instagram updates" />
+            android:summaryOn="YourDigitalSelf was authorized to access your Instagram account. If you want to revoke access please go to: www.instagram.com>Settings>AuthorizedApps and select Revoke Access."
+            android:summaryOff="This option if selected will authorize the application to check for instagram updates." />
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Email"
@@ -32,7 +32,8 @@
         <CheckBoxPreference android:title="Gmail"
             android:defaultValue="false"
             android:persistent="true"
-            android:summary="This option if selected will allow the application to check for latest versions."
+            android:summaryOn="YourDigitalSelf was authorized to access your Gmail account."
+            android:summaryOff="This option if selected will authorize the application to check for Gmail updates."
             android:key="gmail"
             android:icon="@drawable/gmail_icon" />
     </PreferenceCategory>
@@ -43,7 +44,8 @@
         <CheckBoxPreference android:title="Google Calendar"
             android:defaultValue="false"
             android:persistent="true"
-            android:summary="This option if selected will allow the application to check for latest versions."
+            android:summaryOn="YourDigitalSelf was authorized to access your Google Calendar account."
+            android:summaryOff="This option if selected will authorize the application to check for Google Calendar updates."
             android:key="gcal"
             android:icon="@drawable/google_calendar" />
     </PreferenceCategory>
@@ -53,7 +55,8 @@
         android:layout_height="wrap_content">
         <CheckBoxPreference android:title="Plaid"
             android:defaultValue="false"
-            android:summary="This option if selected will allow the application to check for latest versions."
+            android:summaryOn="YourDigitalSelf was authorized to access your financial transactions."
+            android:summaryOff="This option if selected will authorize the application to check for financial updates."
             android:key="plaid"
             android:persistent="true"
             android:icon="@drawable/plaid" />
@@ -71,7 +74,8 @@
         <CheckBoxPreference android:title="GPS"
             android:persistent="true"
             android:defaultValue="false"
-            android:summary="This option if selected will allow the application to access your location data."
+            android:summaryOn="YourDigitalSelf was authorized to access your location updates."
+            android:summaryOff="This option if selected will authorize the application to check for location updates."
             android:key="gps"
             android:icon="@drawable/location" />
     </PreferenceCategory>
