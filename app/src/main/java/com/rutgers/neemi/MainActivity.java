@@ -14,6 +14,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -87,38 +88,48 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-//            boolean gmailPermission = prefs.getBoolean("gmail", true);
-//
-//            PersistableBundle pb = new PersistableBundle();
-//            pb.putBoolean("gmailPermission" , gmailPermission);
-//
-//
-//            JobScheduler jobScheduler = (JobScheduler)getApplicationContext().getSystemService(JOB_SCHEDULER_SERVICE);
-//            ComponentName componentName = new ComponentName(this,DownloadJobService.class);
-//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-//                JobInfo jobInfoObj = new JobInfo.Builder(1, componentName)
-//                        .setPeriodic(300000)
-//                        .setRequiresBatteryNotLow(true)
-//                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
-//                        .setRequiresDeviceIdle(true)
-//                        .setRequiresCharging(true)
-//                        .setRequiresStorageNotLow(true)
-//                        .setBackoffCriteria(3600000, JobInfo.BACKOFF_POLICY_LINEAR)
-//                        .setExtras(pb).build();
-//                jobScheduler.schedule(jobInfoObj);
-//
-//            }else{
-//                JobInfo jobInfoObj = new JobInfo.Builder(1, componentName)
-//                        .setPeriodic(600000)
-//                        .setRequiresCharging(true)
-//                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
-//                        .setRequiresDeviceIdle(true)
-//                        .setBackoffCriteria(3600000, JobInfo.BACKOFF_POLICY_LINEAR)
-//                        .setExtras(pb).build();
-//                jobScheduler.schedule(jobInfoObj);
-//            }
+        boolean gmailPermission = prefs.getBoolean("gmail", true);
 
-            Intent i = getIntent();
+        PersistableBundle pb = new PersistableBundle();
+        pb.putBoolean("gmailPermission" , gmailPermission);
+
+        DataSyncJob.scheduleAdvancedJob();
+
+
+//        JobRequest jobScheduler = (JobScheduler)getApplicationContext().getSystemService(JOB_SCHEDULER_SERVICE);
+//        ComponentName componentName = new ComponentName(this,DownloadJobService.class);
+//        int result;
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+//            JobInfo jobInfoObj = new JobInfo.Builder(1, componentName)
+//                    .setPeriodic(300000)
+//                    .setRequiresBatteryNotLow(true)
+//                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
+//                    //.setRequiresDeviceIdle(true)
+//                    .setRequiresCharging(true)
+//                    .setRequiresStorageNotLow(true)
+//                    //.setBackoffCriteria(3600000, JobInfo.BACKOFF_POLICY_LINEAR)
+//                    .setExtras(pb).build();
+//            result = jobScheduler.schedule(jobInfoObj);
+//
+//        }else{
+//            JobInfo jobInfoObj = new JobInfo.Builder(1, componentName)
+//                    .setPeriodic(300000)
+//                    .setRequiresCharging(true)
+//                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
+//                    //.setRequiresDeviceIdle(true)
+//                    .setBackoffCriteria(3600000, JobInfo.BACKOFF_POLICY_LINEAR)
+//                    .setExtras(pb).build();
+//            result = jobScheduler.schedule(jobInfoObj);
+//        }
+//
+//        if (result == JobScheduler.RESULT_SUCCESS)
+//            Log.d("Scheduler", "Job scheduled successfully!");
+//        else
+//            Log.d("Scheduler", "Job not scheduled successfully!");
+
+
+
+        Intent i = getIntent();
             String key = i.getStringExtra("key");
             int items = i.getIntExtra("items", 0);
 

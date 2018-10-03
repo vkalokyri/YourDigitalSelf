@@ -1,6 +1,7 @@
 package com.rutgers.neemi;
 
 import android.Manifest;
+import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -81,8 +82,8 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
-    private static final String PREF_ACCOUNT_NAME = "accountName";
-    private static final String[] SCOPES = {GmailScopes.GMAIL_READONLY};
+    public static final String PREF_ACCOUNT_NAME = "accountName";
+    public static final String[] SCOPES = {GmailScopes.GMAIL_READONLY};
     HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
 
     DatabaseHelper dbHelper;
@@ -131,9 +132,10 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         }else{
             if (mCredential.getSelectedAccountName() == null) {
                 if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
-                    String accountName = getPreferences(Context.MODE_PRIVATE)
+                    String accountName = getSharedPreferences("credentials", Context.MODE_PRIVATE)
                             .getString(PREF_ACCOUNT_NAME, null);
                     if (accountName != null) {
+                        mCredential.setSelectedAccount(new Account(accountName, "com.rutgers.neemi"));
                         mCredential.setSelectedAccountName(accountName);
                     } else {
                         // Start a dialog from which the user can choose an account
@@ -234,11 +236,11 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                     String accountName =
                             data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
                     if (accountName != null) {
-                        SharedPreferences settings =
-                                this.getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences settings = this.getSharedPreferences("credentials",Context.MODE_PRIVATE );
                         SharedPreferences.Editor editor = settings.edit();
                         editor.putString(PREF_ACCOUNT_NAME, accountName);
                         editor.apply();
+                        mCredential.setSelectedAccount(new Account(accountName, "com.rutgers.neemi"));
                         mCredential.setSelectedAccountName(accountName);
                         getResultsFromApi();
                     }else{
@@ -308,7 +310,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
     private void getResultsFromApi() {
         if (!isGooglePlayServicesAvailable()) {
             acquireGooglePlayServices();
-        } else if (mCredential.getSelectedAccountName() == null) {
+        } else if (mCredential.getSelectedAccount() == null) {
             chooseAccount();
         } else if (!isDeviceOnline()) {
             Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No network connection available", Snackbar.LENGTH_SHORT ).show();
@@ -362,10 +364,11 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
     @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
     private void chooseAccount() {
         if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
-            String accountName = getPreferences(Context.MODE_PRIVATE)
+            String accountName = getSharedPreferences("credentials",Context.MODE_PRIVATE)
                     .getString(PREF_ACCOUNT_NAME, null);
             if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
+                mCredential.setSelectedAccount(new Account(accountName, "com.rutgers.neemi"));
                 getResultsFromApi();
             } else {
                 // Start a dialog from which the user can choose an account

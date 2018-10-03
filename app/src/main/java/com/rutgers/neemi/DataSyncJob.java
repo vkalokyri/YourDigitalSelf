@@ -1,124 +1,144 @@
-package com.rutgers.neemi.rest;
+package com.rutgers.neemi;
 
+import android.accounts.Account;
 import android.app.job.JobParameters;
-import android.app.job.JobService;
-import android.content.Intent;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.PersistableBundle;
-import android.preference.CheckBoxPreference;
-import android.preference.PreferenceManager;
-import android.support.design.widget.Snackbar;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.google.android.gms.auth.GoogleAuthException;
+import com.evernote.android.job.Job;
+import com.evernote.android.job.JobManager;
+import com.evernote.android.job.JobRequest;
+import com.evernote.android.job.util.support.PersistableBundleCompat;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.Base64;
+import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
 import com.google.api.services.gmail.model.MessagePartHeader;
-import com.j256.ormlite.android.AndroidConnectionSource;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.support.ConnectionSource;
 import com.joestelmach.natty.DateGroup;
 import com.joestelmach.natty.Parser;
-import com.rutgers.neemi.DatabaseHelper;
-import com.rutgers.neemi.GmailActivity;
-import com.rutgers.neemi.MainActivity;
-import com.rutgers.neemi.R;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.EmailBcc;
 import com.rutgers.neemi.model.EmailCc;
 import com.rutgers.neemi.model.EmailTo;
 import com.rutgers.neemi.model.Person;
+import com.rutgers.neemi.rest.DownloadJobService;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-public class DownloadJobService extends JobService{
+import static com.rutgers.neemi.GmailActivity.PREF_ACCOUNT_NAME;
+import static com.rutgers.neemi.GmailActivity.mCredential;
 
-    private static final String TAG = DownloadJobService.class.getSimpleName();
+
+public class DataSyncJob extends Job {
+
+    public static final String TAG = "job_syncData_tag";
     DatabaseHelper dbHelper;
-    JobParameters params;
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        dbHelper= DatabaseHelper.getHelper(this);
-        Log.i(TAG, "Service created");
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.i(TAG, "Service destroyed");
-    }
-
+    private com.google.api.services.gmail.Gmail gmailService = null;
+    private Exception mLastError = null;
 
 
     @Override
-    public boolean onStartJob(final JobParameters jobParameters) {
-        params = jobParameters;
+    @NonNull
+    protected Result onRunJob(Params params) {
 
-        new MakeRequestTask(GmailActivity.mCredential).execute();
-
-        return true;
-    }
-
-    @Override
-    public boolean onStopJob(JobParameters jobParameters) {
-        return false;
-    }
+        dbHelper= DatabaseHelper.getHelper(getContext());
 
 
-    private class MakeRequestTask extends AsyncTask<Void, Void, Integer> {
-
-        private com.google.api.services.gmail.Gmail gmailService = null;
-        private Exception mLastError = null;
-
-        public MakeRequestTask(GoogleAccountCredential credential) {
-            HttpTransport transport = AndroidHttp.newCompatibleTransport();
-            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+        HttpTransport transport = AndroidHttp.newCompatibleTransport();
+        JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+        String accountName = getContext().getSharedPreferences( "credentials", Context.MODE_PRIVATE)
+                .getString(PREF_ACCOUNT_NAME, null);
+        if (accountName != null) {
+            mCredential.setSelectedAccount(new Account(accountName, "com.rutgers.neemi"));
+            mCredential.setSelectedAccountName(accountName);
+//            GoogleAccountCredential mCredential = GoogleAccountCredential.usingOAuth2(
+//                    getContext(), Arrays.asList(GmailActivity.SCOPES))
+//                    .setBackOff(new ExponentialBackOff());
             gmailService = new com.google.api.services.gmail.Gmail.Builder(
-                    transport, jsonFactory, credential)
+                    transport, jsonFactory, mCredential)
                     .setApplicationName("Gmail API Android")
                     .build();
+        }else{
+           Log.e("ERROR IN dataSyncJob", "not Authorized");
         }
-
-        /**
-         * Background task to call Google Calendar API.
-         *
-         * @param params no parameters needed for this task.
-         */
-        @Override
-        protected Integer doInBackground(Void... params) {
-            try {
-                //return 0;
-                return getDataFromApi();
-            } catch (Exception e) {
-                mLastError = e;
-                cancel(true);
-                return null;
-
-            }
+        try {
+            getDataFromApi();
+            extractEmailTime();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        return Result.SUCCESS;
+    }
+
+    public static void scheduleJob() {
+        new JobRequest.Builder(DataSyncJob.TAG)
+                .setExecutionWindow(30_000L, 40_000L)
+                .build()
+                .schedule();
+    }
+
+
+    public static void scheduleAdvancedJob() {
+//        PersistableBundleCompat extras = new PersistableBundleCompat();
+//        extras.putString("key", "Hello world");
+
+        int jobId = new JobRequest.Builder(DataSyncJob.TAG)
+                .setExecutionWindow(30_000L, 40_000L)
+                .setBackoffCriteria(5_000L, JobRequest.BackoffPolicy.EXPONENTIAL)
+                .setRequiresCharging(true)
+                .setRequiresDeviceIdle(false)
+                .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
+               // .setExtras(extras)
+                .setRequirementsEnforced(true)
+                .setUpdateCurrent(true)
+                .build()
+                .schedule();
+    }
+
+    private void schedulePeriodicJob() {
+        int jobId = new JobRequest.Builder(DataSyncJob.TAG)
+                .setPeriodic(TimeUnit.MINUTES.toMillis(15), TimeUnit.MINUTES.toMillis(5))
+                .build()
+                .schedule();
+    }
+
+    private void scheduleExactJob() {
+        int jobId = new JobRequest.Builder(DataSyncJob.TAG)
+                .setExact(20_000L)
+                .build()
+                .schedule();
+    }
+
+    private void runJobImmediately() {
+        int jobId = new JobRequest.Builder(DataSyncJob.TAG)
+                .startNow()
+                .build()
+                .schedule();
+    }
+
+    private void cancelJob(int jobId) {
+        JobManager.instance().cancel(jobId);
+    }
 
 
         /**
@@ -189,7 +209,7 @@ public class DownloadJobService extends JobService{
                 }
             }
 
-           // mProgress.setMax(messages.size());
+            // mProgress.setMax(messages.size());
 
 //                final List<Message> messageslist = new ArrayList<Message>();
 //
@@ -416,119 +436,59 @@ public class DownloadJobService extends JobService{
             return email;
         }
 
+    private boolean extractEmailTime() {
 
-        @Override
-        protected void onPreExecute() {
-           // mProgress.show();
+        RuntimeExceptionDao<Email, String> emailDao = dbHelper.getEmailDao();
+        List<Email> results = null;
+
+        QueryBuilder<Email, String> queryBuilder = emailDao.queryBuilder();
+        try {
+            results = queryBuilder.query();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            //return false;
         }
+        //int count=0;
+        try {
+            for (Email email : results) {
+                Date extractedDate=null;
+                //Log.e(TAG, String.valueOf(count));
+                if (email.getTextContent() != null) {
+                    extractedDate = extractTime(email.getTextContent(), email.getDate());
+                    if (extractedDate != null) {
+                        email.setBodyDate(extractedDate);
+                    }
+                }
+                if (email.getTextContent() == null || extractedDate==null){
+                    extractedDate = extractTime(email.getSnippet(), email.getDate());
+                    if (extractedDate != null) {
+                        email.setBodyDate(extractedDate);
+                    }
+                }
+                if (email.getSubject() != null) {
+                    extractedDate = extractTime(email.getSubject(), email.getDate());
+                    if (extractedDate != null) {
+                        email.setSubjectDate(extractedDate);
+                    }
+                }
+                emailDao.update(email);
 
-        @Override
-        protected void onPostExecute(Integer output) {
-           // mProgress.dismiss();
-            new ExtractTimeTask().execute();
-
-            jobFinished(params,false);
-
-
-            // Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-//            myIntent.putExtra("key", "gmail");
-//            myIntent.putExtra("items", output);
-//            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//            startActivity(myIntent);
-
-
-
-
-            if (output == 0) {
-                //Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_LONG ).show();
-            } else {
-               // Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), output+" emails fetched.", Snackbar.LENGTH_LONG ).show();
             }
-
-
+        }catch (Exception e){
+            e.printStackTrace();
         }
-
+        return true;
     }
 
+    private Date extractTime(String text, Date referDate) {
 
-    private class ExtractTimeTask extends AsyncTask<Void, Void, Boolean> {
+        Date extractedDate = null;
 
-        Parser parser = new Parser();
-
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            try {
-                return extractEmailTime();
-            } catch (Exception e) {
-                return false;
-
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean output) {
-
-            if (output) {
-                Log.d(TAG,"All dates have been extracted");
-            } else {
-                Log.e(TAG,"There was an error while extracting email dates");
-            }
-        }
-
-
-        private boolean extractEmailTime() {
-
-            RuntimeExceptionDao<Email, String> emailDao = dbHelper.getEmailDao();
-            List<Email> results = null;
-
-            QueryBuilder<Email, String> queryBuilder = emailDao.queryBuilder();
-            try {
-                results = queryBuilder.query();
-            } catch (SQLException e) {
-                e.printStackTrace();
-                //return false;
-            }
-            //int count=0;
-            try {
-                for (Email email : results) {
-                    Date extractedDate=null;
-                    //Log.e(TAG, String.valueOf(count));
-                    if (email.getTextContent() != null) {
-                        extractedDate = extractTime(email.getTextContent(), email.getDate());
-                        if (extractedDate != null) {
-                            email.setBodyDate(extractedDate);
-                        }
-                    }
-                    if (email.getTextContent() == null || extractedDate==null){
-                        extractedDate = extractTime(email.getSnippet(), email.getDate());
-                        if (extractedDate != null) {
-                            email.setBodyDate(extractedDate);
-                        }
-                    }
-                    if (email.getSubject() != null) {
-                        extractedDate = extractTime(email.getSubject(), email.getDate());
-                        if (extractedDate != null) {
-                            email.setSubjectDate(extractedDate);
-                        }
-                    }
-                    emailDao.update(email);
-
-                }
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-            return true;
-        }
-
-        private Date extractTime(String text, Date referDate) {
-
-            Date extractedDate = null;
-
-            try {
-                List<DateGroup> groups = parser.parse(text, referDate);
-                for (DateGroup group : groups) {
-                    List dates = group.getDates();
+        try {
+            Parser parser = new Parser();
+            List<DateGroup> groups = parser.parse(text, referDate);
+            for (DateGroup group : groups) {
+                List dates = group.getDates();
 //                int line = group.getLine();
 //                int column = group.getPosition();
 //                String matchingValue = group.getText();
@@ -536,21 +496,21 @@ public class DownloadJobService extends JobService{
 //                Map<String, List<ParseLocation>> parseMap = group.getParseLocations();
 //                boolean isRecurring = group.isRecurring();
 //                Date recursUntil = group.getRecursUntil();
-                    if (dates!=null && dates.size()>0) {
-                        extractedDate = (Date) dates.get(0);
-                        break;
-                    }
+                if (dates!=null && dates.size()>0) {
+                    extractedDate = (Date) dates.get(0);
+                    break;
                 }
-            }catch(Exception e){
-                return null;
             }
-
-            return extractedDate;
-
+        }catch(Exception e){
+            return null;
         }
+
+        return extractedDate;
+
     }
 
 
 
 
-}
+
+    }

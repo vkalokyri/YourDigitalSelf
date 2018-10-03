@@ -20,6 +20,7 @@
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
 
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ds_launcher_foreground"
         android:label="@string/app_name"
@@ -117,7 +118,8 @@
 
         <service
             android:name=".rest.DownloadJobService"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="true"/>
 
         <activity
             android:name=".IntroActivity"
