@@ -60,12 +60,20 @@
             android:key="plaid"
             android:persistent="true"
             android:icon="@drawable/plaid" />
-        <ListPreference android:title="GoogleDrive"
+        <Preference
+            android:title="GoogleDrive"
             android:defaultValue="false"
             android:summary="This option if selected will ask you to upload a .csv file with your bank transactions with headers: Date, Description, Amount, Category"
             android:key="gdrive"
             android:persistent="true"
-            android:icon="@drawable/gdrive_icon" />
+            android:icon="@drawable/gdrive_icon">
+            <intent
+                android:action="android.intent.action.MAIN"
+                android:targetPackage="com.rutgers.neemi"
+                android:targetClass="com.rutgers.neemi.GDriveActivity"
+                />
+        </Preference>
+
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Location services"

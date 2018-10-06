@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.util.Xml;
 import android.view.LayoutInflater;
@@ -66,12 +67,14 @@ import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 
 import javax.json.JsonString;
 import javax.xml.parsers.ParserConfigurationException;
@@ -454,9 +457,15 @@ public class RestaurantsFragment extends Fragment {
                             System.err.println(localValue);
                            // values.add(localValue);
                             try {
-                                extractedDate = new Date(localValue);
-                                Format format = new SimpleDateFormat("yyyy-MM-dd");
-                                parsedDate = format.format(extractedDate);
+                                long timestamp = Long.valueOf(localValue);
+                                Calendar cal = Calendar.getInstance(Locale.ENGLISH);
+                                cal.setTimeInMillis(timestamp);
+                                parsedDate = DateFormat.format("yyyy-MM-dd", cal).toString();
+
+
+//                                extractedDate = new Date(localValue);
+//                                Format format = new SimpleDateFormat("yyyy-MM-dd");
+//                                parsedDate = format.format(extractedDate);
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 extractedDate = new Date(Long.parseLong(localValue));
@@ -894,7 +903,7 @@ public class RestaurantsFragment extends Fragment {
 
                                                 } else {
                                                     whereClause = whereClause + " " + andOrKey;
-                                                    if (andOrKey.contains("Transaction") || andOrKey.contains("Category") || andOrKey.contains("Feed") || andOrKey.contains("Person")){
+                                                    if (andOrKey.contains("Transaction") || andOrKey.contains("Category") || andOrKey.contains("Feed") || andOrKey.contains("Person") || andOrKey.contains("Photo")){
                                                         whereClause = whereClause + " = " + andOrValue.toString().replace("\"", "");
                                                     }else {
                                                         //System.out.println("Clue value = " + andOrValue.toString().replace("\"", ""));
@@ -917,6 +926,9 @@ public class RestaurantsFragment extends Fragment {
                             }
                             if (fromClause.contains("Feed")){
                                 query="select distinct `Feed`._id, `Feed`.message, `Feed`.place_id ";
+                            }
+                            if (fromClause.contains("Photo")){
+                                query="select distinct `Photo`._id, `Photo`.name, `Photo`.place_id ";
                             }
                             query = query + fromClause + whereClause;
                             query=query.substring(0,query.length()-4) +");";
@@ -1050,6 +1062,34 @@ public class RestaurantsFragment extends Fragment {
                                 Task task = new Task();
                                 task.setOid(fullFeed.getId());
                                 task.setPid(fullFeed);
+                                task.setName(subtask);
+                                task.setScript(script);
+                                task.setTaskDefinition(new TaskDefinition(subtask));
+                                tasks.add(task);
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }else if (fromTable.contains("Photo")){
+                    for (String[] tuple:rawResults.getResults()) {
+                        Photo photo = new Photo();
+                        photo.setId(tuple[0]);
+                        photo.setName(tuple[1]);
+
+                        String tempQuery = "select * from `Photo` where `_id`=" + tuple[0];
+                        GenericRawResults<Photo> photoData = helper.getPhotoDao().queryRaw(tempQuery, helper.getPhotoDao().getRawRowMapper());
+
+//                        try {
+//                            System.err.println("TransFOUND = " + transactionData.getResults().size());
+//                        } catch (SQLException e) {
+//                            e.printStackTrace();
+//                        }
+                        try {
+                            for (Photo fullPhoto : photoData.getResults()) {
+                                Task task = new Task();
+                                task.setOid(fullPhoto.getId());
+                                task.setPid(fullPhoto);
                                 task.setName(subtask);
                                 task.setScript(script);
                                 task.setTaskDefinition(new TaskDefinition(subtask));

@@ -1153,7 +1153,30 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 				personDao.queryRaw(sb.toString(),
 						new RawRowMapper<Person>() {
 							public Person mapRow(String[] columnNames,
-														  String[] resultColumns) {
+												 String[] resultColumns) {
+								return new Person((String) resultColumns[0], (String) resultColumns[1], (String) resultColumns[2], Boolean.parseBoolean(resultColumns[3]));
+							}
+						});
+
+		return (ArrayList<Person>) rawResults.getResults();
+
+	}
+
+
+
+	public ArrayList<Person> getPhotoWithTags(int photo_id) throws SQLException {
+		RuntimeExceptionDao<Person, String> personDao = getPersonDao();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT Person.name,Person.email,Person.username,Person.isSelf  from Person, PhotoTags, Photo where Photo._id=");
+		sb.append(photo_id);
+		sb.append(" and Photo._id=photo_id and tagged_id=Person._id;");
+
+		GenericRawResults<Person> rawResults =
+				personDao.queryRaw(sb.toString(),
+						new RawRowMapper<Person>() {
+							public Person mapRow(String[] columnNames,
+												 String[] resultColumns) {
 								return new Person((String)resultColumns[0],(String)resultColumns[1],(String)resultColumns[2],Boolean.parseBoolean(resultColumns[3]));
 							}
 						});
@@ -1161,7 +1184,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		return (ArrayList<Person>)rawResults.getResults();
 
 	}
-
 
 	public Email getToCcBcc(Email email) throws SQLException {
 		String tempQuery = "select Person.name, Person.email from Person, EmailTo where Person._id=to_id and email_id=" +email.get_id();

@@ -20,6 +20,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.j256.ormlite.android.AndroidConnectionSource;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.j256.ormlite.support.ConnectionSource;
+import com.rutgers.neemi.model.PhotoTags;
 import com.rutgers.neemi.rest.DownloadJobService;
 import com.rutgers.neemi.util.ApplicationManager;
 
@@ -36,6 +40,20 @@ public class MainActivity extends AppCompatActivity {
 
         DatabaseHelper helper= DatabaseHelper.getHelper(this);
         setContentView(R.layout.activity_main);
+
+        ConnectionSource connectionSource = new AndroidConnectionSource(helper);
+        RuntimeExceptionDao<PhotoTags, String> subScriptDao = helper.getPhotoTagsDao();
+//        subScriptDao.queryRaw("delete from TransactionHasCategory;");
+//
+//        subScriptDao.queryRaw("delete from Transaction;");
+//        subScriptDao.queryRaw("insert into Person values (170, null, 'Merve Yuksel' ,null, 0, null);");
+//        subScriptDao.queryRaw("insert into Person values (171, null, 'Vilmoula Kala' ,null, 0, null);");
+//        subScriptDao.queryRaw("insert into PhotoTags values (71, 170, 7);");
+//        subScriptDao.queryRaw("insert into PhotoTags values (72, 171, 7);");
+
+
+
+
 
 
 //        ConnectionSource connectionSource = new AndroidConnectionSource(helper);
@@ -93,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         PersistableBundle pb = new PersistableBundle();
         pb.putBoolean("gmailPermission" , gmailPermission);
 
-        DataSyncJob.scheduleAdvancedJob();
+       // DataSyncJob.scheduleAdvancedJob();
 
 
 //        JobRequest jobScheduler = (JobScheduler)getApplicationContext().getSystemService(JOB_SCHEDULER_SERVICE);

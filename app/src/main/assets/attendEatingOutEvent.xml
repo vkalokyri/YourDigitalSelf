@@ -7,9 +7,9 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <process binding="Process" isExecutable="true" id="attendEatingOutEvent">
 <locals>
     <who name="whoAttended"/>
-    <when name="whenEatingOccured"/>
-    <where name="whereEatingOccured"/>
-    <what name="whatWasEaten"/>
+    <when name="whenEatingOccurred"/>
+    <where name="whereEatingOccurred"/>
+    <what name="whatWasEatingAbout"/>
 </locals>
 <startEvent name="" id="SubProcessStart"/>
 <endEvent name="" id="SubProcessEnd"/>
@@ -24,6 +24,15 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
     <when name="whenWasPosted"/>
     <where name="whereWasPosted"/>
 </locals>
+</task>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="UploadPhotoOnFacebook" id="UploadPhotoOnFacebook">
+    <locals>
+        <who name="whoUploadedThePhoto"/>
+        <who name="whoIsIncludedInPhoto"/>
+        <what name="whatIsPhotoAbout"/>
+        <when name="whenWasPhotoUploaded"/>
+        <where name="whereWasUploaded"/>
+    </locals>
 </task>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="PostOnInstagram" id="PostOnInstagram"/>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="PostOnTwitter" id="PostOnTwitter"/>

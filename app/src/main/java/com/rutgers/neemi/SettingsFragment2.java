@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
@@ -21,7 +22,7 @@ public class SettingsFragment2 extends PreferenceFragment implements SharedPrefe
     private CheckBoxPreference fbPreference;
     private CheckBoxPreference instagramPreference;
     private CheckBoxPreference gmailPreference;
-    private ListPreference gdrivePreference;
+    private Preference gdrivePreference;
     private CheckBoxPreference gcalPreference;
     private CheckBoxPreference gpsPreference;
     private CheckBoxPreference plaidPreference;
@@ -113,10 +114,8 @@ public class SettingsFragment2 extends PreferenceFragment implements SharedPrefe
         gcalPreference = (CheckBoxPreference) getPreferenceScreen().findPreference("gcal");
         plaidPreference = (CheckBoxPreference) getPreferenceScreen().findPreference("plaid");
         gpsPreference = (CheckBoxPreference) getPreferenceScreen().findPreference("gps");
-        gdrivePreference = (ListPreference) getPreferenceScreen().findPreference("gdrive");
-        String[] array={"Please select a .csv file with your bank transactions with headers: Date, Description, Amount, Category"};
-        gdrivePreference.setEntries(array);
-        gdrivePreference.setEntryValues(array);
+        gdrivePreference = (Preference) getPreferenceScreen().findPreference("gdrive");
+
 
 
 
@@ -276,11 +275,11 @@ public class SettingsFragment2 extends PreferenceFragment implements SharedPrefe
                         .show();
             }
         }else if (key.equals("gdrive")) {
-            if (gdrivePreference.isEnabled()) {
-                Intent myIntent = new Intent(getActivity(), GDriveActivity.class);
-                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(myIntent);
-            }
+//            if (gdrivePreference.isEnabled()) {
+//                Intent myIntent = new Intent(getActivity(), GDriveActivity.class);
+//                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                startActivity(myIntent);
+//            }
         }else if (key.equals("gps")) {
             if (gpsPreference.isChecked()) {
                 System.err.println("clickedGPS");

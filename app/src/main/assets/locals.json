@@ -23,11 +23,8 @@
 	"whoPaid":
 	{	"Transaction": "payer"
 	},
-	"wherePaymentOccured":
+	"wherePaymentOccurred":
 	{	"Transaction": "merchant_name"
-	},
-	"whenPaid":
-	{	"Transaction": "date"
 	},
 	"whatWasPaymentAbout":
 	{	"Transaction": "description"
@@ -65,6 +62,10 @@
 	"whoMadeThePost":{
 		"Feed":"creator_id"
 	},
+
+    "whoIsIncludedInPhoto":{
+     	 "Photo":"PhotoTags"
+    },
 	"whoIsIncludedInPost":{
 		"Feed":"FeedWithTags"
 	},
@@ -92,8 +93,13 @@
 	"whoInitiatedTheConversation":"whoSentEmail",
 	"whoWasIncludedInTheConversation":["whoReceivedEmail","whoWasCCed","whoWasBCCed"],
 	"whenWasTheConversationInitiated":"whenWasSent",
-	"whoAttended":["whoSentEmail","whoReceivedEmail","whoWasCCed","whoWasBCCed"],
-	"whenEatingOccurred": ["whenIsTheProposedEvent","whenPaid", "whenWasEvent"],
-	"whereEatingOccurred":["wherePaymentOccured","whereWasTheReservation"],
-	"whenWasTheReservationScheduled":"whenWasEvent"
+	"whoAttended":["whoSentEmail","whoReceivedEmail","whoWasCCed","whoWasBCCed","whoMadeThePost", "whoIsIncludedInPost"],
+	"whenEatingOccurred": ["whenIsTheProposedEvent","whenPaid", "whenWasEvent","whenWasPosted"],
+	"whereEatingOccurred":["wherePaymentOccurred","whereWasTheReservation","whereWasPosted"],
+	"whenWasTheReservationScheduled":"whenWasEvent",
+	"whatWasEatingAbout":["whatIsPostAbout","whatIsPhotoAbout"],
+	"whoMadeThePayment":"whoPaid",
+	"whenWasThePayment":"whenPaid",
+	"whereWasThePayment":"wherePaymentOccurred",
+	"whatWasPaymentAbout":"whatWasPaid"
 }

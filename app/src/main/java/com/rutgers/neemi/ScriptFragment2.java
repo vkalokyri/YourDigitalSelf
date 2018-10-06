@@ -418,6 +418,49 @@ public class ScriptFragment2 extends Fragment {
             mySpannable.setSpan(myClickableSpan, i1, i1 + myString.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             txtListHeaderBody.setText(mySpannable);
             txtListHeaderBody.setMovementMethod(LinkMovementMethod.getInstance());
+        }else if(childTask.getPid() instanceof Photo) {
+            imageView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.fb_logo));
+            txtListHeader.setText(((Photo) childTask.getPid()).getName());
+            txtListHeaderBody.setText(((Photo) childTask.getPid()).getCreator().getName());
+            Date extractedDate = new Date(((Photo) childTask.getPid()).getCreated_time());
+            Format format = new SimpleDateFormat("yyyy-MM-dd");
+            String parsedDate = format.format(extractedDate);
+            StringBuilder text = new StringBuilder();
+            for(TaskLocalValues taskLocalValues : childTask.getLocalValues()){
+                text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                text.append(": ");
+                text.append(taskLocalValues.getLocal_value());
+                text.append("\n");
+            }
+//            StringBuilder sb = new StringBuilder();
+//            sb.append("whenWasPosted: " + parsedDate + "\n");
+//            sb.append("whereWasPosted: " + ((Feed) childTask.getPid()).getPlace().getName() + "\n" + "whatWasPosted: ");
+            final SpannableString myString = new SpannableString(((Photo) childTask.getPid()).getLink());
+            text.append(myString);
+            String allTheString = text.toString();
+            final int i1 = allTheString.indexOf(myString.toString());
+            txtListHeaderBody.setMovementMethod(LinkMovementMethod.getInstance());
+            txtListHeaderBody.setText(allTheString, TextView.BufferType.SPANNABLE);
+
+            Spannable mySpannable = (Spannable) txtListHeaderBody.getText();
+
+            ClickableSpan myClickableSpan = new ClickableSpan() {
+                @Override
+                public void onClick(View view) {
+                    AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+
+                    WebView mWebview = new WebView(getApplicationContext());
+                    mWebview.loadUrl(((TextView) view).getText().toString().substring(i1));
+                    alert.setView(mWebview);
+                    alert.create();
+                    alert.show();
+
+
+                }
+            };
+            mySpannable.setSpan(myClickableSpan, i1, i1 + myString.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            txtListHeaderBody.setText(mySpannable);
+            txtListHeaderBody.setMovementMethod(LinkMovementMethod.getInstance());
         }
 
         return view;

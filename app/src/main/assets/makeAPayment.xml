@@ -6,9 +6,9 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
   
 <process binding="Process" isExecutable="true" id="makeAPayment">
 <locals>
-<who name="whoPaid"/>
-<when name="whenPaid"/>
-<where name="wherePaymentOccured"/>
+<who name="whoMadeThePayment"/>
+<when name="whenWasThePayment"/>
+<where name="whereWasThePayment"/>
 <what name="whatWasPaymentAbout"/>
 <how name="howWasPaid"/>
 </locals>
@@ -19,8 +19,8 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <locals>
     <who name="whoPaid"/>
     <when name="whenPaid"/>
-    <where name="wherePaymentOccured"/>
-    <what name="whatWasPaymentAbout"/>
+    <where name="wherePaymentOccurred"/>
+    <what name="whatWasPaid"/>
     <how name="howWasPaid"/>
 </locals>
 </task>
@@ -28,8 +28,8 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <locals>
     <who name="whoPaid"/>
     <when name="whenPaid"/>
-    <where name="wherePaymentOccured"/>
-    <what name="whatWasPaymentAbout"/>
+    <where name="wherePaymentOccurred"/>
+    <what name="whatWasPaid"/>
     <how name="howWasPaid"/>
 </locals>
 </task>
@@ -37,8 +37,8 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <locals>
     <who name="whoPaid"/>
     <when name="whenPaid"/>
-    <where name="wherePaymentOccured"/>
-    <what name="whatWasPaymentAbout"/>
+    <where name="wherePaymentOccurred"/>
+    <what name="whatWasPaid"/>
     <how name="howWasPaid"/>
 </locals>
 </task>
@@ -46,8 +46,8 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <locals>
     <who name="whoPaid"/>
     <when name="whenPaid"/>
-    <where name="wherePaymentOccured"/>
-    <what name="whatWasPaymentAbout"/>
+    <where name="wherePaymentOccurred"/>
+    <what name="whatWasPaid"/>
     <how name="howWasPaid"/>
 </locals>
 </task>
@@ -56,8 +56,8 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <locals>
     <who name="whoPaid"/>
     <when name="whenPaid"/>
-    <where name="wherePaymentOccured"/>
-    <what name="whatWasPaymentAbout"/>
+    <where name="wherePaymentOccurred"/>
+    <what name="whatWasPaid"/>
     <how name="howWasPaid"/>
 </locals>
 </task>

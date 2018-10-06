@@ -28,6 +28,7 @@ import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.FeedWithTags;
 import com.rutgers.neemi.model.Person;
+import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.parser.TriggersFactory;
 import com.rutgers.neemi.util.ConfigReader;
@@ -137,12 +138,35 @@ public class JsonLocals implements W5hLocals{
 						else if (attributeName.toString().equalsIgnoreCase("\"bodyDate\"")){
 							localValues.add(((Email)pid).getBodyDate().toString());
 						}
-					}else if (objectClass.equalsIgnoreCase("Transaction")){
-						if (attributeName.toString().equalsIgnoreCase("\"merchant_name\"")){
-							localValues.add(((Transaction)pid).getMerchant_name());
+					}else if (objectClass.equalsIgnoreCase("Transaction")) {
+						if (attributeName.toString().equalsIgnoreCase("\"merchant_name\"")) {
+							localValues.add(((Transaction) pid).getMerchant_name());
+						} else if (attributeName.toString().equalsIgnoreCase("\"date\"")) {
+							localValues.add(String.valueOf(((Transaction) pid).getDate()));
 						}
-						else if (attributeName.toString().equalsIgnoreCase("\"date\"")){
-							localValues.add(String.valueOf(((Transaction)pid).getDate()));
+					}else if (objectClass.equalsIgnoreCase("Photo")){
+						if (attributeName.toString().equalsIgnoreCase("\"creator_id\"")){
+							localValues.add(((Photo)pid).getCreator().getName());
+						}else if (attributeName.toString().equalsIgnoreCase("\"name\"")) {
+							localValues.add(String.valueOf(((Photo) pid).getName()));
+						}else if (attributeName.toString().equalsIgnoreCase("\"created_time\"")){
+							localValues.add(String.valueOf(((Photo)pid).getCreated_time()));
+						}else if (attributeName.toString().equalsIgnoreCase("\"place_id\"")){
+							if (((Photo)pid).getPlace().getName()!=null){
+								localValues.add(String.valueOf(((Photo) pid).getPlace().getName()));
+							}else if (((Photo)pid).getPlace().getCity()!=null) {
+								localValues.add(String.valueOf(((Photo) pid).getPlace().getCity()));
+							}
+
+						}else if (attributeName.toString().equalsIgnoreCase("\"PhotoTags\"")) {
+							try {
+								ArrayList<Person> tags = helper.getPhotoWithTags(((Photo)pid).get_id());
+								for(Person p:tags){
+									localValues.add(p.getName());
+								}
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
 						}
 					}else if (objectClass.equalsIgnoreCase("Feed")){
 						if (attributeName.toString().equalsIgnoreCase("\"creator_id\"")){
