@@ -1,0 +1,27 @@
+trip
+flight
+junket
+round trip
+connecting flight
+direct flight
+domestic flight
+international flight
+nonstop flight
+nonstop
+redeye flight
+journey
+travel
+traveling
+travelling
+commute
+drive
+ride
+long haul
+odyssey
+transit
+tour
+excursion
+outing
+expedition
+voyage
+pleasure trip

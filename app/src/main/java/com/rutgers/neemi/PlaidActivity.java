@@ -60,9 +60,9 @@ public class PlaidActivity extends AppCompatActivity {
 
     PlaidClient plaidClient = PlaidClient.newBuilder()
             .clientIdAndSecret(client_id, secret)
-            .publicKey("0ea8ed7c85e1c6d8aa4695cb156c97")
+            //.publicKey("0ea8ed7c85e1c6d8aa4695cb156c97")
             .sandboxBaseUrl()// optional. only needed to call endpoints that require a public key
-            //.developmentBaseUrl() // or equivalent, depending on which environment you're calling into
+            .developmentBaseUrl() // or equivalent, depending on which environment you're calling into
             .build();
 
     ProgressDialog mProgress;
@@ -388,7 +388,7 @@ public class PlaidActivity extends AppCompatActivity {
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
                     Calendar cal = Calendar.getInstance();
-                    cal.add(Calendar.MONTH, -12);
+                    cal.add(Calendar.MONTH, -6);
                     Date startDate = null;
                     Date endDate = null;
 

@@ -10,8 +10,8 @@ import com.rutgers.neemi.parser.TriggersFactory;
 
 public class JsonFactory extends TriggersFactory {
 
-	public Triggers getTriggers(Context context){
-		return new JsonTriggers(context);
+	public Triggers getTriggers(Context context, String scriptName){
+		return new JsonTriggers(context, scriptName);
 	}
 
 	public Clues getClues(Context context){

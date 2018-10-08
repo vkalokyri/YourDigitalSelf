@@ -54,16 +54,23 @@ public class InstagramActivity extends AppCompatActivity implements Authenticati
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_instagram);
         helper=DatabaseHelper.getHelper(this);
+        prefs = new ObscuredSharedPreferences(
+                this, this.getSharedPreferences("preferences", Context.MODE_PRIVATE) );
 
 
         Intent i = getIntent();
         String permissionType = i.getStringExtra("action");
 
-        if(permissionType.equals("grant")){
+        if(permissionType.equals("grant")) {
             grantPermissions();
-
-            //getResultsFromApi();
-
+        }else if(permissionType.equals("sync")){
+            String instagramToken = prefs.getString("instagram", null);
+            if(instagramToken==null){
+                grantPermissions();
+                fetchData(instagramToken);
+            }else {
+                fetchData(instagramToken);
+            }
         }else{
             revokePermissions();
             Intent myIntent = new Intent(this, MainActivity.class);
@@ -98,8 +105,6 @@ public class InstagramActivity extends AppCompatActivity implements Authenticati
     }
 
     public void grantPermissions(){
-        prefs = new ObscuredSharedPreferences(
-                this, this.getSharedPreferences("preferences", Context.MODE_PRIVATE) );
         String instagramToken = prefs.getString("instagram", null);
         if (instagramToken!=null){
             Toast.makeText(getApplicationContext(), "Instagram is already authenticated!", Toast.LENGTH_SHORT).show();
@@ -146,34 +151,40 @@ public class InstagramActivity extends AppCompatActivity implements Authenticati
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             preferences.edit().putBoolean("instagram", true).apply();
 
+            Toast.makeText(getApplicationContext(), "Instagram was successfully authorized!", Toast.LENGTH_SHORT).show();
+            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(myIntent);
 
 
-            builder.setTitle("Instagram was successfully authorized!")
-                    .setMessage("Do you want the app to get your past month's data or start collecting data from today?")
-                    .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
 
-                            fetchData(access_token);
-                            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-                            myIntent.putExtra("key", "instagram");
-                            myIntent.putExtra("items", 0);
-                            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivity(myIntent);
 
-                        }
-                    })
-                    .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-                            myIntent.putExtra("key", "instagram");
-                            myIntent.putExtra("items", 0);
-                            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivity(myIntent);
-
-                        }
-                    })
-                    .setIcon(android.R.drawable.ic_dialog_info)
-                    .show();
+//            builder.setTitle("Instagram was successfully authorized!")
+//                    .setMessage("Do you want the app to get your past month's data or start collecting data from today?")
+//                    .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int which) {
+//
+//                            fetchData(access_token);
+//                            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+//                            myIntent.putExtra("key", "instagram");
+//                            myIntent.putExtra("items", 0);
+//                            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                            startActivity(myIntent);
+//
+//                        }
+//                    })
+//                    .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+//                            myIntent.putExtra("key", "instagram");
+//                            myIntent.putExtra("items", 0);
+//                            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                            startActivity(myIntent);
+//
+//                        }
+//                    })
+//                    .setIcon(android.R.drawable.ic_dialog_info)
+//                    .show();
 
 
         }
@@ -281,7 +292,7 @@ public class InstagramActivity extends AppCompatActivity implements Authenticati
                             }
                         }
                     }
-                    mProgress.dismiss();
+                    //mProgress.dismiss();
                     Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
                     myIntent.putExtra("key", "instagram");
                     myIntent.putExtra("items", photosReceived);

@@ -165,21 +165,25 @@ public class SettingsFragment extends Fragment {
                 String Selecteditem= ((ExpandListChild)ExpAdapter.getChild(i,i1)).getName();
                 if (Selecteditem.equalsIgnoreCase("Google Calendar")){
                     Intent myIntent = new Intent(getActivity(), GcalActivity.class);
+                    myIntent.putExtra("action", "sync");
                     myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(myIntent);
                 }
                 if (Selecteditem.equalsIgnoreCase("Facebook")) {
                     Intent myIntent = new Intent(getActivity(), FacebookActivity.class);
+                    myIntent.putExtra("action", "sync");
                     myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(myIntent);
                 }
                 if (Selecteditem.equalsIgnoreCase("Instagram")) {
                     Intent myIntent = new Intent(getActivity(), InstagramActivity.class);
+                    myIntent.putExtra("action", "sync");
                     myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(myIntent);
                 }
                 if (Selecteditem.equalsIgnoreCase("Gmail")){
                     Intent myIntent = new Intent(getActivity(), GmailActivity.class);
+                    myIntent.putExtra("action", "sync");
                     myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(myIntent);
                 }

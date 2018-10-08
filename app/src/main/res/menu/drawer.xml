@@ -34,5 +34,10 @@
         <item android:id="@+id/action_settings"
             android:icon="@drawable/settings"
             android:title="Settings" />
+
+        <item android:icon="@drawable/ic_sync_black_24dp"
+            android:title="@string/pref_header_data_sync"
+            android:id="@+id/data_sync" android:value="prefs_sync"
+            android:tint="@color/gray"/>
     </group>
 </menu>

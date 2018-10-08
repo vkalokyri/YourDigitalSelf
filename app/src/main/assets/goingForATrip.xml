@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions id="definitions" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+	targetNamespace="http://www.omg.org/spec/BPMN/20100524/MODEL">
+<process isExecutable="true" id="goingForATrip">
+<locals>
+<who name="whoAttended"/>
+<what name="whatWasTripAbout"/>
+<when name="whenTripOccurred" />
+<where name="whereTripOccurred"/>
+<why name="purpose"/>
+</locals>
+<startEvent name="" id="StartProcess"/>
+<callActivity calledElement="initiateDiscussion" name="initiateGoingOutDiscussion" t="trip" id="subProcessInitiateGoingOut"/>
+<parallelGateway gatewayDirection="Diverging" name="" id="EstablishW4"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="EstablishWhenToGo" id="EstablishWhenToGo"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="EstablishWhereToGo" id="EstablishWhereToGo"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="EstablishWhoWillGo" id="EstablishWhoWillGo"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="EstablishWhatTrip" id="EstablishWhatTrip"/>
+<parallelGateway gatewayDirection="Converging" name="" id="AfterEstablishingW4"/>
+<parallelGateway gatewayDirection="Diverging" name="" id="OptionalWriteInCalendar"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="writeInCalendar" id="writeInCalendar">
+<locals>
+<who name="whoIsTheOrganizer"/>
+<who name="whoIsTheEventCreator"/>
+<who name="whoWillBeInTheEvent"/>
+<what name="whatEvent"/>
+<when name="whenTheEventStarts"/>
+<when name="whenTheEventEnds"/>
+<when name="whenWasTheEventCreated"/>
+</locals>
+</task>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="OptionalReservation"/>
+<callActivity calledElement="makeReservation" name="makeHotelReservation" t="hotel" id="SubProcessMakeHotelReservation" />
+<callActivity calledElement="makeAPayment" name="makeAPayment" t="hotel" id="SubProcessPayHotel"/>
+<callActivity calledElement="makeReservation" name="makeFlightReservation" t="flight" id="SubProcessMakeFlightReservation" />
+<callActivity calledElement="makeAPayment" name="makeAPayment" t="flight" id="SubProcessPayFlight"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="ChangePlans" id="ChangePlans"/>
+<endEvent name="" id="EndProcess"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="CancelORchangePlans"/>
+<exclusiveGateway gatewayDirection="Converging" name="" id="AfterOptionalReservation"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="ChangePlansORremindGoingOutForATrip"/>
+<callActivity calledElement="reminder" name="remindGoingForATrip" t="trip" id="SubProcessRemindGoingForATrip"/>
+<exclusiveGateway gatewayDirection="Converging" name="" id="AfterOptionalRemindGoingForATrip"/>
+<inclusiveGateway gatewayDirection="Diverging" name="" id="CheckingWeatherAndHowToGo"/>
+<task name="EstablishHowToGo" id="EstablishHowToGo"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="CheckTheWeather" id="CheckTheWeather"/>
+<parallelGateway gatewayDirection="Converging" name="" id="AfterCheckingWeatherAndHowToGo"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="BeforeGoingToThePlace"/>
+<callActivity calledElement="goToAPlace" name="goToAirport" t="airport" id="SubProcessGoToTheAirport"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="GoHomeORgoElsewhere"/>
+<callActivity calledElement="goToAPlace" name="goToHotel" t="hotel" id="SubProcessGoToHotel" minDuration="10m" maxDuration="2h"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="GoElsewhere" id="GoElsewhere"/>
+<exclusiveGateway gatewayDirection="Diverging" name="" id="OptionalAfterEatingDiscussion"/>
+<callActivity calledElement="initiateDiscussion" name="afterTripDiscussion" t="trip" id="SubProcessAfterTrip"/>
+<exclusiveGateway gatewayDirection="Converging" name="" id="AfterEatingDiscussionConverge"/>
+</process>
+
+</definitions>

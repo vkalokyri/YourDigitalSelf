@@ -1,62 +1,29 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
-    <Preference
-        android:key="facebook"
-        android:title="@string/facebook"
-        android:summary="@string/facebook"
-        android:icon="@drawable/fb_logo" >
-    <intent
-        android:action="android.intent.action.MAIN"
-        android:targetPackage="com.rutgers.neemi"
-        android:targetClass="com.rutgers.neemi.FacebookFragment"
-        />
-    </Preference>
-    <Preference
-        android:key="gcal"
-        android:title="@string/gcal"
-        android:icon="@drawable/google_calendar"
-        android:summary="@string/gcal"
-        android:defaultValue="false">
-    <intent
-        android:action="android.intent.action.MAIN"
-        android:targetPackage="com.rutgers.neemi"
-        android:targetClass="com.rutgers.neemi.GcalFragment"
-        />
-    </Preference>
-    <Preference
-        android:key="gmail"
-        android:title="@string/gmail"
-        android:icon="@drawable/gmail_icon"
-        android:summary="@string/gmail"
-        android:defaultValue="false" >
+    <ListPreference
+        android:defaultValue="180"
+        android:entries="@array/pref_sync_frequency_titles"
+        android:entryValues="@array/pref_sync_frequency_values"
+        android:key="sync_frequency"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null"
+        android:title="@string/pref_title_sync_period" />
+
+    <!-- This preference simply launches an intent when selected. Use this UI sparingly, per
+         design guidelines. -->
+    <Preference android:title="Sync data manually">
         <intent
             android:action="android.intent.action.MAIN"
             android:targetPackage="com.rutgers.neemi"
-            android:targetClass="com.rutgers.neemi.GmailFragment"
-            />
-    </Preference>
-    <Preference
-        android:key="bank"
-        android:title="@string/bank"
-        android:icon="@drawable/mint"
-        android:summary="@string/bank"
-        android:defaultValue="false" >
-        <intent
-        android:action="android.intent.action.MAIN"
-        android:targetPackage="com.rutgers.neemi"
-        android:targetClass="com.rutgers.neemi.PlaidFragment"
-        />
-    </Preference>
-    <Preference
-        android:key="location"
-        android:title="@string/location"
-        android:icon="@drawable/location"
-        android:summary="@string/location"
-        android:defaultValue="false" />
+            android:targetClass="com.rutgers.neemi.MainActivity">
+            <extra android:name="key" android:value="sync_data" />
 
-
+        </intent>
+    </Preference>
 
 </PreferenceScreen>

@@ -15,7 +15,7 @@ public abstract class TriggersFactory {
 	public static final int owl=3;
 
 
-	public abstract Triggers getTriggers(Context context);
+	public abstract Triggers getTriggers(Context context, String scriptName);
 	public abstract Clues getClues(Context context);
 	public abstract W5hLocals getLocals(Context context);
 

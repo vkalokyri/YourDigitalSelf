@@ -24,7 +24,7 @@ public class JsonTriggers implements Triggers {
 	LinkedList<String> strongTriggers;
 	LinkedList<String> weakTriggers;
 	
-	public JsonTriggers(Context context){
+	public JsonTriggers(Context context, String scriptName){
 		config = ConfigReader.getInstance();
 		 try {
 			 	InputStream fis = context.getAssets().open(config.getStr(PROPERTIES.TRIGGERS_FILE));
@@ -34,8 +34,14 @@ public class JsonTriggers implements Triggers {
 	            JsonObject jsonObject = jsonReader.readObject();
 	            jsonReader.close();
 	    		fis.close();
-	            
-	    		JsonObject scriptObject = jsonObject.getJsonObject(config.getStr(PROPERTIES.SCRIPT));
+
+			 JsonObject scriptObject=null;
+			 	if(scriptName.equalsIgnoreCase("restaurant")) {
+					scriptObject = jsonObject.getJsonObject(config.getStr(PROPERTIES.RESTAURANT_SCRIPT));
+			 	}else if (scriptName.equalsIgnoreCase("trip")) {
+					scriptObject = jsonObject.getJsonObject(config.getStr(PROPERTIES.TRIP_SCRIPT));
+			 	}
+	    		//JsonObject scriptObject = jsonObject.getJsonObject(config.getStr(PROPERTIES.SCRIPT));
 	    		
 	    		JsonArray jsonStrongArray = scriptObject.getJsonArray("strongTriggers");
 	    		this.strongTriggers = new LinkedList<String>();

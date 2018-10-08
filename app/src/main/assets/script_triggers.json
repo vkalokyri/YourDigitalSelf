@@ -2,6 +2,11 @@
   "Eating_Out":{
     "strongTriggers":["makeAPayment<restaurant>","makeReservation<restaurant>","writeInCalendar<restaurant>","attendEatingOutEvent<restaurant>"],
     "weakTriggers":["initiateDiscussion<restaurant>"]
-    }
+    },
+  "GoingForATrip":{
+    "strongTriggers":["makeAPayment<flight>","makeReservation<hotel>","makeAPayment<hotel>","makeReservation<flight>","reminder<trip>"],
+    "weakTriggers":["initiateDiscussion<trip>"]
+  }
+}
 }
 //"momentCapturing","ChangePlans"

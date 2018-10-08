@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -19,11 +18,8 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 
 import com.rutgers.neemi.interfaces.Clues;
-import com.rutgers.neemi.parser.InitiateScript;
 import com.rutgers.neemi.util.ConfigReader;
 import com.rutgers.neemi.util.PROPERTIES;
-
-import static com.couchbase.lite.replicator.RemoteRequest.JSON;
 
 
 public class JsonClues implements Clues{

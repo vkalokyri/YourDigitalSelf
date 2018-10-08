@@ -22,6 +22,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.common.ConnectionResult;
@@ -127,21 +128,78 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 this, Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
-        if(permissionType.equals("grant")){
-            getResultsFromApi();
-        }else{
+        if(permissionType.equals("grant")) {
+           getResultsFromApi();
+
+        }else if(permissionType.equals("sync")){
+            mProgress = new ProgressDialog(this);
+            mProgress.setMessage("Getting your emails ...");
+            mProgress.setIndeterminate(false);
+            mProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            if (mCredential.getSelectedAccountName() == null) {
+                if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
+                    String accountName = getSharedPreferences("credentials", Context.MODE_PRIVATE)
+                            .getString(PREF_ACCOUNT_NAME, null);
+                    mCredential.setSelectedAccountName(accountName);
+                    new MakeRequestTask(mCredential).execute();
+                }
+            }
+        }else if(permissionType.equals("revoke")){
             if (mCredential.getSelectedAccountName() == null) {
                 if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
                     String accountName = getSharedPreferences("credentials", Context.MODE_PRIVATE)
                             .getString(PREF_ACCOUNT_NAME, null);
                     if (accountName != null) {
-                        mCredential.setSelectedAccount(new Account(accountName, "com.rutgers.neemi"));
                         mCredential.setSelectedAccountName(accountName);
-                    } else {
-                        // Start a dialog from which the user can choose an account
-                        startActivityForResult(
-                                mCredential.newChooseAccountIntent(),
-                                REQUEST_ACCOUNT_PICKER);
+                        SharedPreferences settings = this.getSharedPreferences("credentials",Context.MODE_PRIVATE );
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putString(PREF_ACCOUNT_NAME, accountName);
+                        editor.apply();
+
+                        AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+
+                            @Override
+                            protected Boolean doInBackground(Void... params) {
+                                String token = null;
+                                HttpRequestFactory factory = HTTP_TRANSPORT.createRequestFactory();
+                                GenericUrl url = null;
+
+                                try {
+                                    token = mCredential.getToken();
+                                    url = new GenericUrl("https://accounts.google.com/o/oauth2/revoke?token=" + token);
+                                    HttpRequest request = factory.buildGetRequest(url);
+                                    HttpResponse response = request.execute();
+                                    if (response.getStatusCode() == RESULT_OK) {
+                                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                                        preferences.edit().putBoolean("gmail", false).apply();
+                                        preferences.edit().putBoolean("gdrive", false).apply();
+                                        preferences.edit().putBoolean("gcal", false).apply();
+                                        return true;
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                } catch (GoogleAuthException e) {
+                                    e.printStackTrace();
+                                }
+
+                                return false;
+                            }
+
+                            @Override
+                            protected void onPostExecute(Boolean output) {
+
+                                if (output) {
+                                    Log.d(TAG, "All permissions were revoked");
+                                } else {
+                                    Log.e(TAG, "There was an error while revoking permissions");
+                                }
+                            }
+                        };
+                        task.execute();
+                    }
+
+                    else if (accountName == null){
+                        Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "The permissions are already revoked.", Snackbar.LENGTH_SHORT).show();
                     }
                 } else {
                     // Request the GET_ACCOUNTS permission via a user dialog
@@ -153,8 +211,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 }
             } else if (!isDeviceOnline()) {
                 Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No network connection available", Snackbar.LENGTH_SHORT).show();
-            }
-
+            }else {
 
 
                 AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
@@ -175,7 +232,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                                 preferences.edit().putBoolean("gmail", false).apply();
                                 preferences.edit().putBoolean("gdrive", false).apply();
                                 preferences.edit().putBoolean("gcal", false).apply();
-                               return true;
+                                return true;
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -190,13 +247,14 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                     protected void onPostExecute(Boolean output) {
 
                         if (output) {
-                            Log.d(TAG,"All permissions were revoked");
+                            Log.d(TAG, "All permissions were revoked");
                         } else {
-                            Log.e(TAG,"There was an error while revoking permissions");
+                            Log.e(TAG, "There was an error while revoking permissions");
                         }
                     }
                 };
                 task.execute();
+            }
 
 
 
@@ -240,7 +298,6 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                         SharedPreferences.Editor editor = settings.edit();
                         editor.putString(PREF_ACCOUNT_NAME, accountName);
                         editor.apply();
-                        mCredential.setSelectedAccount(new Account(accountName, "com.rutgers.neemi"));
                         mCredential.setSelectedAccountName(accountName);
                         getResultsFromApi();
                     }else{
@@ -270,27 +327,30 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                         builder = new AlertDialog.Builder(GmailActivity.this);
                     }
 
-                    builder.setTitle("Gmail was successfully authorized!")
-                            .setMessage("Do you want the app to get your past month's Gmail data or start collecting data from today?")
-                            .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
+                    Toast.makeText(getApplicationContext(), "Gmail was successfully authorized!", Toast.LENGTH_SHORT).show();
 
-                                    getResultsFromApi();
 
-                                }
-                            })
-                            .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-                                    myIntent.putExtra("key", "gmail");
-                                    myIntent.putExtra("items", 0);
-                                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                    startActivity(myIntent);
-
-                                }
-                            })
-                            .setIcon(android.R.drawable.ic_dialog_info)
-                            .show();
+//                    builder.setTitle("Gmail was successfully authorized!")
+//                            .setMessage("Do you want the app to get your past month's Gmail data or start collecting data from today?")
+//                            .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
+//                                public void onClick(DialogInterface dialog, int which) {
+//
+//                                    getResultsFromApi();
+//
+//                                }
+//                            })
+//                            .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
+//                                public void onClick(DialogInterface dialog, int which) {
+//                                    Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+//                                    myIntent.putExtra("key", "gmail");
+//                                    myIntent.putExtra("items", 0);
+//                                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                                    startActivity(myIntent);
+//
+//                                }
+//                            })
+//                            .setIcon(android.R.drawable.ic_dialog_info)
+//                            .show();
 
 
 
@@ -315,6 +375,9 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         } else if (!isDeviceOnline()) {
             Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No network connection available", Snackbar.LENGTH_SHORT ).show();
         } else{
+            Toast.makeText(getApplicationContext(), "Gmail was successfully authorized!", Toast.LENGTH_SHORT).show();
+
+
 //            AlertDialog.Builder builder;
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //                builder = new AlertDialog.Builder(GmailActivity.this, android.R.style.Theme_Material_Dialog_Alert);
@@ -340,7 +403,8 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 //                    .setIcon(android.R.drawable.ic_dialog_info)
 //                    .show();
 
-             new MakeRequestTask(mCredential).execute();
+           //MakeRequestTask  new MakeRequestTask(mCredential).execute();
+
            // Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
           //  myIntent.putExtra("key", "gmail");
           //  myIntent.putExtra("items", 0);
@@ -368,13 +432,10 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                     .getString(PREF_ACCOUNT_NAME, null);
             if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
-                mCredential.setSelectedAccount(new Account(accountName, "com.rutgers.neemi"));
                 getResultsFromApi();
             } else {
                 // Start a dialog from which the user can choose an account
-                startActivityForResult(
-                        mCredential.newChooseAccountIntent(),
-                        REQUEST_ACCOUNT_PICKER);
+                startActivityForResult(mCredential.newChooseAccountIntent(),REQUEST_ACCOUNT_PICKER);
             }
         } else {
             // Request the GET_ACCOUNTS permission via a user dialog
@@ -687,7 +748,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 int totalItemsInserted = 0;
                 String pageToken = null;
                 Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                cal.add(Calendar.MONTH, -1); // substract 6 months
+                cal.add(Calendar.DATE, -1); // substract 6 months
                 //cal.add(Calendar.DATE, -1); // substract 1 day
 
                 Long since = cal.getTimeInMillis() / 1000;
@@ -969,12 +1030,12 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
     @Override
         protected void onPreExecute() {
-            //mProgress.show();
+            mProgress.show();
         }
 
         @Override
         protected void onPostExecute(Integer output) {
-            //mProgress.dismiss();
+            mProgress.dismiss();
             if (output>1) {
                 new ExtractTimeTask().execute();
             }

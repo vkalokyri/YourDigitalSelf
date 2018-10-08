@@ -11,7 +11,26 @@
 				}
 			}
 		}],
-		"hotel": []
+		"hotel": [{
+			"ReceiveConfirmationEmail": {
+				"from": ["Email"],
+				"where":{
+					"and": {
+						"subject": ["hotel","reservation"]
+					}
+				}
+			}
+		}],
+		"flight": [{
+			"ReceiveConfirmationEmail": {
+				"from": ["Email"],
+				"where":{
+					"and": {
+						"subject": ["flight","confirmation"]
+					}
+				}
+			}
+		}]
 
 	},
 	"makeAPayment": {
@@ -21,6 +40,30 @@
 				"where": {
 					"and": {
 						"category" :["Food and Beverage Store","Food and Drink", "Restaurants", "Fast Food"],
+						"`Transaction`._id": "TransactionHasCategory.transaction_id",
+						"Category._id":"TransactionHasCategory.category_id"
+					}
+				}
+			}
+		}],
+		"flight": [{
+			"PayByCreditCard": {
+				"from": ["Category","Transaction","TransactionHasCategory"],
+				"where": {
+					"and": {
+						"category" :["Travel/ Entertainment"],
+						"`Transaction`._id": "TransactionHasCategory.transaction_id",
+						"Category._id":"TransactionHasCategory.category_id"
+					}
+				}
+			}
+		}],
+		"hotel": [{
+			"PayByCreditCard": {
+				"from": ["Category","Transaction","TransactionHasCategory"],
+				"where": {
+					"and": {
+						"category" :["Travel/ Entertainment"],
 						"`Transaction`._id": "TransactionHasCategory.transaction_id",
 						"Category._id":"TransactionHasCategory.category_id"
 					}

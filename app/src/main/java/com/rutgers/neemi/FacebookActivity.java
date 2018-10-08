@@ -94,13 +94,15 @@ public class FacebookActivity extends AppCompatActivity {
             grantPermissions();
             //getResultsFromApi();
 
-        }else{
+        }else if(permissionType.equals("revoke")){
             revokePermissions();
             Intent myIntent = new Intent(this, MainActivity.class);
             myIntent.putExtra("key", "facebook");
             myIntent.putExtra("items", 0);
             myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(myIntent);
+        }else if(permissionType.equals("sync")){
+            getResultsFromApi();
 
         }
 
@@ -177,41 +179,42 @@ public class FacebookActivity extends AppCompatActivity {
                             }else {
 
                                 System.out.println("OnGrantPermissionsSuccess : " + loginResult.getAccessToken().getToken());
+                                DataSyncJob.scheduleAdvancedJob();
 
 
-                                AlertDialog.Builder builder;
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                    builder = new AlertDialog.Builder(FacebookActivity.this, android.R.style.Theme_Material_Dialog_Alert);
-                                } else {
-                                    builder = new AlertDialog.Builder(FacebookActivity.this);
-                                }
+//                                AlertDialog.Builder builder;
+//                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                                    builder = new AlertDialog.Builder(FacebookActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+//                                } else {
+//                                    builder = new AlertDialog.Builder(FacebookActivity.this);
+//                                }
+//
+//
+//
+//                                builder.setTitle("Facebook was successfully authorized!")
+//                                        .setMessage("Do you want the app to get your past month's data or start collecting data from today?")
+//                                        .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
+//                                            public void onClick(DialogInterface dialog, int which) {
+//
+//                                                getResultsFromApi();
+//
+//                                            }
+//                                        })
+//                                        .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
+//                                            public void onClick(DialogInterface dialog, int which) {
+//                                                Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+//                                                myIntent.putExtra("key", "facebook");
+//                                                myIntent.putExtra("items", 0);
+//                                                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                                                startActivity(myIntent);
+//
+//                                            }
+//                                        })
+//                                        .setIcon(android.R.drawable.ic_dialog_info)
+//                                        .show();
 
 
-
-                                builder.setTitle("Facebook was successfully authorized!")
-                                        .setMessage("Do you want the app to get your past month's data or start collecting data from today?")
-                                        .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int which) {
-
-                                                getResultsFromApi();
-
-                                            }
-                                        })
-                                        .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-                                                myIntent.putExtra("key", "facebook");
-                                                myIntent.putExtra("items", 0);
-                                                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                                startActivity(myIntent);
-
-                                            }
-                                        })
-                                        .setIcon(android.R.drawable.ic_dialog_info)
-                                        .show();
-
-
-                                //Toast.makeText(getApplicationContext(), "Facebook was successfully authorized!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), "Facebook was successfully authorized!", Toast.LENGTH_SHORT).show();
 
                             }
                         }

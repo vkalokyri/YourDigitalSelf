@@ -39,11 +39,16 @@ public class ApplicationManager {
 
     }
 
-    public void initScript(DatabaseHelper helper, Context context){
+    public void initScript(DatabaseHelper helper, Context context,String scriptName){
         this.helper=helper;
 
         ConfigReader config = new ConfigReader(context);
-        String filename = config.getStr(PROPERTIES.SCRIPT_FILE);
+        String filename="";
+        if(scriptName.equalsIgnoreCase("restaurant")) {
+            filename = config.getStr(PROPERTIES.RESTAURANT_SCRIPT_FILE);
+        }else if (scriptName.equalsIgnoreCase("trip")) {
+            filename = config.getStr(PROPERTIES.TRIP_SCRIPT_FILE);
+        }
         Log.d(TAG, "Read script file: "+ filename);
 
 
@@ -51,7 +56,7 @@ public class ApplicationManager {
 
             /*parse the script and get the script definitions*/
         try {
-            this.scriptElements = new ScriptParser().start(filename,null,"restaurant",context);
+            this.scriptElements = new ScriptParser().start(filename,null,scriptName,context);
         } catch (IOException e) {
             e.printStackTrace();
         }

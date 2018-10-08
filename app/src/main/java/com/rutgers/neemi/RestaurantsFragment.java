@@ -79,8 +79,6 @@ import java.util.Locale;
 import javax.json.JsonString;
 import javax.xml.parsers.ParserConfigurationException;
 
-import static com.rutgers.neemi.parser.InitiateScript.JsonTriggerFactory;
-import static com.rutgers.neemi.parser.InitiateScript.config;
 
 import serf.*;
 import serf.test.TestException;
@@ -192,7 +190,7 @@ public class RestaurantsFragment extends Fragment {
 //        }
 
 
-         findScriptInstances();
+         findScriptInstances("restaurant");
 
     }
 
@@ -292,7 +290,7 @@ public class RestaurantsFragment extends Fragment {
     }
 
 
-    public void findScriptInstances(){
+    public void findScriptInstances(String scriptName){
 
         helper=DatabaseHelper.getHelper(getActivity());
         scriptDefDao = helper.getScriptDefDao();
@@ -307,9 +305,15 @@ public class RestaurantsFragment extends Fragment {
 
         try{
             ConfigReader config = new ConfigReader(getContext());
+            InputStream fis=null;
 
             /*get the keywords to search in the documents*/
-            InputStream fis = getContext().getAssets().open(config.getStr(PROPERTIES.KEYWORDS_FILE));
+            if(scriptName.equalsIgnoreCase("restaurant")) {
+                fis = getContext().getAssets().open(config.getStr(PROPERTIES.RESTAURANT_KEYWORDS_FILE));
+            }else if (scriptName.equalsIgnoreCase("trip")) {
+                fis = getContext().getAssets().open(config.getStr(PROPERTIES.TRIP_KEYWORDS_FILE));
+            }
+            //InputStream fis = getContext().getAssets().open(config.getStr(PROPERTIES.KEYWORDS_FILE));
             InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
             BufferedReader br = new BufferedReader(isr);
             String keywords="";
@@ -320,8 +324,8 @@ public class RestaurantsFragment extends Fragment {
             this.scriptKeywords=keywords.substring(0, keywords.length()-4);
 
             //Get the strong triggers and clues for triggers of the script
-            JsonTriggerFactory = TriggersFactory.getTriggersFactory(TriggersFactory.json);
-            scriptTriggers= JsonTriggerFactory.getTriggers(getContext());
+            TriggersFactory JsonTriggerFactory = TriggersFactory.getTriggersFactory(TriggersFactory.json);
+            scriptTriggers= JsonTriggerFactory.getTriggers(getContext(),scriptName);
             clues = JsonTriggerFactory.getClues(getContext());
 
             for (int i=0;i<scriptTriggers.getStrongTriggers().size();i++){
@@ -457,17 +461,25 @@ public class RestaurantsFragment extends Fragment {
                             System.err.println(localValue);
                            // values.add(localValue);
                             try {
-                                long timestamp = Long.valueOf(localValue);
-                                Calendar cal = Calendar.getInstance(Locale.ENGLISH);
-                                cal.setTimeInMillis(timestamp);
-                                parsedDate = DateFormat.format("yyyy-MM-dd", cal).toString();
+//                                long timestamp = Long.valueOf(localValue);
+//                                Calendar cal = Calendar.getInstance(Locale.ENGLISH);
+//                                cal.setTimeInMillis(timestamp);
+//                                parsedDate = DateFormat.format("yyyy-MM-dd", cal).toString();
 
 
-//                                extractedDate = new Date(localValue);
-//                                Format format = new SimpleDateFormat("yyyy-MM-dd");
-//                                parsedDate = format.format(extractedDate);
+                                extractedDate = new Date(localValue);
+                                Format format = new SimpleDateFormat("yyyy-MM-dd");
+                                parsedDate = format.format(extractedDate);
                             } catch (Exception e) {
-                                e.printStackTrace();
+//                                e.printStackTrace();
+//                                Calendar cal = Calendar.getInstance();
+//                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+//                                try {
+//                                    cal.setTime(sdf.parse(localValue));// all done
+//                                } catch (ParseException e1) {
+//                                    e1.printStackTrace();
+//                                }
+
                                 extractedDate = new Date(Long.parseLong(localValue));
                                 Format format = new SimpleDateFormat("yyyy-MM-dd");
                                 parsedDate = format.format(extractedDate);
@@ -531,6 +543,8 @@ public class RestaurantsFragment extends Fragment {
 
 
     public Script setLocalValuesInSuperscripts(Script script, HashMap<String, HashSet<String>> map, Task task) throws IOException {
+
+        TriggersFactory JsonTriggerFactory = TriggersFactory.getTriggersFactory(TriggersFactory.json);
 
         W5hLocals locals = JsonTriggerFactory.getLocals(getContext());
 

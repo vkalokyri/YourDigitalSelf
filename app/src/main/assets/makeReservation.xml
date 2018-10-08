@@ -33,7 +33,7 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
     <where name="whereWasTheReservation"/>
 </locals>
 </task>
-<sequenceFlow sourceRef="SubProcessStart" targetRef="selectFromWhereToDoTheReservation" name="" id=""/>
+    <sequenceFlow sourceRef="SubProcessStart" targetRef="selectFromWhereToDoTheReservation" name="" id=""/>
 <sequenceFlow sourceRef="selectFromWhereToDoTheReservation" targetRef="VisitStoreWebPage_" name="" id=""/>
 <sequenceFlow sourceRef="selectFromWhereToDoTheReservation" targetRef="AccessReservationApp" name="" id=""/>
 <sequenceFlow sourceRef="selectFromWhereToDoTheReservation" targetRef="CallTheStore" name="" id=""/>
