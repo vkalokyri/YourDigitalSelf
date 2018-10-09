@@ -1,24 +1,18 @@
 package com.rutgers.neemi;
 
 import android.accounts.Account;
-import android.app.job.JobParameters;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.evernote.android.job.Job;
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
-import com.evernote.android.job.util.support.PersistableBundleCompat;
 import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.Base64;
-import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.gmail.model.ListMessagesResponse;
 import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePart;
@@ -33,12 +27,10 @@ import com.rutgers.neemi.model.EmailBcc;
 import com.rutgers.neemi.model.EmailCc;
 import com.rutgers.neemi.model.EmailTo;
 import com.rutgers.neemi.model.Person;
-import com.rutgers.neemi.rest.DownloadJobService;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -258,7 +250,7 @@ public class DataSyncJob extends Job {
                     email.setSnippet(msg.getSnippet());
                     //email.setLabelIds(msg.getLabelIds());
                     email.setHistoryId(msg.getHistoryId());
-                    email.setDate(new Date(msg.getInternalDate()));
+                    email.setDate(msg.getInternalDate());
 
                     if(parts==null) {
                         if (msg.getPayload().getMimeType().contentEquals("text/plain")) {
@@ -454,19 +446,19 @@ public class DataSyncJob extends Job {
                 Date extractedDate=null;
                 //Log.e(TAG, String.valueOf(count));
                 if (email.getTextContent() != null) {
-                    extractedDate = extractTime(email.getTextContent(), email.getDate());
+                    extractedDate = extractTime(email.getTextContent(), new Date(email.getDate()));
                     if (extractedDate != null) {
                         email.setBodyDate(extractedDate);
                     }
                 }
                 if (email.getTextContent() == null || extractedDate==null){
-                    extractedDate = extractTime(email.getSnippet(), email.getDate());
+                    extractedDate = extractTime(email.getSnippet(), new Date(email.getDate()));
                     if (extractedDate != null) {
                         email.setBodyDate(extractedDate);
                     }
                 }
                 if (email.getSubject() != null) {
-                    extractedDate = extractTime(email.getSubject(), email.getDate());
+                    extractedDate = extractTime(email.getSubject(), new Date(email.getDate()));
                     if (extractedDate != null) {
                         email.setSubjectDate(extractedDate);
                     }

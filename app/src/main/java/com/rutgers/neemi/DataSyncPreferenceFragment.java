@@ -12,8 +12,10 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
-
+import android.view.View;
+import android.view.ViewGroup;
 
 
 public class DataSyncPreferenceFragment extends PreferenceFragment {
@@ -30,6 +32,13 @@ public class DataSyncPreferenceFragment extends PreferenceFragment {
         bindPreferenceSummaryToValue(findPreference("sync_frequency"));
 
 
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+        view.setBackgroundColor(getResources().getColor(android.R.color.white));
+        return view;
     }
 
 

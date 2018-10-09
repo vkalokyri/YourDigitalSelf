@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -130,7 +131,7 @@ public class JsonLocals implements W5hLocals{
 							}
 						}
 						else if (attributeName.toString().equalsIgnoreCase("\"date\"")){
-							localValues.add(((Email)pid).getDate().toString());
+							localValues.add(new Date(((Email)pid).getDate()).toString());
 						}
 						else if (attributeName.toString().equalsIgnoreCase("\"subject\"")){
 							localValues.add(((Email)pid).getSubject().toString());

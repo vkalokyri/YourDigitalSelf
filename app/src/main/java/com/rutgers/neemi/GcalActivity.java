@@ -24,6 +24,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.common.ConnectionResult;
@@ -73,6 +74,10 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
     GoogleAccountCredential mCredential;
     private SignInButton gcalButton;
     ProgressDialog mProgress;
+    com.google.api.services.calendar.Calendar calendarService = null;
+    HttpTransport transport = AndroidHttp.newCompatibleTransport();
+    JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+    Exception mLastError = null;
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
@@ -83,6 +88,7 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
     private static final String[] SCOPES = {CalendarScopes.CALENDAR_READONLY};
     private static final String TAG = "GcalActivity";
     HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+    String frequency;
 
 
     DatabaseHelper helper;
@@ -152,82 +158,82 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
                 this, Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
+        if (mCredential.getSelectedAccountName() == null) {
+            if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
+                String accountName = getSharedPreferences("credentials", Context.MODE_PRIVATE)
+                        .getString(PREF_ACCOUNT_NAME, null);
+                mCredential.setSelectedAccountName(accountName);
+            }
+        }
 
-        //getResultsFromApi();
+        frequency = PreferenceManager.getDefaultSharedPreferences(this).getString("sync_frequency", "");
 
+        calendarService = new com.google.api.services.calendar.Calendar.Builder(
+                transport, jsonFactory, mCredential)
+                .setApplicationName("Google Calendar API Android")
+                .build();
 
         Intent i = getIntent();
         String permissionType = i.getStringExtra("action");
 
-
-        if(permissionType.equals("grant")){
-            getResultsFromApi();
-        }else {
-            if (mCredential.getSelectedAccountName() == null) {
-                if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
-                    String accountName = getPreferences(Context.MODE_PRIVATE)
-                            .getString(PREF_ACCOUNT_NAME, null);
-                    if (accountName != null) {
-                        mCredential.setSelectedAccountName(accountName);
-                    } else {
-                        // Start a dialog from which the user can choose an account
-                        startActivityForResult(
-                                mCredential.newChooseAccountIntent(),
-                                REQUEST_ACCOUNT_PICKER);
-                    }
-                } else {
-                    // Request the GET_ACCOUNTS permission via a user dialog
-                    EasyPermissions.requestPermissions(
-                            this,
-                            "This app needs to access your Google account (via Contacts).",
-                            REQUEST_PERMISSION_GET_ACCOUNTS,
-                            Manifest.permission.GET_ACCOUNTS);
-                }
+        if(permissionType.equals("sync")) {
+            if (!isGooglePlayServicesAvailable()) {
+                acquireGooglePlayServices();
+            } else if (mCredential.getSelectedAccountName() == null) {
+                chooseAccount();
             } else if (!isDeviceOnline()) {
-                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No network connection available", Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No network connection available", Snackbar.LENGTH_SHORT ).show();
             }
+            new MakeRequestTask().execute();
 
+        }else if(permissionType.equals("grant")){
+            getResultsFromApi();
+        }else if(permissionType.equals("revoke")){
+            if (!isDeviceOnline()) {
+                Snackbar.make(findViewById(R.id.gcalCoordinatorLayout), "No network connection available", Snackbar.LENGTH_SHORT).show();
+            }else {
 
-            AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
+                AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
 
-                @Override
-                protected Boolean doInBackground(Void... params) {
-                    String token = null;
-                    HttpRequestFactory factory = HTTP_TRANSPORT.createRequestFactory();
-                    GenericUrl url = null;
+                    @Override
+                    protected Boolean doInBackground(Void... params) {
+                        String token = null;
+                        HttpRequestFactory factory = HTTP_TRANSPORT.createRequestFactory();
+                        GenericUrl url = null;
 
-                    try {
-                        token = mCredential.getToken();
-                        url = new GenericUrl("https://accounts.google.com/o/oauth2/revoke?token=" + token);
-                        HttpRequest request = factory.buildGetRequest(url);
-                        HttpResponse response = request.execute();
-                        if (response.getStatusCode() == RESULT_OK) {
-                            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                            preferences.edit().putBoolean("gmail", false).apply();
-                            preferences.edit().putBoolean("gdrive", false).apply();
-                            preferences.edit().putBoolean("gcal", false).apply();
-                            return true;
+                        try {
+                            token = mCredential.getToken();
+                            url = new GenericUrl("https://accounts.google.com/o/oauth2/revoke?token=" + token);
+                            HttpRequest request = factory.buildGetRequest(url);
+                            HttpResponse response = request.execute();
+                            if (response.getStatusCode() == RESULT_OK) {
+                                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                                preferences.edit().putBoolean("gmail", false).apply();
+                                preferences.edit().putBoolean("gdrive", false).apply();
+                                preferences.edit().putBoolean("gcal", false).apply();
+                                return true;
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (GoogleAuthException e) {
+                            e.printStackTrace();
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (GoogleAuthException e) {
-                        e.printStackTrace();
+
+                        return false;
                     }
 
-                    return false;
-                }
+                    @Override
+                    protected void onPostExecute(Boolean output) {
 
-                @Override
-                protected void onPostExecute(Boolean output) {
-
-                    if (output) {
-                        Log.d(TAG, "All permissions were revoked");
-                    } else {
-                        Log.e(TAG, "There was an error while revoking permissions");
+                        if (output) {
+                            Log.d(TAG, "All permissions were revoked");
+                        } else {
+                            Log.e(TAG, "There was an error while revoking permissions");
+                        }
                     }
-                }
-            };
-            task.execute();
+                };
+                task.execute();
+            }
         }
 
 
@@ -253,47 +259,35 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
                     String accountName =
                             data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
                     if (accountName != null) {
-                        SharedPreferences settings =
-                               getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences settings = this.getSharedPreferences("credentials",Context.MODE_PRIVATE );
                         SharedPreferences.Editor editor = settings.edit();
                         editor.putString(PREF_ACCOUNT_NAME, accountName);
                         editor.apply();
                         mCredential.setSelectedAccountName(accountName);
                         getResultsFromApi();
+                    }else{
+                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                        preferences.edit().putBoolean("gcal", false).apply();
+                        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                        myIntent.putExtra("key", "gcal");
+                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(myIntent);
                     }
+                }else if (resultCode == RESULT_CANCELED){
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    preferences.edit().putBoolean("gcal", false).apply();
+                    Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                    myIntent.putExtra("key", "gcal");
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(myIntent);
+
                 }
                 break;
             case REQUEST_AUTHORIZATION:
                 if (resultCode == RESULT_OK) {
-                    AlertDialog.Builder builder;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        builder = new AlertDialog.Builder(GcalActivity.this, android.R.style.Theme_Material_Dialog_Alert);
-                    } else {
-                        builder = new AlertDialog.Builder(GcalActivity.this);
-                    }
-                    builder.setTitle("Google Calendar was successfully authorized!")
-                            .setMessage("Do you want the app to get your past month's calendar data or start collecting data from today?")
-                            .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-
-                                    getResultsFromApi();
-
-                                }
-                            })
-                            .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-                                    myIntent.putExtra("key", "gcal");
-                                    myIntent.putExtra("items", 0);
-                                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                    startActivity(myIntent);
-
-                                }
-                            })
-                            .setIcon(android.R.drawable.ic_dialog_info)
-                            .show();
-
-                    }
+                    Toast.makeText(getApplicationContext(), "Google Calendar was successfully authorized!", Toast.LENGTH_SHORT).show();
+                    new MakeRequestTask().execute();
+                }
                 break;
         }
 
@@ -314,8 +308,13 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
         } else if (!isDeviceOnline()) {
             Snackbar.make(findViewById(R.id.gcalCoordinatorLayout), "No network connection available", Snackbar.LENGTH_SHORT ).show();
         } else {
-            //new GetContacts().execute();
-            new MakeRequestTask(mCredential).execute();
+            Toast.makeText(getApplicationContext(), "Google Calendar was successfully authorized!", Toast.LENGTH_SHORT).show();
+
+            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+            myIntent.putExtra("key", "gcal");
+            myIntent.putExtra("items", -1);
+            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(myIntent);
         }
     }
 
@@ -332,18 +331,15 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
      */
     @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
     private void chooseAccount() {
-        if (EasyPermissions.hasPermissions(
-                this, Manifest.permission.GET_ACCOUNTS)) {
-            String accountName = getPreferences(Context.MODE_PRIVATE)
+        if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
+            String accountName = getSharedPreferences("credentials",Context.MODE_PRIVATE)
                     .getString(PREF_ACCOUNT_NAME, null);
             if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
                 getResultsFromApi();
             } else {
                 // Start a dialog from which the user can choose an account
-                startActivityForResult(
-                        mCredential.newChooseAccountIntent(),
-                        REQUEST_ACCOUNT_PICKER);
+                startActivityForResult(mCredential.newChooseAccountIntent(),REQUEST_ACCOUNT_PICKER);
             }
         } else {
             // Request the GET_ACCOUNTS permission via a user dialog
@@ -460,25 +456,30 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
 
+    public Calendar getCalendarDate(String period){
+        Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+
+        if (period.equals("7")){
+            cal.add(Calendar.DATE, -7);
+        }else if(period.equals("30")){
+            cal.add(Calendar.MONTH, -1);
+        }else if(period.equals("180")){
+            cal.add(Calendar.MONTH, -6);
+        }else if(period.equals("365")){
+            cal.add(Calendar.MONTH, -12);
+        }else if(period.equals("1")){
+            cal.add(Calendar.DATE, -1);
+        }
+
+        return  cal;
+
+    }
+
     /**
      * An asynchronous task that handles the Google Calendar API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
     private class MakeRequestTask extends AsyncTask<Void, Void, Integer> {
-
-
-
-        private com.google.api.services.calendar.Calendar calendarService = null;
-        private Exception mLastError = null;
-
-        MakeRequestTask(GoogleAccountCredential credential) {
-            HttpTransport transport = AndroidHttp.newCompatibleTransport();
-            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            calendarService = new com.google.api.services.calendar.Calendar.Builder(
-                    transport, jsonFactory, credential)
-                    .setApplicationName("Google Calendar API Android")
-                    .build();
-        }
 
 
         /**
@@ -533,7 +534,8 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
             String pageToken = null;
             Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
             DateTime now = new DateTime(cal.getTimeInMillis());
-            cal.add(Calendar.MONTH, -36); // substract 6 months
+            cal = getCalendarDate(frequency);
+            //cal.add(Calendar.MONTH, -1); // substract 6 months
             DateTime since=new DateTime(cal.getTimeInMillis());
             System.out.println("since = "+since);
             String timestamp = null;

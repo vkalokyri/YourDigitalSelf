@@ -27,8 +27,11 @@ import android.widget.Toast;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.SignInButton;
 import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
+import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -61,12 +64,17 @@ import com.rutgers.neemi.model.EmailTo;
 import com.rutgers.neemi.model.Person;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -86,6 +94,10 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
     public static final String PREF_ACCOUNT_NAME = "accountName";
     public static final String[] SCOPES = {GmailScopes.GMAIL_READONLY};
     HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+    private com.google.api.services.gmail.Gmail gmailService = null;
+    HttpTransport transport = AndroidHttp.newCompatibleTransport();
+    JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+    String frequency;
 
     DatabaseHelper dbHelper;
 
@@ -110,109 +122,48 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         mProgress.setIndeterminate(false);
         mProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 
-        //Google widgets
-//        gmailButton = (SignInButton) findViewById(R.id.gmailApiButton);
-//        gmailButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                gmailButton.setEnabled(false);
-//                getResultsFromApi();
-//                gmailButton.setEnabled(true);
-//            }
-//        });
 
-
-        Intent i = getIntent();
-        String permissionType = i.getStringExtra("action");
         mCredential = GoogleAccountCredential.usingOAuth2(
                 this, Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
+        if (mCredential.getSelectedAccountName() == null) {
+            if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
+                String accountName = getSharedPreferences("credentials", Context.MODE_PRIVATE)
+                        .getString(PREF_ACCOUNT_NAME, null);
+                mCredential.setSelectedAccountName(accountName);
+            }
+        }
+        gmailService = new com.google.api.services.gmail.Gmail.Builder(
+                transport, jsonFactory, mCredential)
+                .setApplicationName("Gmail API Android")
+                .build();
+
+        Intent i = getIntent();
+        String permissionType = i.getStringExtra("action");
+
+        frequency = PreferenceManager.getDefaultSharedPreferences(this).getString("sync_frequency", "");
+
         if(permissionType.equals("grant")) {
-           getResultsFromApi();
+            getResultsFromApi();
 
         }else if(permissionType.equals("sync")){
-            mProgress = new ProgressDialog(this);
-            mProgress.setMessage("Getting your emails ...");
-            mProgress.setIndeterminate(false);
-            mProgress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            if (mCredential.getSelectedAccountName() == null) {
-                if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
-                    String accountName = getSharedPreferences("credentials", Context.MODE_PRIVATE)
-                            .getString(PREF_ACCOUNT_NAME, null);
-                    mCredential.setSelectedAccountName(accountName);
-                    new MakeRequestTask(mCredential).execute();
-                }
-            }
-        }else if(permissionType.equals("revoke")){
-            if (mCredential.getSelectedAccountName() == null) {
-                if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
-                    String accountName = getSharedPreferences("credentials", Context.MODE_PRIVATE)
-                            .getString(PREF_ACCOUNT_NAME, null);
-                    if (accountName != null) {
-                        mCredential.setSelectedAccountName(accountName);
-                        SharedPreferences settings = this.getSharedPreferences("credentials",Context.MODE_PRIVATE );
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putString(PREF_ACCOUNT_NAME, accountName);
-                        editor.apply();
 
-                        AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
-
-                            @Override
-                            protected Boolean doInBackground(Void... params) {
-                                String token = null;
-                                HttpRequestFactory factory = HTTP_TRANSPORT.createRequestFactory();
-                                GenericUrl url = null;
-
-                                try {
-                                    token = mCredential.getToken();
-                                    url = new GenericUrl("https://accounts.google.com/o/oauth2/revoke?token=" + token);
-                                    HttpRequest request = factory.buildGetRequest(url);
-                                    HttpResponse response = request.execute();
-                                    if (response.getStatusCode() == RESULT_OK) {
-                                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                                        preferences.edit().putBoolean("gmail", false).apply();
-                                        preferences.edit().putBoolean("gdrive", false).apply();
-                                        preferences.edit().putBoolean("gcal", false).apply();
-                                        return true;
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                } catch (GoogleAuthException e) {
-                                    e.printStackTrace();
-                                }
-
-                                return false;
-                            }
-
-                            @Override
-                            protected void onPostExecute(Boolean output) {
-
-                                if (output) {
-                                    Log.d(TAG, "All permissions were revoked");
-                                } else {
-                                    Log.e(TAG, "There was an error while revoking permissions");
-                                }
-                            }
-                        };
-                        task.execute();
-                    }
-
-                    else if (accountName == null){
-                        Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "The permissions are already revoked.", Snackbar.LENGTH_SHORT).show();
-                    }
-                } else {
-                    // Request the GET_ACCOUNTS permission via a user dialog
-                    EasyPermissions.requestPermissions(
-                            this,
-                            "This app needs to access your Google account (via Contacts).",
-                            REQUEST_PERMISSION_GET_ACCOUNTS,
-                            Manifest.permission.GET_ACCOUNTS);
-                }
+            if (!isGooglePlayServicesAvailable()) {
+                acquireGooglePlayServices();
+            } else if (mCredential.getSelectedAccountName() == null) {
+                chooseAccount();
             } else if (!isDeviceOnline()) {
+                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No network connection available", Snackbar.LENGTH_SHORT ).show();
+            }
+
+            new MakeRequestTask().execute();
+
+
+        }else if(permissionType.equals("revoke")){
+            if (!isDeviceOnline()) {
                 Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No network connection available", Snackbar.LENGTH_SHORT).show();
             }else {
-
 
                 AsyncTask<Void, Void, Boolean> task = new AsyncTask<Void, Void, Boolean>() {
 
@@ -255,24 +206,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 };
                 task.execute();
             }
-
-
-
-
-
         }
-
-
-
-
-
-
-
-       // mCredential = GoogleAccountCredential.usingOAuth2(
-       //         this, Arrays.asList(SCOPES))
-       //         .setBackOff(new ExponentialBackOff());
-
-        //getResultsFromApi();
     }
 
 
@@ -320,40 +254,8 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 break;
             case REQUEST_AUTHORIZATION:
                 if (resultCode == RESULT_OK) {
-                    AlertDialog.Builder builder;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        builder = new AlertDialog.Builder(GmailActivity.this, android.R.style.Theme_Material_Dialog_Alert);
-                    } else {
-                        builder = new AlertDialog.Builder(GmailActivity.this);
-                    }
-
                     Toast.makeText(getApplicationContext(), "Gmail was successfully authorized!", Toast.LENGTH_SHORT).show();
-
-
-//                    builder.setTitle("Gmail was successfully authorized!")
-//                            .setMessage("Do you want the app to get your past month's Gmail data or start collecting data from today?")
-//                            .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
-//                                public void onClick(DialogInterface dialog, int which) {
-//
-//                                    getResultsFromApi();
-//
-//                                }
-//                            })
-//                            .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
-//                                public void onClick(DialogInterface dialog, int which) {
-//                                    Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-//                                    myIntent.putExtra("key", "gmail");
-//                                    myIntent.putExtra("items", 0);
-//                                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                                    startActivity(myIntent);
-//
-//                                }
-//                            })
-//                            .setIcon(android.R.drawable.ic_dialog_info)
-//                            .show();
-
-
-
+                    new MakeRequestTask().execute();
                 }
                 break;
         }
@@ -370,48 +272,19 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
     private void getResultsFromApi() {
         if (!isGooglePlayServicesAvailable()) {
             acquireGooglePlayServices();
-        } else if (mCredential.getSelectedAccount() == null) {
+        } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccount();
         } else if (!isDeviceOnline()) {
             Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No network connection available", Snackbar.LENGTH_SHORT ).show();
         } else{
             Toast.makeText(getApplicationContext(), "Gmail was successfully authorized!", Toast.LENGTH_SHORT).show();
 
-
-//            AlertDialog.Builder builder;
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                builder = new AlertDialog.Builder(GmailActivity.this, android.R.style.Theme_Material_Dialog_Alert);
-//            } else {
-//                builder = new AlertDialog.Builder(GmailActivity.this);
-//            }
-//            builder.setTitle("Gmail was successfully authorized!")
-//                    .setMessage("Do you want the app to get your past month's Gmail data or start collecting data from today?")
-//                    .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            new MakeRequestTask(mCredential).execute();
-//                        }
-//                    })
-//                    .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-//                            myIntent.putExtra("key", "gmail");
-//                            myIntent.putExtra("items", 0);
-//                            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                            startActivity(myIntent);
-//                        }
-//                    })
-//                    .setIcon(android.R.drawable.ic_dialog_info)
-//                    .show();
-
-           //MakeRequestTask  new MakeRequestTask(mCredential).execute();
-
-           // Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-          //  myIntent.putExtra("key", "gmail");
-          //  myIntent.putExtra("items", 0);
-          //  myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-          //  startActivity(myIntent);
+            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+            myIntent.putExtra("key", "gmail");
+            myIntent.putExtra("items", -1);
+            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(myIntent);
         }
-        //return false;
     }
 
 
@@ -500,14 +373,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
      */
     @Override
     public void onPermissionsDenied(int requestCode, List<String> list) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        preferences.edit().putBoolean("gmail", false).apply();
 
-        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-        myIntent.putExtra("key", "gmail");
-        myIntent.putExtra("items", 0);
-        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(myIntent);
     }
 
     /**
@@ -619,19 +485,19 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                     Date extractedDate=null;
                     //Log.e(TAG, String.valueOf(count));
                     if (email.getTextContent() != null) {
-                        extractedDate = extractTime(email.getTextContent(), email.getDate());
+                        extractedDate = extractTime(email.getTextContent(), new Date(email.getDate()));
                         if (extractedDate != null) {
                             email.setBodyDate(extractedDate);
                         }
                     }
                     if (email.getTextContent() == null || extractedDate==null){
-                        extractedDate = extractTime(email.getSnippet(), email.getDate());
+                        extractedDate = extractTime(email.getSnippet(), new Date(email.getDate()));
                         if (extractedDate != null) {
                             email.setBodyDate(extractedDate);
                         }
                     }
                     if (email.getSubject() != null) {
-                        extractedDate = extractTime(email.getSubject(), email.getDate());
+                        extractedDate = extractTime(email.getSubject(), new Date(email.getDate()));
                         if (extractedDate != null) {
                             email.setSubjectDate(extractedDate);
                         }
@@ -674,24 +540,34 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         }
     }
 
+
+    public Calendar getCalendarDate(String period){
+        Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+
+        if (period.equals("7")){
+            cal.add(Calendar.DATE, -7);
+        }else if(period.equals("30")){
+            cal.add(Calendar.MONTH, -1);
+        }else if(period.equals("180")){
+            cal.add(Calendar.MONTH, -6);
+        }else if(period.equals("365")){
+            cal.add(Calendar.MONTH, -12);
+        }else if(period.equals("1")){
+            cal.add(Calendar.DATE, -1);
+        }
+
+        return  cal;
+
+    }
+
     /**
      * An asynchronous task that handles the Gmail  API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
     public class MakeRequestTask extends AsyncTask<Void, Void, Integer> {
 
-        private com.google.api.services.gmail.Gmail gmailService = null;
         private Exception mLastError = null;
 
-        public MakeRequestTask(GoogleAccountCredential credential) {
-            HttpTransport transport = AndroidHttp.newCompatibleTransport();
-            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            gmailService = new com.google.api.services.gmail.Gmail.Builder(
-                    transport, jsonFactory, credential)
-                    .setApplicationName("Gmail API Android")
-                    .build();
-
-        }
 
         /**
          * Background task to call Google Calendar API.
@@ -717,7 +593,10 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
          * @throws IOException
          */
         public int getDataFromApi() throws IOException {
-            // List the next 10 events from the primary calendar.
+
+            if (getIntent().getStringExtra("action").equals("grant")){
+                return -1;
+            }
             RuntimeExceptionDao<Email, String> emailDao = dbHelper.getEmailDao();
             RuntimeExceptionDao<EmailTo, String> emailToDao = dbHelper.getEmailToDao();
             RuntimeExceptionDao<EmailCc, String> emailCcDao = dbHelper.getEmailCcDao();
@@ -727,7 +606,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 
 
             //final SQLiteDatabase db = dbHelper.getWritableDatabase();
-            ConnectionSource connectionSource = new AndroidConnectionSource(dbHelper);
+//            ConnectionSource connectionSource = new AndroidConnectionSource(dbHelper);
             //emailDao.queryRaw("delete from  Email;");
             //emailDao.queryRaw("delete from  Email_fts;");
 //                try {
@@ -744,59 +623,132 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
 //            helper.getEmailDao().queryRaw("INSERT INTO Email_fts SELECT \"_id\", \"textContent\",\"subject\" from Email order by \"_id\" desc");
 
 
-                String user = "me";
-                int totalItemsInserted = 0;
-                String pageToken = null;
-                Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                cal.add(Calendar.DATE, -1); // substract 6 months
-                //cal.add(Calendar.DATE, -1); // substract 1 day
+            String user = "me";
+            int totalItemsInserted = 0;
+            String pageToken = null;
 
-                Long since = cal.getTimeInMillis() / 1000;
-                System.out.println("since = " + since);
-                String timestamp = null;
+            String maxTimestamp = null;
+            Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
 
-                GenericRawResults<String[]> rawResults = emailDao.queryRaw("select max(timestamp) from Email;");
-                List<String[]> results = null;
-                try {
-                    results = rawResults.getResults();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+            ListMessagesResponse response = null;
+            List<Message> messages = new ArrayList<Message>();
+
+
+            //since last email stored --> now
+            GenericRawResults<String[]> rawResults = emailDao.queryRaw("select max(timestamp) from Email;");
+            List<String[]> results;
+            try {
+                results = rawResults.getResults();
                 if (results != null) {
                     String[] resultArray = results.get(0);
-                    System.out.println("timestamp= " + resultArray[0]);
-                    timestamp = resultArray[0];
+                    System.out.println("maxTimestamp= " + resultArray[0]);
+                    maxTimestamp = resultArray[0];
                 }
-
-
-                if (timestamp != null) {
-                    cal.setTimeInMillis(Long.parseLong(timestamp));
-                    since = cal.getTimeInMillis();
-                }
-
-                System.out.println("Since=" + since);
-
-
-            ListMessagesResponse response = gmailService.users().messages().list(user)
-                    .setPageToken(pageToken)
-                    .setQ("after:" + since)
-                    .execute();
-
-            //pageToken = response.getNextPageToken();
-
-            List<Message> messages = new ArrayList<Message>();
-            while (response.getMessages() != null) {
-                messages.addAll(response.getMessages());
-                if (response.getNextPageToken() != null) {
-                    pageToken = response.getNextPageToken();
-                    response = gmailService.users().messages().list(user)
-                            .setPageToken(pageToken)
-                            .setQ("after:" + since)
-                            .execute();
-                } else {
-                    break;
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            if (maxTimestamp != null) {
+                cal.setTimeInMillis(Long.parseLong(maxTimestamp));
+                Long sinceTimestamp = cal.getTimeInMillis();
+                System.out.println("sinceTimestamp"+sinceTimestamp);
+                response = gmailService.users().messages().list(user)
+                        .setPageToken(pageToken)
+                        .setQ("after:" + sinceTimestamp)
+                        .execute();
+                while (response.getMessages() != null) {
+                    messages.addAll(response.getMessages());
+                    if (response.getNextPageToken() != null) {
+                        pageToken = response.getNextPageToken();
+                        response = gmailService.users().messages().list(user)
+                                .setPageToken(pageToken)
+                                .setQ("after:" + sinceTimestamp)
+                                .execute();
+                    } else {
+                        break;
+                    }
                 }
             }
+
+
+            cal = getCalendarDate(frequency);
+            Long since = cal.getTimeInMillis()/1000;
+            System.out.println("since = " + new Date(since));
+            String minEmailDate=null;
+            Long before = null;
+
+
+
+            //find the oldest email in database
+            GenericRawResults<String[]> rawMinDate = emailDao.queryRaw("select min(date) from Email;");
+            List<String[]> minDate;
+            try {
+                minDate = rawMinDate.getResults();
+                if (minDate != null) {
+                    String[] resultArray = minDate.get(0);
+                    System.out.println("minTimestamp= " + resultArray[0]);
+                    minEmailDate = resultArray[0];
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            if (minEmailDate != null) {
+                cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+                cal.setTimeInMillis(Long.parseLong(minEmailDate));
+                before = cal.getTimeInMillis()/1000;
+            }
+
+
+            System.out.println("Since=" + since);
+            System.out.println("Before=" + before);
+            pageToken = null;
+            response = null;
+
+
+
+            if (before!=null){
+                response = gmailService.users().messages().list(user)
+                        .setPageToken(pageToken)
+                        .setQ("after:" + since)
+                        .setQ("before:"+ before)
+                        .execute();
+                while (response.getMessages() != null) {
+                    messages.addAll(response.getMessages());
+                    if (response.getNextPageToken() != null) {
+                        pageToken = response.getNextPageToken();
+                        response = gmailService.users().messages().list(user)
+                                .setPageToken(pageToken)
+                                .setQ("after:" + since)
+                                .setQ("before:"+before)
+                                .execute();
+                    } else {
+                        break;
+                    }
+                }
+            }else{
+                response = gmailService.users().messages().list(user)
+                        .setPageToken(pageToken)
+                        .setQ("after:" + since)
+                        .execute();
+                while (response.getMessages() != null) {
+                    messages.addAll(response.getMessages());
+                    if (response.getNextPageToken() != null) {
+                        pageToken = response.getNextPageToken();
+                        response = gmailService.users().messages().list(user)
+                                .setPageToken(pageToken)
+                                .setQ("after:" + since)
+                                .execute();
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+
+//            ListMessagesResponse response = gmailService.users().messages().list(user)
+//                    .setPageToken(pageToken)
+//                    .setQ("after:" + since)
+//                    .execute();
 
             mProgress.setMax(messages.size());
 
@@ -847,7 +799,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                             email.setSnippet(msg.getSnippet());
                             //email.setLabelIds(msg.getLabelIds());
                             email.setHistoryId(msg.getHistoryId());
-                            email.setDate(new Date(msg.getInternalDate()));
+                            email.setDate(msg.getInternalDate());
 
                             if(parts==null) {
                                 if (msg.getPayload().getMimeType().contentEquals("text/plain")) {
@@ -1046,11 +998,11 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
             myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(myIntent);
 
-            if (output == 0) {
-                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_LONG).show();
-            } else {
-                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), output + " emails fetched.", Snackbar.LENGTH_LONG).show();
-            }
+//            if (output == 0) {
+//                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_LONG).show();
+//            } else {
+//                Snackbar.make(findViewById(R.id.gmailCoordinatorLayout), output + " emails fetched.", Snackbar.LENGTH_LONG).show();
+//            }
 
 
 

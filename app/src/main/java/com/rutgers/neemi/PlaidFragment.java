@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -57,8 +58,9 @@ public class PlaidFragment extends Fragment {
 
     PlaidClient plaidClient = PlaidClient.newBuilder()
             .clientIdAndSecret(client_id, secret)
-            .publicKey("0ea8ed7c85e1c6d8aa4695cb156c97") // optional. only needed to call endpoints that require a public key
-            .developmentBaseUrl() // or equivalent, depending on which environment you're calling into
+            .publicKey("0ea8ed7c85e1c6d8aa4695cb156c97")
+            .sandboxBaseUrl()// optional. only needed to call endpoints that require a public key
+            //.developmentBaseUrl() // or equivalent, depending on which environment you're calling into
             .build();
 
     ProgressDialog mProgress;
@@ -66,12 +68,16 @@ public class PlaidFragment extends Fragment {
     String account_name;
     String accountId;
     View view;
+    String frequency;
+
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         view = inflater.inflate(R.layout.activity_plaid,container,false);
+        frequency = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("sync_frequency", "");
+
 
 //        Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
@@ -94,8 +100,9 @@ public class PlaidFragment extends Fragment {
         //linkInitializeOptions.put("product", "auth");
         linkInitializeOptions.put("product", "transactions");
         linkInitializeOptions.put("selectAccount", "true");
-        linkInitializeOptions.put("env", "development");
-        linkInitializeOptions.put("clientName", "Neemi");
+        //linkInitializeOptions.put("env", "development");
+        linkInitializeOptions.put("env", "sandbox");
+        linkInitializeOptions.put("clientName", "YourDigitalSelf");
         linkInitializeOptions.put("webhook", "http://requestb.in");
         linkInitializeOptions.put("baseUrl", "https://cdn.plaid.com/link/v2/stable/link.html");
         // If initializing Link in PATCH / update mode, also provide the public_token
@@ -306,8 +313,28 @@ public class PlaidFragment extends Fragment {
         }
     }
 
+    public Calendar getCalendarDate(String period){
+        Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
 
-        private class AsyncGetTransactionsTask extends AsyncTask<String, Void, Integer> {
+        if (period.equals("7")){
+            cal.add(Calendar.DATE, -7);
+        }else if(period.equals("30")){
+            cal.add(Calendar.MONTH, -1);
+        }else if(period.equals("180")){
+            cal.add(Calendar.MONTH, -6);
+        }else if(period.equals("365")){
+            cal.add(Calendar.MONTH, -12);
+        }else if(period.equals("1")){
+            cal.add(Calendar.DATE, -1);
+        }
+
+        return  cal;
+
+    }
+
+
+
+    private class AsyncGetTransactionsTask extends AsyncTask<String, Void, Integer> {
 
         final RuntimeExceptionDao<Category, String> categoryDao = helper.getCategoryDao();
         final RuntimeExceptionDao<Transaction, String> transactionDao = helper.getTransactionDao();
@@ -326,8 +353,10 @@ public class PlaidFragment extends Fragment {
                 try {
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-                    Calendar cal = Calendar.getInstance();
-                    cal.add(Calendar.MONTH, -12);
+                    //Calendar cal = Calendar.getInstance();
+                    Calendar cal = getCalendarDate(frequency);
+
+                    //cal.add(Calendar.MONTH, -12);
                     Date startDate = null;
                     Date endDate = null;
 

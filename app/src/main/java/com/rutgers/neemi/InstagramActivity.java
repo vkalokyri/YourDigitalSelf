@@ -74,7 +74,7 @@ public class InstagramActivity extends AppCompatActivity implements Authenticati
         }else{
             revokePermissions();
             Intent myIntent = new Intent(this, MainActivity.class);
-            myIntent.putExtra("key", "facebook");
+            myIntent.putExtra("key", "instagram");
             myIntent.putExtra("items", 0);
             myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(myIntent);
@@ -113,7 +113,7 @@ public class InstagramActivity extends AppCompatActivity implements Authenticati
 
             Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
             myIntent.putExtra("key", "instagram");
-            myIntent.putExtra("items", 0);
+            myIntent.putExtra("items", -1);
             myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(myIntent);
 
@@ -153,6 +153,8 @@ public class InstagramActivity extends AppCompatActivity implements Authenticati
 
             Toast.makeText(getApplicationContext(), "Instagram was successfully authorized!", Toast.LENGTH_SHORT).show();
             Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+            myIntent.putExtra("key", "instagram");
+            myIntent.putExtra("items", -1);
             myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(myIntent);
 

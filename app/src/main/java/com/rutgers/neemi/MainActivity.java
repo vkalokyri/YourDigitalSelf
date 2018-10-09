@@ -1,11 +1,7 @@
 package com.rutgers.neemi;
 
-import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -14,17 +10,11 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.j256.ormlite.android.AndroidConnectionSource;
-import com.j256.ormlite.dao.RuntimeExceptionDao;
-import com.j256.ormlite.support.ConnectionSource;
-import com.rutgers.neemi.model.PhotoTags;
-import com.rutgers.neemi.rest.DownloadJobService;
 import com.rutgers.neemi.util.ApplicationManager;
 
 public class MainActivity extends AppCompatActivity {
@@ -118,85 +108,124 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        Intent i = getIntent();
+            Intent i = getIntent();
             String key = i.getStringExtra("key");
             int items = i.getIntExtra("items", 0);
 
             if (key != null) {
                 if (key.equalsIgnoreCase("facebook")) {
-                    SettingsFragment settingsfragment = new SettingsFragment();
-                    android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                    setfragmentTransaction.add(R.id.frame, settingsfragment);
-                    setfragmentTransaction.addToBackStack(null);
-                    setfragmentTransaction.commit();
                     if (items == 0) {
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
                         Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No facebook data fetched.", Snackbar.LENGTH_LONG).show();
-                    } else {
+
+                    } else if(items>0){
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
                         Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " facebook objects fetched.", Snackbar.LENGTH_LONG).show();
                     }
 
+
                 }
                 if (key.equalsIgnoreCase("instagram")) {
-                    SettingsFragment settingsfragment = new SettingsFragment();
-                    android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                    setfragmentTransaction.add(R.id.frame, settingsfragment);
-                    setfragmentTransaction.addToBackStack(null);
-                    setfragmentTransaction.commit();
+
                     if (items == 0) {
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
                         Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No instagram photos fetched.", Snackbar.LENGTH_LONG).show();
-                    } else {
+
+                    } else if (items>0){
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
                         Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items + " instagram photos fetched.", Snackbar.LENGTH_LONG).show();
+
                     }
 
                 }
                 if (key.equalsIgnoreCase("gcal")) {
-                    SettingsFragment settingsfragment = new SettingsFragment();
-                    android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                    setfragmentTransaction.add(R.id.frame, settingsfragment);
-                    setfragmentTransaction.addToBackStack(null);
-                    setfragmentTransaction.commit();
+
                     if (items == 0) {
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
                         Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No calendar events fetched.", Snackbar.LENGTH_LONG ).show();
-                    } else {
+                    } else if (items>0) {
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
                         Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items+" calendar events fetched.", Snackbar.LENGTH_LONG ).show();
                     }
 
                 }
                 if (key.equalsIgnoreCase("gmail")) {
-                    SettingsFragment settingsfragment = new SettingsFragment();
-                    android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                    setfragmentTransaction.add(R.id.frame, settingsfragment);
-                    setfragmentTransaction.addToBackStack(null);
-                    setfragmentTransaction.commit();
-                    if (items == 0) {
+
+                    if(items == 0) {
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
                         Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No emails fetched.", Snackbar.LENGTH_LONG ).show();
-                    } else {
+                    } else if(items>0) {
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
                         Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items+" emails fetched.", Snackbar.LENGTH_LONG ).show();
                     }
-
                 }
                 if (key.equalsIgnoreCase("bank")) {
-                    SettingsFragment settingsfragment = new SettingsFragment();
-                    android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                    setfragmentTransaction.add(R.id.frame, settingsfragment);
-                    setfragmentTransaction.addToBackStack(null);
-                    setfragmentTransaction.commit();
+
                     if (items == 0) {
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
                         Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No financial transactions fetched.", Snackbar.LENGTH_LONG).show();
-                    } else {
+                    } else if(items>0){
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
                         Snackbar.make(findViewById(R.id.mainCoordinatorLayout),  items+" financial transactions fetched.", Snackbar.LENGTH_LONG).show();
                     }
 
                 }
                 if (key.equalsIgnoreCase("gdrive")) {
-                    SettingsFragment settingsfragment = new SettingsFragment();
-                    android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
-                    setfragmentTransaction.add(R.id.frame, settingsfragment);
-                    setfragmentTransaction.addToBackStack(null);
-                    setfragmentTransaction.commit();
+
+
                     if (items == 0) {
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
                         Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No financial transactions fetched.", Snackbar.LENGTH_LONG).show();
                     } else {
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
                         Snackbar.make(findViewById(R.id.mainCoordinatorLayout),  items+" financial transactions fetched.", Snackbar.LENGTH_LONG).show();
                     }
                 }
@@ -207,10 +236,11 @@ public class MainActivity extends AppCompatActivity {
                     setfragmentTransaction.addToBackStack(null);
                     setfragmentTransaction.commit();
                 }
-
                 getFragmentManager().beginTransaction()
                         .replace(R.id.frame, new SettingsFragment2())
                         .commit();
+
+
 
             }
 

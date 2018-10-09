@@ -246,7 +246,7 @@ public class SettingsFragment2 extends PreferenceFragment implements SharedPrefe
             }
         }else if (key.equals("plaid")) {
             if (plaidPreference.isChecked()) {
-                Intent myIntent = new Intent(getActivity(), BankActivity.class);
+                Intent myIntent = new Intent(getActivity(), PlaidActivity.class);
                 myIntent.putExtra("action", "grant");
                 myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(myIntent);

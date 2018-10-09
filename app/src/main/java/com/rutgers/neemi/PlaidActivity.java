@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +18,7 @@ import android.util.Log;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
@@ -62,7 +64,7 @@ public class PlaidActivity extends AppCompatActivity {
             .clientIdAndSecret(client_id, secret)
             //.publicKey("0ea8ed7c85e1c6d8aa4695cb156c97")
             .sandboxBaseUrl()// optional. only needed to call endpoints that require a public key
-            .developmentBaseUrl() // or equivalent, depending on which environment you're calling into
+            //.developmentBaseUrl() // or equivalent, depending on which environment you're calling into
             .build();
 
     ProgressDialog mProgress;
@@ -86,14 +88,14 @@ public class PlaidActivity extends AppCompatActivity {
         helper=DatabaseHelper.getHelper(this);
 
 
+
         Intent i = getIntent();
         String permissionType = i.getStringExtra("action");
 
-        if(permissionType.equals("grant")){
+        if(permissionType.equals("grant")) {
             grantPermissions();
             //getResultsFromApi();
-
-        }else{
+        } else{
             revokePermissions();
             Intent myIntent = new Intent(this, MainActivity.class);
             myIntent.putExtra("key", "bank");
@@ -105,8 +107,8 @@ public class PlaidActivity extends AppCompatActivity {
 
 
 
-        mProgress = new ProgressDialog(this);
-        mProgress.setMessage("Getting your financial transactions. Please wait ...");
+        //mProgress = new ProgressDialog(this);
+        //mProgress.setMessage("Authorizing Plaid. Please wait ...");
 
 
     }
@@ -179,31 +181,8 @@ public class PlaidActivity extends AppCompatActivity {
                         }
 
 
-
-                        builder.setTitle("Plaid was successfully authorized!")
-                                .setMessage("Do you want the app to get your past month's financial data or start collecting data from today?")
-                                .setPositiveButton("One month data", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-
-                                        new RetrieveTransactionsTask(getApplicationContext()).execute(linkData.get("public_token"));
-
-                                    }
-                                })
-                                .setNegativeButton("Start from today", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-                                        myIntent.putExtra("key", "bank");
-                                        myIntent.putExtra("items", 0);
-                                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                        startActivity(myIntent);
-
-                                    }
-                                })
-                                .setIcon(android.R.drawable.ic_dialog_info)
-                                .show();
-
-
-
+                        Toast.makeText(getApplicationContext(), "Plaid was successfully authorized!", Toast.LENGTH_SHORT).show();
+                        new RetrieveTransactionsTask(getApplicationContext()).execute(linkData.get("public_token"));
 
 
                     } else if (action.equals("exit")) {
@@ -282,7 +261,7 @@ public class PlaidActivity extends AppCompatActivity {
 
         @Override
         protected void onPreExecute() {
-            mProgress.show();
+            //mProgress.show();
         }
 
         @Override
@@ -307,7 +286,7 @@ public class PlaidActivity extends AppCompatActivity {
                             if (response.isSuccessful()) {
                                 final String accessToken = response.body().getAccessToken();
                                 new AsyncGetAccountsTask().execute(accessToken);
-                                new AsyncGetTransactionsTask().execute(accessToken);
+                                //new AsyncGetTransactionsTask().execute(accessToken);
                             }
 
                         }
@@ -321,6 +300,11 @@ public class PlaidActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void output) {
+            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+            myIntent.putExtra("key", "bank");
+            myIntent.putExtra("items", -1);
+            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(myIntent);
 
 
         }
@@ -368,234 +352,236 @@ public class PlaidActivity extends AppCompatActivity {
     }
 
 
-        private class AsyncGetTransactionsTask extends AsyncTask<String, Void, Integer> {
-
-        final RuntimeExceptionDao<Category, String> categoryDao = helper.getCategoryDao();
-        final RuntimeExceptionDao<Transaction, String> transactionDao = helper.getTransactionDao();
-        final RuntimeExceptionDao<Person, String> personDao = helper.getPersonDao();
-        final RuntimeExceptionDao<Place, String> placeDao = helper.getPlaceDao();
-        final RuntimeExceptionDao<TransactionHasCategory, String> transactionHasCategoriesDao = helper.getTransactionHasCategoryRuntimeDao();
-
-        int transactionsRetrieved = 0;
-
-
-        @Override
-        protected Integer doInBackground(String... params) {
-            String accessToken = params[0];
-
-            try {
-                try {
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
-                    Calendar cal = Calendar.getInstance();
-                    cal.add(Calendar.MONTH, -6);
-                    Date startDate = null;
-                    Date endDate = null;
-
-
-
-                    try {
-
-                        startDate = simpleDateFormat.parse(simpleDateFormat.format(cal.getTime()));
-                        endDate = simpleDateFormat.parse(simpleDateFormat.format(Calendar.getInstance().getTime()));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-
-
-                    String timestamp = null;
-
-                    GenericRawResults<String[]> rawResults = transactionDao.queryRaw("select max(timestamp) from `Transaction` where account_id='"+accountId+"';");
-                    List<String[]> results = null;
-                    try {
-                        results = rawResults.getResults();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                    if (results!=null){
-                        String[] resultArray = results.get(0);
-                        System.out.println("timestamp= " + resultArray[0]);
-                        timestamp=resultArray[0];
-                    }
-
-                    if (timestamp!=null) {
-                        Calendar caltimestamp = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                        caltimestamp.setTimeInMillis(Long.parseLong(timestamp)*1000);
-                        startDate = simpleDateFormat.parse(simpleDateFormat.format(caltimestamp.getTime()));
-                    }
-
-
-
-                    //startDate = simpleDateFormat.parse("2017-01-01");
-                    //endDate = simpleDateFormat.parse("2017-02-01");
-                    int totalTransactions=0;
-                    do{
-                        Response<TransactionsGetResponse> transactionsResponse = plaidClient.service().transactionsGet(
-                                new TransactionsGetRequest(
-                                        accessToken,
-                                        startDate,
-                                        endDate)
-                                        .withAccountIds(Arrays.asList(accountId))
-                                        .withOffset(transactionsRetrieved)).execute();
-
-
-                    if (transactionsResponse!=null) {
-                        totalTransactions = transactionsResponse.body().getTotalTransactions();
-
-                        for (TransactionsGetResponse.Transaction txn : transactionsResponse.body().getTransactions()) {
-                            Transaction transaction = new Transaction();
-
-                            if (txn.getAccountId() != null) {
-                                transaction.setAccount_id(txn.getAccountId());
-                            }
-                            if (txn.getAccountOwner() != null) {
-                                Person personExists = helper.personExistsByName(txn.getAccountOwner());
-                                if (personExists == null) {
-                                    Person newPerson = new Person();
-                                    newPerson.setName(txn.getAccountOwner());
-                                    personDao.create(newPerson);
-                                    transaction.setAccount_owner(newPerson);
-                                } else {
-                                    transaction.setAccount_owner(personExists);
-                                }
-                            }
-                            if (txn.getAmount() != null) {
-                                transaction.setAmount(txn.getAmount());
-                            }
-                            if (txn.getDate() != null) {
-                                String date = txn.getDate();
-                                transaction.setDate(simpleDateFormat.parse(txn.getDate()).getTime());
-                            }
-                            if (txn.getName() != null) {
-                                transaction.setMerchant_name(txn.getName());
-                            }
-                            if (txn.getOriginalDescription() != null) {
-                                transaction.setDescription(txn.getOriginalDescription());
-                            }
-                            if (txn.getPending() != null) {
-                                transaction.setPending(txn.getPending());
-                                System.out.println();
-                            }
-
-                            if (txn.getTransactionId() != null) {
-                                transaction.setId(txn.getTransactionId());
-                            }
-                            if (txn.getTransactionType() != null) {
-                                transaction.setTransaction_type(txn.getTransactionType());
-                            }
-                            if (txn.getAccountId() != null) {
-                                transaction.setAccount_id(txn.getAccountId());
-                            }
-                            if (txn.getPaymentMeta() != null) {
-                                TransactionsGetResponse.Transaction.PaymentMeta meta = txn.getPaymentMeta();
-                                if (meta.getPayee() != null) {
-                                    Person personExists = helper.personExistsByName(meta.getPayee());
-                                    if (personExists == null) {
-                                        Person newPerson = new Person();
-                                        newPerson.setName(meta.getPayee());
-                                        personDao.create(newPerson);
-                                        transaction.setPayee(newPerson);
-                                    } else {
-                                        transaction.setPayee(personExists);
-                                    }
-                                }
-                                if (meta.getPayer() != null) {
-                                    Person personExists = helper.personExistsByName(meta.getPayer());
-                                    if (personExists == null) {
-                                        Person newPerson = new Person();
-                                        newPerson.setName(meta.getPayer());
-                                        personDao.create(newPerson);
-                                        transaction.setPayer(newPerson);
-                                    } else {
-                                        transaction.setPayer(personExists);
-                                    }
-
-                                }
-                                if (meta.getPaymentMethod() != null) {
-                                    transaction.setPayment_method(meta.getPaymentMethod());
-                                }
-                            }
-                            if (txn.getLocation() != null) {
-                                TransactionsGetResponse.Transaction.Location location = txn.getLocation();
-                                if (location.getLat() != null && location.getLon() != null) {
-                                    Place placeExists = helper.placeExistsByLatLong(location.getLat(), location.getLon());
-                                    if (placeExists == null) {
-                                        Place newPlace = new Place();
-                                        if (location.getAddress() != null) {
-                                            newPlace.setStreet(location.getAddress());
-                                        }
-                                        if (location.getCity() != null) {
-                                            newPlace.setCity(location.getCity());
-                                        }
-                                        if (location.getLat() != null) {
-                                            newPlace.setLatitude(location.getLat());
-                                        }
-                                        if (location.getLon() != null) {
-                                            newPlace.setLongitude(location.getLon());
-                                        }
-                                        if (location.getState() != null) {
-                                            newPlace.setState(location.getState());
-                                        }
-                                        if (location.getZip() != null) {
-                                            newPlace.setZip(location.getZip());
-                                        }
-                                        placeDao.create(newPlace);
-                                        transaction.setPlace(newPlace);
-                                        placeExists=newPlace;
-                                    } else {
-                                        transaction.setPlace(placeExists);
-                                    }
-                                }
-                            }
-
-                            transaction.setTimestamp(System.currentTimeMillis() / 1000);
-                            transactionDao.create(transaction);
-
-                            if (txn.getCategory() != null) {
-                                List<Category> categoryList = new ArrayList<>();
-                                for (String category : txn.getCategory()) {
-                                    Category categoryExists = helper.categoryExists(category);
-                                    if (categoryExists == null) {
-                                        Category newCategory = new Category();
-                                        newCategory.setCategoryName(category);
-                                        categoryDao.create(newCategory);
-                                        categoryList.add(newCategory);
-                                    } else {
-                                        TransactionHasCategory trans_categories = new TransactionHasCategory(transaction, categoryExists);
-                                        transactionHasCategoriesDao.create(trans_categories);
-                                    }
-                                }
-                                for (Category eachCategory : categoryList) {
-                                    TransactionHasCategory trans_categories = new TransactionHasCategory(transaction, eachCategory);
-                                    transactionHasCategoriesDao.create(trans_categories);
-                                }
-
-
-                            }
-                            transactionsRetrieved++;
-                        }
-                    }
-                    }while(transactionsRetrieved<totalTransactions);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return transactionsRetrieved;
-        }
-
-        protected void onPostExecute(Integer output) {
-            mProgress.dismiss();
-            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
-            myIntent.putExtra("key", "bank");
-            myIntent.putExtra("items", output);
-            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(myIntent);
-
-        }
-
-    }
+//        private class AsyncGetTransactionsTask extends AsyncTask<String, Void, Integer> {
+//
+//        final RuntimeExceptionDao<Category, String> categoryDao = helper.getCategoryDao();
+//        final RuntimeExceptionDao<Transaction, String> transactionDao = helper.getTransactionDao();
+//        final RuntimeExceptionDao<Person, String> personDao = helper.getPersonDao();
+//        final RuntimeExceptionDao<Place, String> placeDao = helper.getPlaceDao();
+//        final RuntimeExceptionDao<TransactionHasCategory, String> transactionHasCategoriesDao = helper.getTransactionHasCategoryRuntimeDao();
+//
+//        int transactionsRetrieved = 0;
+//
+//
+//        @Override
+//        protected Integer doInBackground(String... params) {
+//            String accessToken = params[0];
+//
+//            try {
+//                try {
+//                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//
+//
+//                    Calendar cal = getCalendarDate(frequency);
+//
+//                   // cal.add(Calendar.MONTH, -6);
+//                    Date startDate = null;
+//                    Date endDate = null;
+//
+//
+//
+//                    try {
+//
+//                        startDate = simpleDateFormat.parse(simpleDateFormat.format(cal.getTime()));
+//                        endDate = simpleDateFormat.parse(simpleDateFormat.format(Calendar.getInstance().getTime()));
+//                    } catch (ParseException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//
+//                    String timestamp = null;
+//
+//                    GenericRawResults<String[]> rawResults = transactionDao.queryRaw("select max(timestamp) from `Transaction` where account_id='"+accountId+"';");
+//                    List<String[]> results = null;
+//                    try {
+//                        results = rawResults.getResults();
+//                    } catch (SQLException e) {
+//                        e.printStackTrace();
+//                    }
+//                    if (results!=null){
+//                        String[] resultArray = results.get(0);
+//                        System.out.println("timestamp= " + resultArray[0]);
+//                        timestamp=resultArray[0];
+//                    }
+//
+//                    if (timestamp!=null) {
+//                        Calendar caltimestamp = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+//                        caltimestamp.setTimeInMillis(Long.parseLong(timestamp)*1000);
+//                        startDate = simpleDateFormat.parse(simpleDateFormat.format(caltimestamp.getTime()));
+//                    }
+//
+//
+//
+//                    //startDate = simpleDateFormat.parse("2017-01-01");
+//                    //endDate = simpleDateFormat.parse("2017-02-01");
+//                    int totalTransactions=0;
+//                    do{
+//                        Response<TransactionsGetResponse> transactionsResponse = plaidClient.service().transactionsGet(
+//                                new TransactionsGetRequest(
+//                                        accessToken,
+//                                        startDate,
+//                                        endDate)
+//                                        .withAccountIds(Arrays.asList(accountId))
+//                                        .withOffset(transactionsRetrieved)).execute();
+//
+//
+//                    if (transactionsResponse!=null) {
+//                        totalTransactions = transactionsResponse.body().getTotalTransactions();
+//
+//                        for (TransactionsGetResponse.Transaction txn : transactionsResponse.body().getTransactions()) {
+//                            Transaction transaction = new Transaction();
+//
+//                            if (txn.getAccountId() != null) {
+//                                transaction.setAccount_id(txn.getAccountId());
+//                            }
+//                            if (txn.getAccountOwner() != null) {
+//                                Person personExists = helper.personExistsByName(txn.getAccountOwner());
+//                                if (personExists == null) {
+//                                    Person newPerson = new Person();
+//                                    newPerson.setName(txn.getAccountOwner());
+//                                    personDao.create(newPerson);
+//                                    transaction.setAccount_owner(newPerson);
+//                                } else {
+//                                    transaction.setAccount_owner(personExists);
+//                                }
+//                            }
+//                            if (txn.getAmount() != null) {
+//                                transaction.setAmount(txn.getAmount());
+//                            }
+//                            if (txn.getDate() != null) {
+//                                String date = txn.getDate();
+//                                transaction.setDate(simpleDateFormat.parse(txn.getDate()).getTime());
+//                            }
+//                            if (txn.getName() != null) {
+//                                transaction.setMerchant_name(txn.getName());
+//                            }
+//                            if (txn.getOriginalDescription() != null) {
+//                                transaction.setDescription(txn.getOriginalDescription());
+//                            }
+//                            if (txn.getPending() != null) {
+//                                transaction.setPending(txn.getPending());
+//                                System.out.println();
+//                            }
+//
+//                            if (txn.getTransactionId() != null) {
+//                                transaction.setId(txn.getTransactionId());
+//                            }
+//                            if (txn.getTransactionType() != null) {
+//                                transaction.setTransaction_type(txn.getTransactionType());
+//                            }
+//                            if (txn.getAccountId() != null) {
+//                                transaction.setAccount_id(txn.getAccountId());
+//                            }
+//                            if (txn.getPaymentMeta() != null) {
+//                                TransactionsGetResponse.Transaction.PaymentMeta meta = txn.getPaymentMeta();
+//                                if (meta.getPayee() != null) {
+//                                    Person personExists = helper.personExistsByName(meta.getPayee());
+//                                    if (personExists == null) {
+//                                        Person newPerson = new Person();
+//                                        newPerson.setName(meta.getPayee());
+//                                        personDao.create(newPerson);
+//                                        transaction.setPayee(newPerson);
+//                                    } else {
+//                                        transaction.setPayee(personExists);
+//                                    }
+//                                }
+//                                if (meta.getPayer() != null) {
+//                                    Person personExists = helper.personExistsByName(meta.getPayer());
+//                                    if (personExists == null) {
+//                                        Person newPerson = new Person();
+//                                        newPerson.setName(meta.getPayer());
+//                                        personDao.create(newPerson);
+//                                        transaction.setPayer(newPerson);
+//                                    } else {
+//                                        transaction.setPayer(personExists);
+//                                    }
+//
+//                                }
+//                                if (meta.getPaymentMethod() != null) {
+//                                    transaction.setPayment_method(meta.getPaymentMethod());
+//                                }
+//                            }
+//                            if (txn.getLocation() != null) {
+//                                TransactionsGetResponse.Transaction.Location location = txn.getLocation();
+//                                if (location.getLat() != null && location.getLon() != null) {
+//                                    Place placeExists = helper.placeExistsByLatLong(location.getLat(), location.getLon());
+//                                    if (placeExists == null) {
+//                                        Place newPlace = new Place();
+//                                        if (location.getAddress() != null) {
+//                                            newPlace.setStreet(location.getAddress());
+//                                        }
+//                                        if (location.getCity() != null) {
+//                                            newPlace.setCity(location.getCity());
+//                                        }
+//                                        if (location.getLat() != null) {
+//                                            newPlace.setLatitude(location.getLat());
+//                                        }
+//                                        if (location.getLon() != null) {
+//                                            newPlace.setLongitude(location.getLon());
+//                                        }
+//                                        if (location.getState() != null) {
+//                                            newPlace.setState(location.getState());
+//                                        }
+//                                        if (location.getZip() != null) {
+//                                            newPlace.setZip(location.getZip());
+//                                        }
+//                                        placeDao.create(newPlace);
+//                                        transaction.setPlace(newPlace);
+//                                        placeExists=newPlace;
+//                                    } else {
+//                                        transaction.setPlace(placeExists);
+//                                    }
+//                                }
+//                            }
+//
+//                            transaction.setTimestamp(System.currentTimeMillis() / 1000);
+//                            transactionDao.create(transaction);
+//
+//                            if (txn.getCategory() != null) {
+//                                List<Category> categoryList = new ArrayList<>();
+//                                for (String category : txn.getCategory()) {
+//                                    Category categoryExists = helper.categoryExists(category);
+//                                    if (categoryExists == null) {
+//                                        Category newCategory = new Category();
+//                                        newCategory.setCategoryName(category);
+//                                        categoryDao.create(newCategory);
+//                                        categoryList.add(newCategory);
+//                                    } else {
+//                                        TransactionHasCategory trans_categories = new TransactionHasCategory(transaction, categoryExists);
+//                                        transactionHasCategoriesDao.create(trans_categories);
+//                                    }
+//                                }
+//                                for (Category eachCategory : categoryList) {
+//                                    TransactionHasCategory trans_categories = new TransactionHasCategory(transaction, eachCategory);
+//                                    transactionHasCategoriesDao.create(trans_categories);
+//                                }
+//
+//
+//                            }
+//                            transactionsRetrieved++;
+//                        }
+//                    }
+//                    }while(transactionsRetrieved<totalTransactions);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//            return transactionsRetrieved;
+//        }
+//
+//        protected void onPostExecute(Integer output) {
+//            mProgress.dismiss();
+//            Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+//            myIntent.putExtra("key", "bank");
+//            myIntent.putExtra("items", output);
+//            myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//            startActivity(myIntent);
+//
+//        }
+//
+//    }
 
 }
 

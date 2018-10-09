@@ -31,7 +31,7 @@ public class Email implements Serializable{
         @DatabaseField (foreign = true,foreignAutoRefresh = true)
         Person from;
         @DatabaseField
-        Date date;
+        long date;
         @DatabaseField
         String snippet;
         @DatabaseField
@@ -123,11 +123,11 @@ public class Email implements Serializable{
         this.bcc = bcc;
     }
 
-    public Date getDate() {
+    public long getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(long date) {
         this.date = date;
     }
 

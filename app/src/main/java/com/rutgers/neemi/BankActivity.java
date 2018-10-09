@@ -59,10 +59,10 @@ public class BankActivity extends AppCompatActivity {
         plaidFragment = new PlaidFragment();
         bankFragment = new BankFragment();
         allTabs.addTab(allTabs.newTab().setText("Download your transactions (plaid api)"),true);
-        allTabs.addTab(allTabs.newTab().setText("Upload your transactions (.csv)"));
+        //allTabs.addTab(allTabs.newTab().setText("Upload your transactions (.csv)"));
 
         allTabs.getTabAt(0).setIcon(tabIcons[1]);
-        allTabs.getTabAt(1).setIcon(tabIcons[0]);
+//        allTabs.getTabAt(1).setIcon(tabIcons[0]);
     }
 
     private void bindWidgetsWithAnEvent()
@@ -113,11 +113,11 @@ public class BankActivity extends AppCompatActivity {
                 }
 
                 break;
-            case 1 :
-                Intent myIntent = new Intent(this, GDriveActivity.class);
-                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(myIntent);
-                break;
+//            case 1 :
+//                Intent myIntent = new Intent(this, GDriveActivity.class);
+//                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                startActivity(myIntent);
+//                break;
         }
     }
     public void replaceFragment(Fragment fragment) {

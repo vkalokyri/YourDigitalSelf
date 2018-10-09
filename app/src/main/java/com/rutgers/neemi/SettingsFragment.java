@@ -223,6 +223,11 @@ public class SettingsFragment extends Fragment {
 //                    }
 
                 }
+                if (Selecteditem.equalsIgnoreCase("Google Drive")){
+                    Intent myIntent = new Intent(getActivity(), GDriveActivity.class);
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(myIntent);
+                }
 
                 if (Selecteditem.equalsIgnoreCase("GPS data")){
                     System.err.println("clickedGPS");

@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -67,11 +68,13 @@ public class BankFragment extends Fragment {
     ProgressDialog mProgress;
     String client_id = "596e6db04e95b810ac887f56";
     String secret = "d1ba7f8c06c7d70da0cef6e28b6b2f";
+    String frequency;
 
     PlaidClient plaidClient = PlaidClient.newBuilder()
             .clientIdAndSecret(client_id, secret)
             .publicKey("0ea8ed7c85e1c6d8aa4695cb156c97") // optional. only needed to call endpoints that require a public key
-            .developmentBaseUrl() // or equivalent, depending on which environment you're calling into
+            //.developmentBaseUrl() // or equivalent, depending on which environment you're calling into
+            .sandboxBaseUrl()
             .build();
 
 
@@ -94,6 +97,9 @@ public class BankFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+
+        frequency = PreferenceManager.getDefaultSharedPreferences(getContext()).getString("sync_frequency", "");
 
         helper=DatabaseHelper.getHelper(getActivity()); 
         mProgress = new ProgressDialog(getActivity());
@@ -161,6 +167,26 @@ public class BankFragment extends Fragment {
         });
 
     }
+
+    public Calendar getCalendarDate(String period){
+        Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+
+        if (period.equals("7")){
+            cal.add(Calendar.DATE, -7);
+        }else if(period.equals("30")){
+            cal.add(Calendar.MONTH, -1);
+        }else if(period.equals("180")){
+            cal.add(Calendar.MONTH, -6);
+        }else if(period.equals("365")){
+            cal.add(Calendar.MONTH, -12);
+        }else if(period.equals("1")){
+            cal.add(Calendar.DATE, -1);
+        }
+
+        return  cal;
+
+    }
+
 
 
 
@@ -230,8 +256,9 @@ public class BankFragment extends Fragment {
                     try {
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-                        Calendar cal = Calendar.getInstance();
-                        cal.add(Calendar.MONTH, -12);
+                        //Calendar cal = Calendar.getInstance();
+                        Calendar cal = getCalendarDate(frequency);
+                        //cal.add(Calendar.MONTH, -12);
                         Date startDate = null;
                         Date endDate = null;
 

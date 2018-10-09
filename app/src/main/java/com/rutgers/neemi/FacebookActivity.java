@@ -66,7 +66,8 @@ public class FacebookActivity extends AppCompatActivity {
     // Creating Facebook CallbackManager Value
     public static CallbackManager callbackmanager;
     DatabaseHelper helper;
-    int totalItemsInserted=1;
+    int totalItemsInserted=0;
+    String frequency;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +82,8 @@ public class FacebookActivity extends AppCompatActivity {
         ab.setDisplayHomeAsUpEnabled(true);
 
         helper=DatabaseHelper.getHelper(this);
+
+        frequency = PreferenceManager.getDefaultSharedPreferences(this).getString("sync_frequency", "");
 
         // Initialize layout button
         //fbbutton = (Button) findViewById(R.id.login_button);
@@ -179,7 +182,7 @@ public class FacebookActivity extends AppCompatActivity {
                             }else {
 
                                 System.out.println("OnGrantPermissionsSuccess : " + loginResult.getAccessToken().getToken());
-                                DataSyncJob.scheduleAdvancedJob();
+                                //DataSyncJob.scheduleAdvancedJob();
 
 
 //                                AlertDialog.Builder builder;
@@ -215,6 +218,11 @@ public class FacebookActivity extends AppCompatActivity {
 
 
                                 Toast.makeText(getApplicationContext(), "Facebook was successfully authorized!", Toast.LENGTH_SHORT).show();
+                                Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                                myIntent.putExtra("key", "facebook");
+                                myIntent.putExtra("items", -1);
+                                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(myIntent);
 
                             }
                         }
@@ -250,6 +258,25 @@ public class FacebookActivity extends AppCompatActivity {
                 });
     }
 
+    public Calendar getCalendarDate(String period){
+        Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+
+        if (period.equals("7")){
+            cal.add(Calendar.DATE, -7);
+        }else if(period.equals("30")){
+            cal.add(Calendar.MONTH, -1);
+        }else if(period.equals("180")){
+            cal.add(Calendar.MONTH, -6);
+        }else if(period.equals("365")){
+            cal.add(Calendar.MONTH, -12);
+        }else if(period.equals("1")){
+            cal.add(Calendar.DATE, -1);
+        }
+
+        return  cal;
+
+    }
+
     // Private method to handle Facebook login and callback
     public void getResultsFromApi() {
 
@@ -272,7 +299,7 @@ public class FacebookActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
 
-                       // mProgress.show();
+                        mProgress.show();
                         System.out.println("Success");
 
                         final RuntimeExceptionDao<Photo, String> photoDao = helper.getPhotoDao();
@@ -287,9 +314,9 @@ public class FacebookActivity extends AppCompatActivity {
 
 
 
-
-                        Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                        cal.add(Calendar.MONTH, -36); // substract 6 months
+                        //Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+                        Calendar cal = getCalendarDate(frequency);
+                        //cal.add(Calendar.MONTH, -36); // substract 6 months
                         DateTime since=new DateTime(cal.getTimeInMillis());
                         System.out.println("since = "+since);
                         String timestamp = null;
@@ -708,8 +735,10 @@ public class FacebookActivity extends AppCompatActivity {
 
 
                         /* POSTTTTT*/
-                        cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                        cal.add(Calendar.MONTH, -36); // substract 6 months
+                       // cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+                        cal = getCalendarDate(frequency);
+
+                        //cal.add(Calendar.MONTH, -36); // substract 6 months
                         since=new DateTime(cal.getTimeInMillis());
                         System.out.println("since = "+since);
                         timestamp = null;
