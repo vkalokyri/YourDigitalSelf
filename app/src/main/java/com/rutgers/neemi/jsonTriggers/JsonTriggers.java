@@ -35,7 +35,7 @@ public class JsonTriggers implements Triggers {
 	            jsonReader.close();
 	    		fis.close();
 
-			 JsonObject scriptObject=null;
+			 	JsonObject scriptObject=null;
 			 	if(scriptName.equalsIgnoreCase("restaurant")) {
 					scriptObject = jsonObject.getJsonObject(config.getStr(PROPERTIES.RESTAURANT_SCRIPT));
 			 	}else if (scriptName.equalsIgnoreCase("trip")) {

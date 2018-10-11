@@ -11,7 +11,7 @@ public enum PROPERTIES {
 	RESTAURANT_SCRIPT_FILE("restaurant_script_file"),
 	RESTAURANT_SCRIPT("restaurant_script"),
 	TRIP_SCRIPT_FILE("trip_script_file"),
-	TRIP_SCRIPT("restaurant_script"),
+	TRIP_SCRIPT("trip_script"),
 	CLUES("clues_file"),
 	DB_NAME("database_name"),
 	DB_HOSTNAME("db_hostname"),

@@ -56,6 +56,7 @@ import com.j256.ormlite.table.TableUtils;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.EventAttendees;
 import com.rutgers.neemi.model.Person;
+import com.rutgers.neemi.model.PhotoTags;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -138,6 +139,22 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
 
 
         helper=DatabaseHelper.getHelper(this);
+
+        //ConnectionSource connectionSource = new AndroidConnectionSource(helper);
+//        RuntimeExceptionDao<PhotoTags, String> subScriptDao = helper.getPhotoTagsDao();
+//
+//        subScriptDao.queryRaw("delete from Event;");
+//        subScriptDao.queryRaw("delete from Event_fts_segdir;");
+//        subScriptDao.queryRaw("delete from Event_fts_docsize;");
+//        subScriptDao.queryRaw("delete from Event_fts_content;");
+//        subScriptDao.queryRaw("delete from EventAttendees;");
+//        subScriptDao.queryRaw("delete from Event_fts_stat;");
+//        subScriptDao.queryRaw("drop table Event_fts;");
+//        subScriptDao.queryRaw("CREATE VIRTUAL TABLE Event_fts USING fts4 ( \"_id\", \"title\" )");
+
+
+
+
 
         //Google widgets
         //gcalButton = (SignInButton) findViewById(R.id.gcalApiButton);
@@ -673,17 +690,17 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
                 try {
                     GenericRawResults<String[]> rawResults = helper.getEventDao().queryRaw("select * from Event_fts limit 1");
                     if (rawResults.getResults().size()==0){
-                        helper.getEventDao().queryRaw("INSERT INTO Event_fts SELECT \"_id\", \"description\" from Event");
+                        helper.getEventDao().queryRaw("INSERT INTO Event_fts SELECT \"_id\", \"title\" from Event");
                     }else{
-                        helper.getEventDao().queryRaw("INSERT INTO Event_fts SELECT \"_id\", \"description\" from Event order by \"_id\" desc limit "+totalItemsInserted);
+                        helper.getEventDao().queryRaw("INSERT INTO Event_fts SELECT \"_id\", \"title\" from Event order by \"_id\" desc limit "+totalItemsInserted);
                     }
                     GenericRawResults<String[]> vrResults =helper.getEventDao().queryRaw("SELECT * FROM Event_fts;");
                     System.err.println("VIRTUAL TABLE ADDED = "+vrResults.getResults().size());
 
                 }catch (SQLException e){
                     helper.getEventDao().queryRaw("DROP TABLE IF EXISTS Event_fts ");
-                    helper.getEventDao().queryRaw("CREATE VIRTUAL TABLE Event_fts USING fts4 ( \"_id\", \"description\" )");
-                    helper.getEventDao().queryRaw("INSERT INTO Event_fts SELECT \"_id\", \"description\" from Event");
+                    helper.getEventDao().queryRaw("CREATE VIRTUAL TABLE Event_fts USING fts4 ( \"_id\", \"title\" )");
+                    helper.getEventDao().queryRaw("INSERT INTO Event_fts SELECT \"_id\", \"title\" from Event");
                 }
         }
 

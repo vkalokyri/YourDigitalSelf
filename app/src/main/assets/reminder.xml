@@ -7,10 +7,10 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 
 <process binding="Process" isExecutable="true" id="reminder">
 <locals>
-<who name="whoRemindedYou "/>
-<when name="whenWasTheReminder "/>
-<when name="forWhenWasTheReminder  "/>
-<what name="whatWasTheReminderAbout  "/>
+<who name="whoRemindedYou"/>
+<when name="whenWasTheReminder"/>
+<when name="forWhenWasTheReminder"/>
+<what name="whatWasTheReminderAbout"/>
 </locals>
 <startEvent name="" id="SubProcessStart"/>
 <endEvent name="" id="SubProcessEnd"/>

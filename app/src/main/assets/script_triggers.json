@@ -4,9 +4,7 @@
     "weakTriggers":["initiateDiscussion<restaurant>"]
     },
   "GoingForATrip":{
-    "strongTriggers":["makeAPayment<flight>","makeReservation<hotel>","makeAPayment<hotel>","makeReservation<flight>","reminder<trip>"],
-    "weakTriggers":["initiateDiscussion<trip>"]
+    "strongTriggers":["makeReservation<hotel>","makeAPayment<flight>","makeReservation<flight>","writeInCalendar<trip>"]
   }
-}
 }
 //"momentCapturing","ChangePlans"

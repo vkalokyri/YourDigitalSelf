@@ -59,6 +59,9 @@ public class JsonClues implements Clues{
 
 			JsonObject taskObject = jsonObject.getJsonObject(task); //makeAPayment
 
+			System.out.println(task);
+			System.out.println(taskObject);
+			System.out.println(onObject);
 
 
 			JsonArray jsonArray = taskObject.getJsonArray(onObject); //restaurant

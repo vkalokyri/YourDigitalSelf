@@ -63,8 +63,8 @@ public class PlaidActivity extends AppCompatActivity {
     PlaidClient plaidClient = PlaidClient.newBuilder()
             .clientIdAndSecret(client_id, secret)
             //.publicKey("0ea8ed7c85e1c6d8aa4695cb156c97")
-            .sandboxBaseUrl()// optional. only needed to call endpoints that require a public key
-            //.developmentBaseUrl() // or equivalent, depending on which environment you're calling into
+            //.sandboxBaseUrl()// optional. only needed to call endpoints that require a public key
+            .developmentBaseUrl() // or equivalent, depending on which environment you're calling into
             .build();
 
     ProgressDialog mProgress;
@@ -124,8 +124,8 @@ public class PlaidActivity extends AppCompatActivity {
         //linkInitializeOptions.put("product", "auth");
         linkInitializeOptions.put("product", "transactions");
         linkInitializeOptions.put("selectAccount", "true");
-        linkInitializeOptions.put("env", "sandbox");
-        //linkInitializeOptions.put("env", "development");
+        //linkInitializeOptions.put("env", "sandbox");
+        linkInitializeOptions.put("env", "development");
         linkInitializeOptions.put("clientName", "YourDigitalSelf");
         linkInitializeOptions.put("webhook", "http://requestb.in");
         linkInitializeOptions.put("baseUrl", "https://cdn.plaid.com/link/v2/stable/link.html");

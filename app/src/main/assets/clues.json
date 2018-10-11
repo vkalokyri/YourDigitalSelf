@@ -15,8 +15,9 @@
 			"ReceiveConfirmationEmail": {
 				"from": ["Email"],
 				"where":{
-					"and": {
-						"subject": ["hotel","reservation"]
+					"or": {
+						"subject": ["hotel"],
+						"textContent": ["hotel confirmation", "hotel reservation"]
 					}
 				}
 			}
@@ -25,8 +26,9 @@
 			"ReceiveConfirmationEmail": {
 				"from": ["Email"],
 				"where":{
-					"and": {
-						"subject": ["flight","confirmation"]
+					"or": {
+						"subject": ["flight"],
+						"textContent": ["flight confirmation","flight reservation"]
 					}
 				}
 			}
@@ -51,19 +53,7 @@
 				"from": ["Category","Transaction","TransactionHasCategory"],
 				"where": {
 					"and": {
-						"category" :["Travel/ Entertainment"],
-						"`Transaction`._id": "TransactionHasCategory.transaction_id",
-						"Category._id":"TransactionHasCategory.category_id"
-					}
-				}
-			}
-		}],
-		"hotel": [{
-			"PayByCreditCard": {
-				"from": ["Category","Transaction","TransactionHasCategory"],
-				"where": {
-					"and": {
-						"category" :["Travel/ Entertainment"],
+						"category" :["Travel/ Entertainment", "Airlines and Aviation Services","Travel Agents and Tour Operators"],
 						"`Transaction`._id": "TransactionHasCategory.transaction_id",
 						"Category._id":"TransactionHasCategory.category_id"
 					}
@@ -94,23 +84,44 @@
 					}
 				}
 			}],
+		"trip": [{
+			"SendEmail": {
+				"from": "Email",
+				"where": {
+					"or": {
+						"textContent":	"KEYWORDS_FILE",
+						"subject": "KEYWORDS_FILE"
+					}
+				}
+			}
+		}],
 		"opera": [
 
 		]
 	},
 	"writeInCalendar": {
 		"restaurant": [{
-			"reminder": {
+			"WriteInGoogleCalendar": {
 				"from": "Event",
 				"where": {
 					"and": {
-						"description": "KEYWORDS_FILE"
+						"title": "KEYWORDS_FILE"
+					}
+				}
+			}
+		}],
+		"trip": [{
+			"WriteInGoogleCalendar": {
+				"from": "Event",
+				"where": {
+					"and": {
+						"title": "KEYWORDS_FILE"
 					}
 				}
 			}
 		}]
 	},
-	"GoToEventReminder": {
+	"reminder": {
 		"restaurant": [{
 				"ReceiveGoogleCalendarNotification": {
 					"from": "Email",
@@ -128,6 +139,15 @@
 						}
 					}
 				}
+			}
+		],
+		"trip": [{
+			"ReceiveGoogleCalendarNotification": {
+				"from": "Email",
+				"where": {
+					"from": "calendar-notification@google.com"
+				}
+			}
 			}
 		]
 	},

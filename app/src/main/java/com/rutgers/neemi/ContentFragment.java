@@ -147,6 +147,8 @@ public class ContentFragment extends Fragment {
 
         myView = inflater.inflate(R.layout.content_fragment,container,false);
         ListView list1 =  (ListView) myView.findViewById(R.id.trip_list);
+        myView.setBackgroundColor(getResources().getColor(android.R.color.white));
+
 
 //        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 //        SharedPreferences.Editor editor = prefs.edit();
@@ -271,7 +273,7 @@ public class ContentFragment extends Fragment {
                 System.out.println("Task is: " + taskName);
                 Object pid = task.getPid();
                 if (pid instanceof Event) {
-                    System.err.println("Task = " + taskName + ", Event = " + ((Event) pid).get_id()+" Script = ");
+                    System.err.println("Task = " + taskName + ", Event = " + ((Event) pid).get_id());
 
                 } else if (pid instanceof Email) {
                     System.err.println("Task = " + taskName + ", Email = " + ((Email) pid).get_id());
@@ -308,6 +310,9 @@ public class ContentFragment extends Fragment {
             ArrayList<ArrayList<Task>> tasksThreads = mergeThreads(tasks);
             listOfScripts = createScriptPerTask(tasksThreads);
             listOfScripts = mergeScriptsByWhenAndWhere(listOfScripts);
+            //listOfScripts = mergeTransactionsAndBookings(listOfScripts);
+
+
 
             //sort them
             Collections.sort(listOfScripts, new Comparator<Script>() {
@@ -534,40 +539,40 @@ public class ContentFragment extends Fragment {
 //    }
 
 
-    public ArrayList<ArrayList<Task>> mergeTasksByEventDate(List<Task> tasks){
-        Log.d(TAG,"SIZE OF tasks: " +tasks.size());
+    public ArrayList<ArrayList<Task>> mergeTasksByEventDate(List<Task> tasks) {
+        Log.d(TAG, "SIZE OF tasks: " + tasks.size());
         ArrayList<ArrayList<Task>> listofMergedTasks = new ArrayList<ArrayList<Task>>();
         HashMap<Date, ArrayList<Task>> hashMap = new HashMap<Date, ArrayList<Task>>();
 
-        for (Task task:tasks){
-            Date extractedDate=null;
-            if (task.getPid() instanceof Transaction){
+        for (Task task : tasks) {
+            Date extractedDate = null;
+            if (task.getPid() instanceof Transaction) {
                 try {
                     extractedDate = sdf.parse(sdf.format(((Transaction) task.getPid()).getDate()));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-            }else if (task.getPid() instanceof Email){
-                if (((Email) task.getPid()).getSubjectDate()!=null) {
+            }else if (task.getPid() instanceof Email) {
+                if (((Email) task.getPid()).getSubjectDate() != null) {
                     try {
-                        extractedDate = sdf.parse(sdf.format(((Email) task.getPid()).getSubjectDate()));
+                        extractedDate = sdf.parse(sdf.format(((Email) task.getPid()).getDate()));
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
                 }
-            }else if (task.getPid() instanceof Event){
+            } else if (task.getPid() instanceof Event) {
                 try {
-                    extractedDate = sdf.parse(sdf.format(((Event) task.getPid()).getStartTime()));
+                    extractedDate = sdf.parse(sdf.format(((Event) task.getPid()).getDateCreated()));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-            }else if (task.getPid() instanceof Feed){
+            } else if (task.getPid() instanceof Feed) {
                 try {
                     extractedDate = sdf.parse(sdf.format(((Feed) task.getPid()).getCreated_time()));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-            }else if (task.getPid() instanceof Photo){
+            } else if (task.getPid() instanceof Photo) {
                 try {
                     extractedDate = sdf.parse(sdf.format(((Photo) task.getPid()).getCreated_time()));
                 } catch (ParseException e) {
@@ -575,7 +580,7 @@ public class ContentFragment extends Fragment {
                 }
             }
 
-            if(extractedDate!=null) {
+            if (extractedDate != null) {
                 if (!hashMap.containsKey(extractedDate)) {
                     ArrayList<Task> list = new ArrayList<Task>();
                     list.add(task);
@@ -583,7 +588,7 @@ public class ContentFragment extends Fragment {
                 } else {
                     hashMap.get(extractedDate).add(task);
                 }
-            }else{
+            } else {
                 ArrayList<Task> notMergedTask = new ArrayList<Task>();
                 notMergedTask.add(task);
                 listofMergedTasks.add(notMergedTask);
@@ -592,57 +597,381 @@ public class ContentFragment extends Fragment {
         }
 
 
-        for (Date date: hashMap.keySet()){
-            boolean isTransaction=false;
-            boolean isEvent=false;
+        for (Date date : hashMap.keySet()) {
+            boolean isTransaction = false;
+            boolean isEvent = false;
 
             ArrayList<Task> list = new ArrayList<Task>();
-            for(int i=0;i<hashMap.get(date).size();i++){
-                if (hashMap.get(date).get(i).getPid() instanceof Transaction){
-                    if(!isTransaction){
-                        isTransaction=true;
-                        list.add(hashMap.get(date).get(i));
-                    }else{
-                        ArrayList<Task> list2 = new ArrayList<Task>();
-                        list2.add(hashMap.get(date).get(i));
-                        listofMergedTasks.add(list2);
-                    }
-                }else if (hashMap.get(date).get(i).getPid() instanceof Event){
-                    if(!isEvent){
-                        isEvent=true;
-                        list.add(hashMap.get(date).get(i));
-                    }else{
-                        ArrayList<Task> list2 = new ArrayList<Task>();
-                        list2.add(hashMap.get(date).get(i));
-                        listofMergedTasks.add(list2);
-                    }
-                }else{
+            for (int i = 0; i < hashMap.get(date).size(); i++) {
+//                if (hashMap.get(date).get(i).getPid() instanceof Transaction) {
+//                    if (!isTransaction) {
+//                        isTransaction = true;
+//                        list.add(hashMap.get(date).get(i));
+//                    } else {
+//                        ArrayList<Task> list2 = new ArrayList<Task>();
+//                        list2.add(hashMap.get(date).get(i));
+//                        listofMergedTasks.add(list2);
+//                    }
+//                } else if (hashMap.get(date).get(i).getPid() instanceof Event) {
+//                    if (!isEvent) {
+//                        isEvent = true;
+//                        list.add(hashMap.get(date).get(i));
+//                    } else {
+//                        ArrayList<Task> list2 = new ArrayList<Task>();
+//                        list2.add(hashMap.get(date).get(i));
+//                        listofMergedTasks.add(list2);
+//                    }
+//                } else {
                     list.add(hashMap.get(date).get(i));
-                }
+                //}
             }
             listofMergedTasks.add(list);
             //listofMergedTasks.add(hashMap.get(date));
         }
 
         return listofMergedTasks;
-
-
-//        Log.d(TAG,"SIZE OF PROCESSES after: " +hashMap.size());
-//        for (Map.Entry entry : hashMap.entrySet()) {
-//            Log.d(TAG,"Date: " +entry.getKey());
-//            for (Task t:(List<Task>)entry.getValue()){
-//                if (t.getPid() instanceof Event) {
-//                    Log.d(TAG,"Event = " + ((Event) t.getPid()).getDescription());
-//                }else if (t.getPid() instanceof Email){
-//                    Log.d(TAG, "Email = "+((Email) t.getPid()).getSubject());
-//                }else if (t.getPid() instanceof Transaction){
-//                    Log.d(TAG,"Transaction = "+((Transaction) t.getPid()).getName());
-//                }
-//            }
-//        }
-
     }
 
+//    public ArrayList<ArrayList<Task>> mergeTasksByEventDate(List<Task> tasks){
+//        Log.d(TAG,"SIZE OF tasks: " +tasks.size());
+//        ArrayList<ArrayList<Task>> listofMergedTasks = new ArrayList<ArrayList<Task>>();
+//        HashMap<Date, ArrayList<Task>> hashMap = new HashMap<Date, ArrayList<Task>>();
+//        HashMap<Date, ArrayList<Date>> hashMapBookedDates = new HashMap<Date, ArrayList<Date>>();
+//
+//        ArrayList<Task> transactions = new ArrayList<Task>();
+//
+////        if (task.getPid() instanceof Transaction){
+//////                try {
+//////                    extractedDate = sdf.parse(sdf.format(((Transaction) task.getPid()).getDate()));
+//////                } catch (ParseException e) {
+//////                    e.printStackTrace();
+//////                }
+////            try {
+////                extractedDate = sdf.parse(sdf.format(((Transaction) task.getPid()).getDate()));
+////                if(extractedDate!=null) {
+////                    if (!hashMapBookedDates.containsKey(extractedDate)) {
+////                        ArrayList<Task> list = new ArrayList<Task>();
+////                        list.add(task);
+////                        hashMapBookedDates.put(extractedDate, list);
+////                    } else {
+////                        hashMapBookedDates.get(extractedDate).add(task);
+////                    }
+////                }
+////            } catch (ParseException e) {
+////                e.printStackTrace();
+////            }
+////        }else
+//        for (Task task:tasks){
+//            Date extractedDate=null;
+//            Date bookExtractedDate=null;
+//            boolean isTransaction=false;
+//            if (task.getPid() instanceof Transaction){
+//                transactions.add(task);
+//                isTransaction=true;
+//
+//            }else if (task.getPid() instanceof Email){
+//                if (((Email) task.getPid()).getSubjectDate()!=null) {
+//                    try {
+//                        extractedDate = sdf.parse(sdf.format(((Email) task.getPid()).getSubjectDate()));
+//                    } catch (ParseException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//
+//                try {
+//                    bookExtractedDate = sdf.parse(sdf.format(((Email) task.getPid()).getDate()));
+//                    if(bookExtractedDate!=null && extractedDate!=null) {
+//                        if (!hashMapBookedDates.containsKey(bookExtractedDate)) {
+//                            ArrayList<Date> list = new ArrayList<Date>();
+//                            list.add(((Email) task.getPid()).getSubjectDate());
+//                            hashMapBookedDates.put(bookExtractedDate, list);
+//                        } else {
+//                            hashMapBookedDates.get(bookExtractedDate).add(((Email) task.getPid()).getSubjectDate());
+//                        }
+//                    }
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
+//
+//            }else if (task.getPid() instanceof Event){
+//                try {
+//                    extractedDate = sdf.parse(sdf.format(((Event) task.getPid()).getStartTime()));
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
+//                try {
+//                    bookExtractedDate = sdf.parse(sdf.format(((Event) task.getPid()).getDateCreated()));
+//                    if(bookExtractedDate!=null && extractedDate!=null) {
+//                        if (!hashMapBookedDates.containsKey(bookExtractedDate)) {
+//                            ArrayList<Date> list = new ArrayList<Date>();
+//                            list.add(extractedDate);
+//                            hashMapBookedDates.put(bookExtractedDate, list);
+//                        } else {
+//                            hashMapBookedDates.get(bookExtractedDate).add(extractedDate);
+//                        }
+//                    }
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
+//            }else if (task.getPid() instanceof Feed){
+//
+//                try {
+//                    extractedDate = sdf.parse(sdf.format(((Feed) task.getPid()).getCreated_time()));
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
+//
+//            }else if (task.getPid() instanceof Photo){
+//                try {
+//                    extractedDate = sdf.parse(sdf.format(((Photo) task.getPid()).getCreated_time()));
+//                } catch (ParseException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//            if(extractedDate!=null) {
+//                if (!hashMap.containsKey(extractedDate)) {
+//                    ArrayList<Task> list = new ArrayList<Task>();
+//                    list.add(task);
+//                    hashMap.put(extractedDate, list);
+//                } else {
+//                    hashMap.get(extractedDate).add(task);
+//                }
+//            }else{
+//                if (!isTransaction) {
+//                    ArrayList<Task> notMergedTask = new ArrayList<Task>();
+//                    notMergedTask.add(task);
+//                    listofMergedTasks.add(notMergedTask);
+//                }
+//            }
+//
+//        }
+//
+//
+//        for(Task task:transactions){
+//            boolean found=false;
+//            Date extractedDate = null;
+//            try {
+//                extractedDate = sdf.parse(sdf.format(((Transaction) task.getPid()).getDate()));
+//            } catch (ParseException e) {
+//                e.printStackTrace();
+//            }
+//            if(extractedDate!=null) {
+//
+//                if (hashMapBookedDates.get(extractedDate)!=null && !found){
+//                    for(Date d:hashMapBookedDates.get(extractedDate)) {
+//                        hashMap.get(d).add(task);
+//                        break;
+//                    }
+//                    found = true;
+//                }
+//                Calendar cal = Calendar.getInstance();
+//                cal.setTime(extractedDate);
+//                cal.add(Calendar.DATE, -1);
+//                if (hashMapBookedDates.get(cal.getTime())!=null && !found){
+//                    for(Date d:hashMapBookedDates.get(cal.getTime())) {
+//                        hashMap.get(d).add(task);
+//                        break;
+//                    }
+//                    found = true;
+//                }
+//                cal.add(Calendar.DATE, -1);
+//                if (hashMapBookedDates.get(cal.getTime())!=null && !found){
+//                    for(Date d:hashMapBookedDates.get(cal.getTime())) {
+//                        hashMap.get(d).add(task);
+//                        break;
+//                    }
+//                    found = true;
+//                }
+//                cal.add(Calendar.DATE, -1);
+//                if(hashMapBookedDates.get(cal.getTime())!=null && !found){
+//                    for(Date d:hashMapBookedDates.get(cal.getTime())) {
+//                        hashMap.get(d).add(task);
+//                        break;
+//                    }
+//                    found = true;
+//
+//                }
+//
+//                if(!found && extractedDate!=null) {
+//                    ArrayList<Task> list = new ArrayList<Task>();
+//                    list.add(task);
+//                    hashMap.put(extractedDate, list);
+//                }
+//
+////                }else{
+////                    ArrayList<Task> notMergedTask = new ArrayList<Task>();
+////                    notMergedTask.add(task);
+////                    listofMergedTasks.add(notMergedTask);
+////                }
+//            }
+//        }
+//
+//
+//        for (Date d: hashMapBookedDates.keySet()){
+//            ArrayList<Task> list = new ArrayList<Task>();
+//            for (Date date :hashMapBookedDates.get(d)){
+//                if (date.equals(d)) {
+//                    if (hashMap.get(date) != null) {
+//                        list.addAll(hashMap.get(date));
+//                        hashMap.get(date).clear();
+//                    }
+//                }
+//            }
+//            listofMergedTasks.add(list);
+//        }
+//        for (Date date: hashMap.keySet()){
+//            ArrayList<Task> list = new ArrayList<Task>();
+//            for(int i=0;i<hashMap.get(date).size();i++){
+//                list.add(hashMap.get(date).get(i));
+//            }
+//            listofMergedTasks.add(list);
+//        }
+//
+//
+//
+//
+////        for (Date date: hashMap.keySet()){
+////            ArrayList<Task> list = new ArrayList<Task>();
+////            for(int i=0;i<hashMap.get(date).size();i++){
+////                if (hashMap.get(date).get(i).getPid() instanceof Event || hashMap.get(date).get(i).getPid() instanceof Email){
+////                    Calendar cal = Calendar.getInstance();
+////                    cal.setTime(date);
+////                    if (hashMapBookedDates.get(cal.getTime())!=null){
+////                        hashMapBookedDates.get(cal.getTime());
+////                        list.addAll(hashMapBookedDates.get(cal.getTime()));
+////                    }
+////                    cal.add(Calendar.DATE, -1);
+////                    if (hashMapBookedDates.get(cal.getTime())!=null){
+////                        list.addAll(hashMapBookedDates.get(cal.getTime()));
+////                    }
+////                    cal.add(Calendar.DATE, -1);
+////                    if (hashMapBookedDates.get(cal.getTime())!=null){
+////                        list.addAll(hashMapBookedDates.get(cal.getTime()));
+////                    }
+////                    cal.add(Calendar.DATE, -1);
+////                    if(hashMapBookedDates.get(cal.getTime())!=null){
+////                        list.addAll(hashMapBookedDates.get(cal.getTime()));
+////                    }
+////                    list.add(hashMap.get(date).get(i));
+////
+//////
+////                }else{
+////                    list.add(hashMap.get(date).get(i));
+////                }
+////            }
+//
+////            HashMap<Object, Task> hashMapNoDuplicates = new HashMap<Object, Task>();
+////            for (Task t: list){
+////                if(!hashMapNoDuplicates.containsKey(t.getPid())){
+////                    hashMapNoDuplicates.put(t.getPid(),t);
+////                }
+////            }
+////            listofMergedTasks.add(new ArrayList<>(hashMapNoDuplicates.values()));
+//
+////            listofMergedTasks.add(list);
+//        //listofMergedTasks.add(hashMap.get(date));
+//        //       }
+//
+//
+//        return listofMergedTasks;
+//
+//
+////        Log.d(TAG,"SIZE OF PROCESSES after: " +hashMap.size());
+////        for (Map.Entry entry : hashMap.entrySet()) {
+////            Log.d(TAG,"Date: " +entry.getKey());
+////            for (Task t:(List<Task>)entry.getValue()){
+////                if (t.getPid() instanceof Event) {
+////                    Log.d(TAG,"Event = " + ((Event) t.getPid()).getDescription());
+////                }else if (t.getPid() instanceof Email){
+////                    Log.d(TAG, "Email = "+((Email) t.getPid()).getSubject());
+////                }else if (t.getPid() instanceof Transaction){
+////                    Log.d(TAG,"Transaction = "+((Transaction) t.getPid()).getName());
+////                }
+////            }
+////        }
+//
+//    }
+
+//    public ArrayList<Script> mergeTransactionsAndBookings(List<Script> scripts){
+//
+//        ArrayList<Script> mergedScripts = new ArrayList<Script>();
+//        HashMap<String, ArrayList<Script>> hashMap = new HashMap<String, ArrayList<Script>>();
+//
+//        for (Script script:scripts) {
+//            String when = null;
+//            for (ScriptLocalValues scriptLocalValues : script.getLocalValues()) {
+//                String label = scriptLocalValues.getLocalProperties().getW5h_label();
+//                if (label.equals("when")) {
+//                    when = scriptLocalValues.getLocal_value();
+//                }
+//            }
+//
+//            if (when != null) {
+//                if (script.getTasks().get(0).getPid() instanceof Transaction) {
+//                    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+//                    Date date = null;
+//                    try {
+//                        date = sdf.parse(when);
+//                    } catch (ParseException e) {
+//                        e.printStackTrace();
+//                    }
+//                    Calendar cal = Calendar.getInstance();
+//                    cal.add(Calendar.DATE, -2);
+//                    cal.setTime(date);
+//
+//
+//                    if (!hashMap.containsKey(cal.getTime())) {
+//                        ArrayList<Script> list = new ArrayList<Script>();
+//                        list.add(script);
+//                        hashMap.put(when, list);
+//                    }else{
+//                        hashMap.get(cal.getTime()).add(script);
+//                    }
+////                    date = null;
+////                    try {
+////                        date = sdf.parse(when);
+////                    } catch (ParseException e) {
+////                        e.printStackTrace();
+////                    }
+////                    cal = Calendar.getInstance();
+////                    cal.add(Calendar.DATE, -3);
+////                    cal.setTime(date);
+////                    if (!hashMap.containsKey(cal.getTime())) {
+////                        ArrayList<Script> list = new ArrayList<Script>();
+////                        list.add(script);
+////                        hashMap.put(when, list);
+////                    } else {
+////                        hashMap.get(when).add(script);
+////                    }
+//                }else{
+//                    if (!hashMap.containsKey(when)) {
+//                        ArrayList<Script> list = new ArrayList<Script>();
+//                        list.add(script);
+//                        hashMap.put(when, list);
+//                    } else {
+//                        hashMap.get(when).add(script);
+//                    }
+//                }
+//            } else {
+//                //not mergedScript
+//                mergedScripts.add(script);
+//
+//            }
+//        }
+//
+//            for (String whenAndWhere: hashMap.keySet()) {
+//                Script mergedScript;
+//                mergedScript = hashMap.get(whenAndWhere).get(0);
+//                for (int i=1; i< hashMap.get(whenAndWhere).size();i++) {
+//                    mergedScript.merge(hashMap.get(whenAndWhere).get(i));
+//                }
+//                mergedScripts.add(mergedScript);
+//            }
+//
+//            return mergedScripts;
+//
+//    }
 
     public ArrayList<Script> mergeScriptsByWhenAndWhere(List<Script> scripts){
         Log.d(TAG,"SIZE OF scripts: " +scripts.size());
@@ -662,7 +991,7 @@ public class ContentFragment extends Fragment {
             }
 
             if (when != null && where !=null) {
-                String whenAndWhere = when+where;
+                String whenAndWhere = when;//+where;
                 if (!hashMap.containsKey(whenAndWhere)) {
                     ArrayList<Script> list = new ArrayList<Script>();
                     list.add(script);
@@ -1033,7 +1362,30 @@ public class ContentFragment extends Fragment {
                         e.printStackTrace();
                     }
                 }
-            }else if (fromTable.contains("Person")){
+            }else if (fromTable.contains("Person")) {
+
+                for (String[] tuple : rawResults.getResults()) {
+                    Email email = new Email();
+                    email.setId(tuple[0]);
+
+                    String tempQuery = "select * from `Email` where `_id`=" + tuple[0];
+
+
+                    GenericRawResults<Email> emailResults = helper.getEmailDao().queryRaw(tempQuery, helper.getEmailDao().getRawRowMapper());
+                    if (emailResults != null) {
+                        for (Email fullEmail : emailResults.getResults()) {
+                            Email emailUpdated = helper.getToCcBcc(fullEmail);
+                            Task task = new Task();
+                            task.setPid(emailUpdated);
+                            task.setName(subtask);
+                            task.setScript(script);
+                            task.setTaskDefinition(new TaskDefinition(subtask));
+                            tasks.add(task);
+                        }
+                    }
+                }
+
+            }else if (fromTable.contains("Email")){
 
                 for (String[] tuple:rawResults.getResults()) {
                     Email email = new Email();
@@ -1055,10 +1407,7 @@ public class ContentFragment extends Fragment {
                         }
                     }
                 }
-
-
             }
-            //  }
         }
         return tasks;
     }
@@ -1151,16 +1500,16 @@ public class ContentFragment extends Fragment {
                 }
             }
 
-            if (place != null) {
-                byte[] image = place.getImage();
-                if (image != null) {
-                    Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
-                    imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
-                }
-            }else{
-                imageView.setImageResource(imgid[0]);
+//            if (place != null) {
+//                byte[] image = place.getImage();
+//                if (image != null) {
+//                    Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
+//                    imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
+//                }
+//            }else{
+            imageView.setImageResource(imgid[0]);
 
-            }
+            //}
 
 
 

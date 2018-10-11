@@ -223,6 +223,8 @@ public class RestaurantsFragment extends Fragment {
 
         myView = inflater.inflate(R.layout.fragment_restaurants, container, false);
         ListView list1 =  (ListView) myView.findViewById(R.id.restaurant_list);
+        myView.setBackgroundColor(getResources().getColor(android.R.color.white));
+
 
 //        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 //        SharedPreferences.Editor editor = prefs.edit();
@@ -351,7 +353,7 @@ public class RestaurantsFragment extends Fragment {
                 System.out.println("Task is: " + taskName);
                 Object pid = task.getPid();
                 if (pid instanceof Event) {
-                    System.err.println("Task = " + taskName + ", Event = " + ((Event) pid).get_id()+" Script = ");
+                    System.err.println("Task = " + taskName + ", Event = " + ((Event) pid).get_id());
 
                 } else if (pid instanceof Email) {
                     System.err.println("Task = " + taskName + ", Email = " + ((Email) pid).get_id());
@@ -1231,16 +1233,16 @@ public class RestaurantsFragment extends Fragment {
                 }
             }
 
-            if (place != null) {
-                byte[] image = place.getImage();
-                if (image != null) {
-                    Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
-                    imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
-                }
-            }else{
+//            if (place != null) {
+//                byte[] image = place.getImage();
+//                if (image != null) {
+//                    Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
+//                    imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
+//                }
+//            }else{
                 imageView.setImageResource(imgid[0]);
 
-            }
+ //           }
 
 
 

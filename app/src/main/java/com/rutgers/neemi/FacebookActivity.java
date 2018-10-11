@@ -268,7 +268,7 @@ public class FacebookActivity extends AppCompatActivity {
         }else if(period.equals("180")){
             cal.add(Calendar.MONTH, -6);
         }else if(period.equals("365")){
-            cal.add(Calendar.MONTH, -12);
+            cal.add(Calendar.MONTH, -36);
         }else if(period.equals("1")){
             cal.add(Calendar.DATE, -1);
         }

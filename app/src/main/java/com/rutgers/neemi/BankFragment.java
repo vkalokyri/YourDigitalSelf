@@ -73,8 +73,8 @@ public class BankFragment extends Fragment {
     PlaidClient plaidClient = PlaidClient.newBuilder()
             .clientIdAndSecret(client_id, secret)
             .publicKey("0ea8ed7c85e1c6d8aa4695cb156c97") // optional. only needed to call endpoints that require a public key
-            //.developmentBaseUrl() // or equivalent, depending on which environment you're calling into
-            .sandboxBaseUrl()
+            .developmentBaseUrl() // or equivalent, depending on which environment you're calling into
+            //.sandboxBaseUrl()
             .build();
 
 

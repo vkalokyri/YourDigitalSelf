@@ -20,17 +20,7 @@
 <task binding="Task" completionQuantity="1" startQuantity="1" name="EstablishWhatEat" id="EstablishWhatEat"/>
 <parallelGateway gatewayDirection="Converging" name="" id="AfterEstablishingW4"/>
 <parallelGateway gatewayDirection="Diverging" name="" id="OptionalWriteInCalendar"/>
-<task binding="Task" completionQuantity="1" startQuantity="1" name="writeInCalendar" id="writeInCalendar">
-<locals>
-<who name="whoIsTheOrganizer"/>
-<who name="whoIsTheEventCreator"/>
-<who name="whoWillBeInTheEvent"/>
-<what name="whatEvent"/>
-<when name="whenTheEventStarts"/>
-<when name="whenTheEventEnds"/>
-<when name="whenWasTheEventCreated"/>
-</locals>
-</task>
+<callActivity calledElement="writeInCalendar" name="writeInCalendar" t="restaurant" id="subProcessWriteInCalendar"/>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="OptionalReservation"/>
 <callActivity calledElement="makeReservation" name="makeRestaurantReservation" t="restaurant" id="SubProcessMakeReservation" />
 <task binding="Task" completionQuantity="1" startQuantity="1" name="ChangePlans" id="ChangePlans"/>
@@ -64,7 +54,7 @@
 <sequenceFlow sourceRef="EstablishWhereEat" targetRef="AfterEstablishingW4" name="" id=""/>
 <sequenceFlow sourceRef="EstablishWhoEat" targetRef="AfterEstablishingW4" name="" id=""/>
 <sequenceFlow sourceRef="AfterEstablishingW4" targetRef="OptionalWriteInCalendar" name="" id=""/>
-<sequenceFlow sourceRef="OptionalWriteInCalendar" targetRef="WriteInCalendar" name="" id=""/>
+<sequenceFlow sourceRef="OptionalWriteInCalendar" targetRef="subProcessWriteInCalendar" name="" id=""/>
 <sequenceFlow sourceRef="OptionalWriteInCalendar" targetRef="OptionalReservation" name="" id=""/>
 <sequenceFlow sourceRef="OptionalReservation" targetRef="SubProcessMakeReservation" name="" id=""/>
 <sequenceFlow sourceRef="OptionalReservation" targetRef="ChangePlans" name="" id=""/>

@@ -549,7 +549,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         }else if(period.equals("30")){
             cal.add(Calendar.MONTH, -1);
         }else if(period.equals("180")){
-            cal.add(Calendar.MONTH, -6);
+            cal.add(Calendar.MONTH, -3);
         }else if(period.equals("365")){
             cal.add(Calendar.MONTH, -12);
         }else if(period.equals("1")){

@@ -57,7 +57,8 @@ public class ScriptFragment2 extends Fragment {
     ListView listView;
     View view;
     Integer[] imgid={
-            R.drawable.restaurant
+            R.drawable.restaurant,
+            R.drawable.trips
     };
 
     @Override
@@ -94,16 +95,20 @@ public class ScriptFragment2 extends Fragment {
             }
         }
 
-        if (place != null) {
-            byte[] image = place.getImage();
-            if (image != null) {
-                Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
-                imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
+//        if (place != null) {
+//            byte[] image = place.getImage();
+//            if (image != null) {
+//                Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
+//                imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
+//            }
+//        }else{
+            if(script.getScriptDefinition().getName().equals("goingForATrip")) {
+                imageView.setImageResource(imgid[1]);
+            }else{
+                imageView.setImageResource(imgid[0]);
             }
-        }else{
-            imageView.setImageResource(imgid[0]);
 
-        }
+       // }
 
         //imageView.setImageResource(imgid[0]);
         ArrayList<ScriptLocalValues> localValues = script.getLocalValues();
@@ -363,7 +368,7 @@ public class ScriptFragment2 extends Fragment {
                 text.append("\n");
             }
             txtListHeaderBody.setText(text);
-        }else if(childTask.getPid() instanceof Calendar){
+        }else if(childTask.getPid() instanceof Event){
             imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.google_calendar));
             txtListHeader.setText(((Event) childTask.getPid()).getTitle());
             StringBuilder text = new StringBuilder();

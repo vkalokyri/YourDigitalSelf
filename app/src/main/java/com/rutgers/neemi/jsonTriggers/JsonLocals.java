@@ -26,6 +26,7 @@ import com.rutgers.neemi.interfaces.Clues;
 import com.rutgers.neemi.interfaces.Triggers;
 import com.rutgers.neemi.interfaces.W5hLocals;
 import com.rutgers.neemi.model.Email;
+import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.FeedWithTags;
 import com.rutgers.neemi.model.Person;
@@ -137,36 +138,74 @@ public class JsonLocals implements W5hLocals{
 							localValues.add(((Email)pid).getSubject().toString());
 						}
 						else if (attributeName.toString().equalsIgnoreCase("\"bodyDate\"")){
-							localValues.add(((Email)pid).getBodyDate().toString());
+							if (((Email)pid).getBodyDate()!=null) {
+								localValues.add(((Email) pid).getBodyDate().toString());
+							}
 						}
 					}else if (objectClass.equalsIgnoreCase("Transaction")) {
 						if (attributeName.toString().equalsIgnoreCase("\"merchant_name\"")) {
 							localValues.add(((Transaction) pid).getMerchant_name());
 						} else if (attributeName.toString().equalsIgnoreCase("\"date\"")) {
 							localValues.add(String.valueOf(((Transaction) pid).getDate()));
+						}else if (attributeName.toString().equalsIgnoreCase("\"amount\"")) {
+							localValues.add(String.valueOf(((Transaction) pid).getAmount()));
+						} else if (attributeName.toString().equalsIgnoreCase("\"date\"")) {
+							localValues.add(String.valueOf(((Transaction) pid).getDate()));
 						}
-					}else if (objectClass.equalsIgnoreCase("Photo")){
-						if (attributeName.toString().equalsIgnoreCase("\"creator_id\"")){
-							localValues.add(((Photo)pid).getCreator().getName());
-						}else if (attributeName.toString().equalsIgnoreCase("\"name\"")) {
+					}else if (objectClass.equalsIgnoreCase("Photo")) {
+						if (attributeName.toString().equalsIgnoreCase("\"creator_id\"")) {
+							localValues.add(((Photo) pid).getCreator().getName());
+						} else if (attributeName.toString().equalsIgnoreCase("\"name\"")) {
 							localValues.add(String.valueOf(((Photo) pid).getName()));
-						}else if (attributeName.toString().equalsIgnoreCase("\"created_time\"")){
-							localValues.add(String.valueOf(((Photo)pid).getCreated_time()));
+						} else if (attributeName.toString().equalsIgnoreCase("\"created_time\"")) {
+							localValues.add(String.valueOf(((Photo) pid).getCreated_time()));
+						} else if (attributeName.toString().equalsIgnoreCase("\"place_id\"")) {
+							if (((Photo) pid).getPlace().getName() != null) {
+								localValues.add(String.valueOf(((Photo) pid).getPlace().getName()));
+							} else if (((Photo) pid).getPlace().getCity() != null) {
+								localValues.add(String.valueOf(((Photo) pid).getPlace().getCity()));
+							}
+
+						} else if (attributeName.toString().equalsIgnoreCase("\"PhotoTags\"")) {
+							try {
+								ArrayList<Person> tags = helper.getPhotoWithTags(((Photo) pid).get_id());
+								for (Person p : tags) {
+									localValues.add(p.getName());
+								}
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
+						}
+					}else if (objectClass.equalsIgnoreCase("Event")){
+						if (attributeName.toString().equalsIgnoreCase("\"creator_id\"")){
+							if (((Event)pid).getCreator().getName()!=null) {
+								localValues.add(((Event)pid).getCreator().getName());
+							}else{
+								localValues.add(((Event)pid).getCreator().getEmail());
+							}
+						}else if (attributeName.toString().equalsIgnoreCase("\"title\"")) {
+							localValues.add(String.valueOf(((Event) pid).getTitle()));
+						}else if (attributeName.toString().equalsIgnoreCase("\"dateCreated\"")) {
+							localValues.add(new Date(((Event)pid).getDateCreated()).toString());
+						}else if (attributeName.toString().equalsIgnoreCase("\"startTime\"")){
+							localValues.add(new Date(((Event)pid).getStartTime()).toString());
+						}else if (attributeName.toString().equalsIgnoreCase("\"endTime\"")) {
+							localValues.add(new Date(((Event)pid).getEndTime()).toString());
+						}else if (attributeName.toString().equalsIgnoreCase("\"location\"")){
+								localValues.add(String.valueOf(((Event)pid).getLocation()));
+						}else if (attributeName.toString().equalsIgnoreCase("\"organizer_id\"")) {
+							if (((Event) pid).getOrganizer().getName()!=null) {
+								localValues.add(((Event) pid).getOrganizer().getName());
+							}else{
+								localValues.add(((Event) pid).getOrganizer().getEmail());
+							}
+						}else if (attributeName.toString().equalsIgnoreCase("\"location\"")){
+								localValues.add(String.valueOf(((Event)pid).getLocation()));
 						}else if (attributeName.toString().equalsIgnoreCase("\"place_id\"")){
 							if (((Photo)pid).getPlace().getName()!=null){
 								localValues.add(String.valueOf(((Photo) pid).getPlace().getName()));
 							}else if (((Photo)pid).getPlace().getCity()!=null) {
 								localValues.add(String.valueOf(((Photo) pid).getPlace().getCity()));
-							}
-
-						}else if (attributeName.toString().equalsIgnoreCase("\"PhotoTags\"")) {
-							try {
-								ArrayList<Person> tags = helper.getPhotoWithTags(((Photo)pid).get_id());
-								for(Person p:tags){
-									localValues.add(p.getName());
-								}
-							} catch (SQLException e) {
-								e.printStackTrace();
 							}
 						}
 					}else if (objectClass.equalsIgnoreCase("Feed")){

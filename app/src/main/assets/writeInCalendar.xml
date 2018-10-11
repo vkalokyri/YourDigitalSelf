@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions id="definitions" 
+xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+targetNamespace="http://www.activiti.org/bpmn2.0">
+
+
+
+<process binding="Process" isExecutable="true" id="writeInCalendar">
+<locals>
+    <who name="whoIsTheOrganizer"/>
+    <who name="whoIsTheEventCreator"/>
+    <who name="whoWillBeInTheEvent"/>
+    <what name="whatEvent"/>
+    <when name="whenIsTheEvent"/>
+    <when name="whenEventWasCreated"/>
+    <where name="whereEventOccured"/>
+</locals>
+<startEvent name="" id="SubProcessStart"/>
+<endEvent name="" id="SubProcessEnd"/>
+<inclusiveGateway gatewayDirection="Diverging" name="" id="typesOfCalendar"/>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="WriteInGoogleCalendar" id="WriteInGoogleCalendar">
+    <locals>
+        <who name="whoOrganizedEvent"/>
+        <who name="whoCreatedEvent"/>
+        <when name="whenTheEventStarts"/>
+        <when name="whenTheEventEnds"/>
+        <when name="whenWasTheEventCreated"/>
+        <where name="whereIsTheEvent"/>
+        <what name="whatIsTheEventAbout"/>
+    </locals>
+</task>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="WriteInOffice365Calendar" id="WriteInOffice365Calendar"/>
+<inclusiveGateway gatewayDirection="Converging" name="" id="ConvergeTypesOfReminders"/>
+<sequenceFlow sourceRef="SubProcessStart" targetRef="typesOfCalendar" name="" id=""/>
+<sequenceFlow sourceRef="typesOfCalendar" targetRef="WriteInGoogleCalendar" name="" id=""/>
+<sequenceFlow sourceRef="typesOfCalendar" targetRef="WriteInOffice365Calendar" name="" id=""/>
+<sequenceFlow sourceRef="WriteInGoogleCalendar" targetRef="ConvergeTypesOfReminders" name="" id=""/>
+<sequenceFlow sourceRef="WriteInOffice365Calendar" targetRef="ConvergeTypesOfReminders" name="" id=""/>
+<sequenceFlow sourceRef="ConvergeTypesOfReminders" targetRef="SubProcessEnd" name="" id=""/>
+</process> 
+
+</definitions>

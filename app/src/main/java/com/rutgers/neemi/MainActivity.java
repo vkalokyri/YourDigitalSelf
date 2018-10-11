@@ -15,6 +15,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.j256.ormlite.dao.RuntimeExceptionDao;
+import com.rutgers.neemi.model.PhotoTags;
 import com.rutgers.neemi.util.ApplicationManager;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,8 +35,13 @@ public class MainActivity extends AppCompatActivity {
 
 //        ConnectionSource connectionSource = new AndroidConnectionSource(helper);
 //        RuntimeExceptionDao<PhotoTags, String> subScriptDao = helper.getPhotoTagsDao();
-//        subScriptDao.queryRaw("delete from TransactionHasCategory;");
-//
+//        subScriptDao.queryRaw("delete from `Transaction` where merchant_name='Payment Thank You-Mobile';");
+//        subScriptDao.queryRaw("delete from `Transaction` where merchant_name='FOREIGN TRANSACTION FEE';");
+//        subScriptDao.queryRaw("delete from `Transaction` where merchant_name='GERLANDAS-BUSH CAMPUS';");
+
+        //        subScriptDao.queryRaw("delete from `Feed`;");
+//        subScriptDao.queryRaw("delete from `Album`;");
+
 //        subScriptDao.queryRaw("delete from Transaction;");
 //        subScriptDao.queryRaw("insert into Person values (170, null, 'Merve Yuksel' ,null, 0, null);");
 //        subScriptDao.queryRaw("insert into Person values (171, null, 'Vilmoula Kala' ,null, 0, null);");

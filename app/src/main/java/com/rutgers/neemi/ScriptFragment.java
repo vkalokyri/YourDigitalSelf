@@ -69,7 +69,8 @@ public class ScriptFragment extends Fragment {
 
 
     Integer[] imgid={
-            R.drawable.restaurant
+            R.drawable.restaurant,
+            R.drawable.trips
     };
 
 
@@ -326,10 +327,18 @@ public class ScriptFragment extends Fragment {
                         text.append("\n");
                     }
                     txtListHeaderBody.setText(text);
-                }else if(childTask.getPid() instanceof Calendar){
+                }else if(childTask.getPid() instanceof Event){
                     imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.google_calendar));
                     txtListHeader.setText(((Event) childTask.getPid()).getTitle());
-                    txtListHeaderBody.setText(((Event) childTask.getPid()).getCreator().getName());
+                    StringBuilder text = new StringBuilder();
+                    for(TaskLocalValues taskLocalValues : childTask.getLocalValues()){
+                        text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                        text.append(": ");
+                        text.append(taskLocalValues.getLocal_value());
+                        text.append("\n");
+                    }
+                    txtListHeaderBody.setText(text);
+
                 }else if(childTask.getPid() instanceof Feed){
                     imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.fb_logo));
                     txtListHeader.setText(((Feed) childTask.getPid()).getMessage());
@@ -491,10 +500,6 @@ public class ScriptFragment extends Fragment {
             return true;
         }
     }
-
-
-
-
 
 
 }

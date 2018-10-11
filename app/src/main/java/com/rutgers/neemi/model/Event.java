@@ -28,7 +28,7 @@ public class Event implements Serializable {
     String description;
     //@ForeignCollectionField(eager = false, columnName="attendees")
     //ForeignCollection<Person> attendees;
-    @DatabaseField(foreign = true)
+    @DatabaseField(foreign = true, foreignAutoRefresh = true)
     Person creator;
     @DatabaseField
     long dateCreated;
