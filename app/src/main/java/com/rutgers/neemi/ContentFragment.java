@@ -1538,14 +1538,14 @@ public class ContentFragment extends Fragment {
                                     startTrip = localValue.getLocal_value();
                                 } else {
                                     if (endTrip == null) {
-                                        if (localValue.getLocal_value().compareTo(startTrip) < 0) {
+                                        if (localValue.getLocal_value().compareTo(startTrip) <= 0) {
                                             endTrip = startTrip;
                                             startTrip = localValue.getLocal_value();
                                         } else if (localValue.getLocal_value().compareTo(startTrip) > 0) {
                                             endTrip = localValue.getLocal_value();
                                         }
                                     } else {
-                                        if (localValue.getLocal_value().compareTo(startTrip) < 0) {
+                                        if (localValue.getLocal_value().compareTo(startTrip) <= 0) {
                                             startTrip = localValue.getLocal_value();
                                         } else if (localValue.getLocal_value().compareTo(endTrip) > 0) {
                                             endTrip = localValue.getLocal_value();
@@ -1658,7 +1658,7 @@ public class ContentFragment extends Fragment {
                 for (ScriptLocalValues lv:curItem.getLocalValues()){
                     if (lv.getLocalProperties().getW5h_label().equalsIgnoreCase("when")){
                         if(lv.getLocal_value()!=null && startTrip!=null && endTrip!=null) {
-                            if (lv.getLocal_value().compareTo(startTrip) > 0 && lv.getLocal_value().compareTo(endTrip) < 0) {
+                            if (lv.getLocal_value().compareTo(startTrip) >= 0 && lv.getLocal_value().compareTo(endTrip) < 0) {
                                 tripRestaurants.add(curItem);
                             }
                         }
