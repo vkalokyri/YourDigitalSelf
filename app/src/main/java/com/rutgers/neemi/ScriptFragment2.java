@@ -364,10 +364,19 @@ public class ScriptFragment2 extends Fragment {
            // String text = "whenPaid: "+parsedDate+" \n howMuchWasPaid: $"+((Transaction) childTask.getPid()).getAmount() ;
             StringBuilder text = new StringBuilder();
             for(TaskLocalValues taskLocalValues : childTask.getLocalValues()){
-                text.append(taskLocalValues.getLocalProperties().getW5h_value());
-                text.append(": ");
-                text.append(taskLocalValues.getLocal_value());
-                text.append("\n");
+                if (taskLocalValues.getLocalProperties().getW5h_label().equalsIgnoreCase("when")){
+                    Date date = new Date(Long.parseLong(taskLocalValues.getLocal_value()));
+                    SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+                    text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                    text.append(": ");
+                    text.append(sf.format(date));
+                    text.append("\n");
+                }else{
+                    text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                    text.append(": ");
+                    text.append(taskLocalValues.getLocal_value());
+                    text.append("\n");
+                }
             }
             txtListHeaderBody.setText(text);
         }else if(childTask.getPid() instanceof Event){
@@ -386,15 +395,21 @@ public class ScriptFragment2 extends Fragment {
             imageView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.fb_logo));
             txtListHeader.setText(((Feed) childTask.getPid()).getMessage());
             txtListHeaderBody.setText(((Feed) childTask.getPid()).getCreator().getName());
-            Date extractedDate = new Date(((Feed) childTask.getPid()).getCreated_time());
-            Format format = new SimpleDateFormat("yyyy-MM-dd");
-            String parsedDate = format.format(extractedDate);
             StringBuilder text = new StringBuilder();
             for(TaskLocalValues taskLocalValues : childTask.getLocalValues()){
-                text.append(taskLocalValues.getLocalProperties().getW5h_value());
-                text.append(": ");
-                text.append(taskLocalValues.getLocal_value());
-                text.append("\n");
+                if (taskLocalValues.getLocalProperties().getW5h_label().equalsIgnoreCase("when")){
+                    Date date = new Date(Long.parseLong(taskLocalValues.getLocal_value()));
+                    SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+                    text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                    text.append(": ");
+                    text.append(sf.format(date));
+                    text.append("\n");
+                }else{
+                    text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                    text.append(": ");
+                    text.append(taskLocalValues.getLocal_value());
+                    text.append("\n");
+                }
             }
 //            StringBuilder sb = new StringBuilder();
 //            sb.append("whenWasPosted: " + parsedDate + "\n");
@@ -439,9 +454,9 @@ public class ScriptFragment2 extends Fragment {
                 if (taskLocalValues.getLocalProperties().getW5h_label().equalsIgnoreCase("when")){
                     Date date = new Date(Long.parseLong(taskLocalValues.getLocal_value()));
                     SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
-                    text.append(sf.format(date));
+                    text.append(taskLocalValues.getLocalProperties().getW5h_value());
                     text.append(": ");
-                    text.append(taskLocalValues.getLocal_value());
+                    text.append(sf.format(date));
                     text.append("\n");
 
                     // Date extractedDate = new Date(taskLocalValues.getLocal_value());

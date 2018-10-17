@@ -10,7 +10,7 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <when name="whenWasThePayment"/>
 <where name="whereWasThePayment"/>
 <what name="whatWasPaymentAbout"/>
-<how name="howWasPaid"/>
+<how name="howMuchWasThePayment"/>
 </locals>
 <startEvent name="" id="SubProcessStart"/>
 <endEvent name="" id="SubProcessEnd"/>
@@ -21,7 +21,7 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
     <when name="whenPaid"/>
     <where name="wherePaymentOccurred"/>
     <what name="whatWasPaid"/>
-    <how name="howWasPaid"/>
+    <how name="howMuchWasPaid"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="PayByCreditCard" id="PayByCreditCard">
@@ -30,7 +30,7 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
     <when name="whenPaid"/>
     <where name="wherePaymentOccurred"/>
     <what name="whatWasPaid"/>
-    <how name="howWasPaid"/>
+    <how name="howMuchWasPaid"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="PayByDebitCard" id="PayByDebitCard">
@@ -39,7 +39,7 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
     <when name="whenPaid"/>
     <where name="wherePaymentOccurred"/>
     <what name="whatWasPaid"/>
-    <how name="howWasPaid"/>
+    <how name="howMuchWasPaid"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="PayByCheck" id="PayByCheck">
@@ -48,7 +48,7 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
     <when name="whenPaid"/>
     <where name="wherePaymentOccurred"/>
     <what name="whatWasPaid"/>
-    <how name="howWasPaid"/>
+    <how name="howMuchWasPaid"/>
 </locals>
 </task>
 <exclusiveGateway gatewayDirection="Diverging" name="" id="optionalConfirmationEmail"/>
@@ -58,7 +58,7 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
     <when name="whenPaid"/>
     <where name="wherePaymentOccurred"/>
     <what name="whatWasPaid"/>
-    <how name="howWasPaid"/>
+    <how name="howMuchWasPaid"/>
 </locals>
 </task>
 <exclusiveGateway gatewayDirection="Converging" name="" id="paymentCompleted"/>

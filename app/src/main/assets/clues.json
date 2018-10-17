@@ -41,7 +41,7 @@
 				"from": ["Category","Transaction","TransactionHasCategory"],
 				"where": {
 					"and": {
-						"category" :["Food and Beverage Store","Food and Drink", "Restaurants", "Fast Food"],
+						"category" :["Food and Drink", "Restaurants", "Fast Food"],
 						"`Transaction`._id": "TransactionHasCategory.transaction_id",
 						"Category._id":"TransactionHasCategory.category_id"
 					}
@@ -185,7 +185,7 @@
 					"from": ["Feed", "PlaceHasCategory", "Category"],
 					"where": {
 						"and": {
-							"category" :["Food and Beverage Store","Food and Drink", "restaurant", "Fast Food"],
+							"category" :["Food and Drink", "restaurant", "Fast Food"],
 							"Feed.place_id":"PlaceHasCategory.place_id",
 							"Category._id":"PlaceHasCategory.category_id"
 						}
@@ -195,7 +195,7 @@
 					"from": ["Photo", "PlaceHasCategory", "Category"],
 					"where": {
 						"and": {
-							"category" :["Food and Beverage Store","Food and Drink", "restaurant", "Fast Food"],
+							"category" :["Food and Drink", "restaurant", "Fast Food"],
 							"Photo.place_id":"PlaceHasCategory.place_id",
 							"Category._id":"PlaceHasCategory.category_id",
 							"source":"facebook"
@@ -206,7 +206,7 @@
 					"from": ["Photo", "PlaceHasCategory", "Category"],
 					"where": {
 						"and": {
-							"category" :["Food and Beverage Store","Food and Drink", "restaurant", "Fast Food"],
+							"category" :["Food and Drink", "restaurant", "Fast Food"],
 							"Photo.place_id":"PlaceHasCategory.place_id",
 							"Category._id":"PlaceHasCategory.category_id",
 							"source":"instagram"

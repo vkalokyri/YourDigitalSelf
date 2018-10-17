@@ -29,8 +29,8 @@
 	"whatWasPaymentAbout":
 	{	"Transaction": "description"
 	},
-	"howWasPaid":
-	{	"Transaction": "payment_method"
+	"howMuchWasPaid":
+	{	"Transaction": "amount"
 	},
 	"whoMadeTheReservation":{
 		"Email": "from"
@@ -108,14 +108,14 @@
 	"whoInitiatedTheConversation":"whoSentEmail",
 	"whoWasIncludedInTheConversation":["whoReceivedEmail","whoWasCCed","whoWasBCCed"],
 	"whenWasTheConversationInitiated":"whenWasSent",
-	"whoAttended":["whoSentEmail","whoReceivedEmail","whoWasCCed","whoWasBCCed","whoMadeThePost", "whoIsIncludedInPost", "whoCreatedEvent", "whoIsIncludedInPhoto"],
-	"whenEatingOccurred": ["whenIsTheProposedEvent","whenPaid", "whenWasEvent","whenWasPosted","whenWasPhotoUploaded"],
+	"whoAttended":["whoIsTheEventCreator","whoWillBeInTheEvent","whoSentEmail","whoReceivedEmail","whoWasCCed","whoWasBCCed","whoMadeThePost", "whoIsIncludedInPost", "whoCreatedEvent", "whoIsIncludedInPhoto"],
+	"whenEatingOccurred": ["whenIsTheProposedEvent","whenPaid", "whenWasEvent","whenWasPosted","whenWasPhotoUploaded","whenTheEventStarts","whenTheEventEnds"],
 	"whenTripOccurred":["whenIsTheProposedEvent", "whenTheEventStarts","whenTheEventEnds", "whenWasEvent"],
 	"whereTripOccurred":["whereWasTheReservation", "whereWasPosted", "whereIsTheEvent"],
 	"whenTripBooked":["whenPaid","whenEventWasCreated"],
-	"whereEatingOccurred":["wherePaymentOccurred","whereWasTheReservation","whereWasPosted","whereWasUploaded"],
+	"whereEatingOccurred":["wherePaymentOccurred","whereWasTheReservation","whereWasPosted","whereWasUploaded","whereIsTheEvent"],
 	"whenWasTheReservationScheduled":["whenWasEvent"],
-	"whatWasEatingAbout":["whatIsPostAbout","whatIsPhotoAbout"],
+	"whatWasEatingAbout":["whatIsPostAbout","whatIsPhotoAbout","whatIsTheEventAbout"],
 	"whoMadeThePayment":"whoPaid",
 	"whenWasThePayment":"whenPaid",
 	"whereWasThePayment":"wherePaymentOccurred",
@@ -128,5 +128,7 @@
 	"whatEvent":"whatIsTheEventAbout",
 	"whenIsTheEvent":["whenTheEventStarts","whenTheEventEnds"],
 	"whenEventWasCreated":"whenWasTheEventCreated",
-	"whatWasTripAbout":"whatIsTheEventAbout"
+	"whatWasTripAbout":"whatIsTheEventAbout",
+	"howMuchWasTheEatingOut":"howMuchWasPaid",
+	"howMuchWasThePayment":"howMuchWasPaid"
 }
