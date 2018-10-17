@@ -170,7 +170,11 @@ public class JsonLocals implements W5hLocals{
 							try {
 								ArrayList<Person> tags = helper.getPhotoWithTags(((Photo) pid).get_id());
 								for (Person p : tags) {
-									localValues.add(p.getName());
+									if(p.getName()!=null) {
+										localValues.add(p.getName());
+									}else{
+										localValues.add(p.getUsername());
+									}
 								}
 							} catch (SQLException e) {
 								e.printStackTrace();
@@ -225,8 +229,12 @@ public class JsonLocals implements W5hLocals{
 						}else if (attributeName.toString().equalsIgnoreCase("\"FeedWithTags\"")) {
 							try {
 								ArrayList<Person> tags = helper.getFeedWithTags(((Feed)pid).get_id());
-								for(Person p:tags){
-									localValues.add(p.getName());
+								for (Person p : tags) {
+									if(p.getName()!=null) {
+										localValues.add(p.getName());
+									}else{
+										localValues.add(p.getUsername());
+									}
 								}
 							} catch (SQLException e) {
 								e.printStackTrace();

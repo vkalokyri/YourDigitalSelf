@@ -19,9 +19,9 @@ public interface RetrofitService {
 
 
     @GET("v1/users/self/media/recent")
-    Call<InstagramResponse> getRecentMedia(@Query("access_token") String access_token);
+    Call<InstagramResponse> getRecentMedia(@Query("access_token") String access_token, @Query("count") int count);
 
     @GET("v1/users/self/media/recent")
-    Call<InstagramResponse> getRecentMediaAfterID(@Query("access_token") String access_token, @Query("MIN_ID") String id);
+    Call<InstagramResponse> getRecentMediaAfterID(@Query("access_token") String access_token,@Query("count") int count, @Query("max_tag_id") String id);
 
 }

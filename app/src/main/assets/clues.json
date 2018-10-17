@@ -191,13 +191,25 @@
 						}
 					}
 				},
-				"PostPhotoOnFacebook": {
+				"UploadPhotoOnFacebook": {
 					"from": ["Photo", "PlaceHasCategory", "Category"],
 					"where": {
 						"and": {
 							"category" :["Food and Beverage Store","Food and Drink", "restaurant", "Fast Food"],
 							"Photo.place_id":"PlaceHasCategory.place_id",
-							"Category._id":"PlaceHasCategory.category_id"
+							"Category._id":"PlaceHasCategory.category_id",
+							"source":"facebook"
+						}
+					}
+				},
+				"PostOnInstagram":{
+					"from": ["Photo", "PlaceHasCategory", "Category"],
+					"where": {
+						"and": {
+							"category" :["Food and Beverage Store","Food and Drink", "restaurant", "Fast Food"],
+							"Photo.place_id":"PlaceHasCategory.place_id",
+							"Category._id":"PlaceHasCategory.category_id",
+							"source":"instagram"
 						}
 					}
 				}

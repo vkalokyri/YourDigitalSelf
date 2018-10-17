@@ -35,6 +35,13 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
     </locals>
 </task>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="PostOnInstagram" id="PostOnInstagram"/>
+    <locals>
+        <who name="whoUploadedThePhoto"/>
+        <who name="whoIsIncludedInPhoto"/>
+        <what name="whatIsPhotoAbout"/>
+        <when name="whenWasPhotoUploaded"/>
+        <where name="whereWasUploaded"/>
+    </locals>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="PostOnTwitter" id="PostOnTwitter"/>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="CheckinOnFacebook" id="CheckinOnFacebook"/>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="CheckinOnFoursquare" id="CheckinOnFoursquare"/>

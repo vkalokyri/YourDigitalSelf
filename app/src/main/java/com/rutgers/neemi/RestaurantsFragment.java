@@ -88,14 +88,14 @@ public class RestaurantsFragment extends Fragment {
 
 
     private static final String TAG = "RestaurantsFragment";
-    View myView;
+    public static View myView;
     String scriptKeywords;
     static Triggers scriptTriggers;
     static Clues clues;
     public static HashMap<Object,Object> triggers_Clues = new HashMap<Object,Object>();
     DatabaseHelper helper;
     List<Task> tasksRunning=new ArrayList<Task>();
-    ArrayList<Script> listOfScripts = new ArrayList<Script>();
+    static ArrayList<Script> listOfScripts = new ArrayList<Script>();
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     RuntimeExceptionDao<ScriptDefinition, String> scriptDefDao;
     RuntimeExceptionDao<Subscript, String> subscriptsDao;
@@ -1195,7 +1195,7 @@ public class RestaurantsFragment extends Fragment {
 
 
 
-    private class CustomListAdapter extends ArrayAdapter<Script> {
+    public class CustomListAdapter extends ArrayAdapter<Script> {
 
         private final Activity context;
         private final List<Script> itemname;

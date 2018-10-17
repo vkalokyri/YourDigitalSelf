@@ -38,7 +38,9 @@ public enum PROPERTIES {
 	OutputFile("OutputFile"),
 	MatcherMerger("MatcherMerger"),
 	EmailThreshold("EmailThreshold"),
-	NameThreshold("NameThreshold");
+	NameThreshold("NameThreshold"),
+	Classifier("Classifier");
+
 
 	
 	private String strVal;

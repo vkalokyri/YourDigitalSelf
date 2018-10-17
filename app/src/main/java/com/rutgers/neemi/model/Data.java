@@ -10,12 +10,21 @@ public class Data{
 
     private Images images;
     private User user;
+    private String link;
     private Caption caption;
     private long created_time;
     private UsersTagged[] users_in_photo;
     private String[] tags;
     private Location location;
     private String id;
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
 
     public String getId() {
         return id;
@@ -48,10 +57,19 @@ public class Data{
     public Caption getCaption() {return caption;}
 
     public class Location {
+        private String id;
         private double latitude;
         private double longitude;
         private String street_address;
         private String name;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
 
         public double getLatitude() {
             return latitude;

@@ -14,10 +14,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
-
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.rutgers.neemi.model.PhotoTags;
 import com.rutgers.neemi.util.ApplicationManager;
+import com.rutgers.neemi.util.NER;
+
+import java.util.ArrayList;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -79,6 +82,18 @@ public class MainActivity extends AppCompatActivity {
 //                }
 
 
+//        try {
+//            NER ner = new NER(this);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
+//        String[] args= new String[2];
+//        try {
+//            NERDemo d = new NERDemo();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);

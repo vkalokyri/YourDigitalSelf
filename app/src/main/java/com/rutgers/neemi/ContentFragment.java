@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -73,6 +74,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -119,33 +121,11 @@ public class ContentFragment extends Fragment {
 
     }
 
-    public void parseAttributes(XmlPullParser parser) throws IOException, XmlPullParserException {
-        int eventType = parser.getEventType();
-        if (eventType==XmlPullParser.START_TAG && parser.getName().equals("attribute")) {
-            while (eventType != XmlPullParser.END_TAG && !parser.getName().equals("record")) {
-                String attributeName = parser.getAttributeValue(null, "name");
-                System.out.println("attributeName = " + attributeName);
-                parser.nextTag();
-                while (parser.getName().equals("value")) {
-                    String attributeValue = parser.nextText();
-                    System.out.println("Value = " + attributeValue);
-                    parser.nextTag();
-                }
-                parser.nextTag();
-            }
-        }
-    }
-
-    public void parseRecord(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, null, "record");
-        parser.nextTag();
-        parseAttributes(parser);
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        myView = inflater.inflate(R.layout.content_fragment,container,false);
+        myView = inflater.inflate(R.layout.content_fragment, container,false);
         ListView list1 =  (ListView) myView.findViewById(R.id.trip_list);
         myView.setBackgroundColor(getResources().getColor(android.R.color.white));
 
@@ -189,8 +169,7 @@ public class ContentFragment extends Fragment {
 
 
 
-        list1.setOnItemClickListener(
-                new AdapterView.OnItemClickListener()
+        list1.setOnItemClickListener(new AdapterView.OnItemClickListener()
                 {
                     @Override
                     public void onItemClick(AdapterView<?> arg0, View view,
@@ -322,9 +301,33 @@ public class ContentFragment extends Fragment {
 
             });
 
+
             CustomListAdapter adapter=new CustomListAdapter(getActivity(), listOfScripts, imgid);
             ListView list= myView.findViewById(R.id.trip_list);
             list.setAdapter(adapter);
+
+            list.setOnItemClickListener(new AdapterView.OnItemClickListener()
+                 {
+                     @Override
+                     public void onItemClick(AdapterView<?> arg0, View view,
+                                             int position, long id) {
+                         ScriptFragment2 scriptFragment = new ScriptFragment2();
+                         Bundle arguments = new Bundle();
+                         arguments.putSerializable("processes", listOfScripts);
+                         arguments.putSerializable("position",position);
+                         arguments.putSerializable("id",id);
+
+                         scriptFragment.setArguments(arguments);
+
+                         android.support.v4.app.FragmentTransaction scriptfragmentTrans = getFragmentManager().beginTransaction();
+                         scriptfragmentTrans.add(R.id.frame,scriptFragment);
+                         scriptfragmentTrans.addToBackStack(null);
+                         scriptfragmentTrans.commit();
+                         Toast.makeText(getContext(), "Pressed here!", Toast.LENGTH_LONG).show();
+                     }
+                 }
+            );
+
         } catch (FileNotFoundException e1) {
             e1.printStackTrace();
         }catch (IOException e) {
@@ -1518,12 +1521,42 @@ public class ContentFragment extends Fragment {
             //txtTitle.setText(itemname.get(position).getScore()+", "+String.valueOf(((Email)processTask.getPid()).get_id()));
 
 
+            String startTrip=null;
+            String endTrip=null;
+            ArrayList<Script> restaurants=new ArrayList<>();
+
+
             ArrayList<ScriptLocalValues> localValues = script.getLocalValues();
             if (localValues != null) {
                 for (ScriptLocalValues localValue : localValues) {
                     if (localValue != null) {
                         LocalProperties lp = localValue.getLocalProperties();
                         if (lp != null) {
+///////////
+                            if (lp.getW5h_label().equals("when")) {
+                                if (startTrip == null) {
+                                    startTrip = localValue.getLocal_value();
+                                } else {
+                                    if (endTrip == null) {
+                                        if (localValue.getLocal_value().compareTo(startTrip) < 0) {
+                                            endTrip = startTrip;
+                                            startTrip = localValue.getLocal_value();
+                                        } else if (localValue.getLocal_value().compareTo(startTrip) > 0) {
+                                            endTrip = localValue.getLocal_value();
+                                        }
+                                    } else {
+                                        if (localValue.getLocal_value().compareTo(startTrip) < 0) {
+                                            startTrip = localValue.getLocal_value();
+                                        } else if (localValue.getLocal_value().compareTo(endTrip) > 0) {
+                                            endTrip = localValue.getLocal_value();
+                                        }
+                                    }
+                                }
+                            }
+
+
+////////////////
+
                             String w5h_value = lp.getW5h_value();
                             if (map.containsKey(w5h_value)) {
                                 ArrayList<String> values = map.get(w5h_value);
@@ -1539,7 +1572,12 @@ public class ContentFragment extends Fragment {
                         }
                     }
                 }
+
+                restaurants = getTripRestaurants(startTrip,endTrip);
+
             }
+
+
 
             for (String localLabel:map.keySet()) {
                 StringBuilder sb = new StringBuilder();
@@ -1548,7 +1586,7 @@ public class ContentFragment extends Fragment {
                     sb.append(", ");
                 }
                 sb.delete(sb.length() - 2, sb.length() - 1);
-                // }
+
 
                 LinearLayout textLayout = new LinearLayout(context);
                 textLayout.setOrientation(LinearLayout.HORIZONTAL);
@@ -1568,10 +1606,71 @@ public class ContentFragment extends Fragment {
                 textLayout.addView(localValueTextView);
                 linearLayout.addView(textLayout);
 
+
+
+
+
+                //textLayout.addView();
+
+
+            }
+
+            if (restaurants.size()>0){
+                Button b = new Button(this.getContext());
+                b.setText("Trip's Restaurants");
+                b.setTransformationMethod(null);
+                ArrayList<Script> finalRestaurants = restaurants;
+                b.setFocusable(false);
+                b.setFocusableInTouchMode(false);
+                b.setOnClickListener(new Button.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        TripRestaurantsFragment restFragment = new TripRestaurantsFragment();
+                        Bundle args = new Bundle();
+                        args.putSerializable("listOfScripts", finalRestaurants);
+                        restFragment.setArguments(args);
+                        android.support.v4.app.FragmentTransaction restaurantsfragmentTrans = getFragmentManager().beginTransaction();
+                        restaurantsfragmentTrans.add(R.id.frame, restFragment);
+                        restaurantsfragmentTrans.addToBackStack(null);
+                        restaurantsfragmentTrans.commit();
+
+
+                       // Toast.makeText(getContext(), "Restaurants!", Toast.LENGTH_LONG).show();
+                    }
+                });
+                linearLayout.addView(b);
             }
 
             return rowView;
-        };
+        }
+
+        public ArrayList<Script> getTripRestaurants(String startTrip, String endTrip){
+
+            ArrayList<Script> tripRestaurants = new ArrayList<>();
+
+            Iterator<Script> iter = RestaurantsFragment.listOfScripts.iterator();
+            Script curItem;
+
+            while ( iter.hasNext() == true )
+            {
+                curItem =(Script) iter.next();
+                for (ScriptLocalValues lv:curItem.getLocalValues()){
+                    if (lv.getLocalProperties().getW5h_label().equalsIgnoreCase("when")){
+                        if(lv.getLocal_value()!=null && startTrip!=null && endTrip!=null) {
+                            if (lv.getLocal_value().compareTo(startTrip) > 0 && lv.getLocal_value().compareTo(endTrip) < 0) {
+                                tripRestaurants.add(curItem);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return tripRestaurants;
+
+        }
+
+
     }
 
 

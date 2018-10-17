@@ -15,6 +15,7 @@ import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ImageView;
@@ -38,6 +39,7 @@ import com.rutgers.neemi.model.TaskLocalValues;
 import com.rutgers.neemi.model.Transaction;
 
 import java.text.Format;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -424,18 +426,35 @@ public class ScriptFragment2 extends Fragment {
             txtListHeaderBody.setText(mySpannable);
             txtListHeaderBody.setMovementMethod(LinkMovementMethod.getInstance());
         }else if(childTask.getPid() instanceof Photo) {
-            imageView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.fb_logo));
+            if (((Photo) childTask.getPid()).getSource().equalsIgnoreCase("facebook")) {
+                imageView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.fb_logo));
+            }else{
+                imageView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.insta_logo));
+            }
             txtListHeader.setText(((Photo) childTask.getPid()).getName());
             txtListHeaderBody.setText(((Photo) childTask.getPid()).getCreator().getName());
-            Date extractedDate = new Date(((Photo) childTask.getPid()).getCreated_time());
-            Format format = new SimpleDateFormat("yyyy-MM-dd");
-            String parsedDate = format.format(extractedDate);
+
             StringBuilder text = new StringBuilder();
             for(TaskLocalValues taskLocalValues : childTask.getLocalValues()){
-                text.append(taskLocalValues.getLocalProperties().getW5h_value());
-                text.append(": ");
-                text.append(taskLocalValues.getLocal_value());
-                text.append("\n");
+                if (taskLocalValues.getLocalProperties().getW5h_label().equalsIgnoreCase("when")){
+                    Date date = new Date(Long.parseLong(taskLocalValues.getLocal_value()));
+                    SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+                    text.append(sf.format(date));
+                    text.append(": ");
+                    text.append(taskLocalValues.getLocal_value());
+                    text.append("\n");
+
+                    // Date extractedDate = new Date(taskLocalValues.getLocal_value());
+                    //Format format = new SimpleDateFormat("yyyy-MM-dd");
+                    //String parsedDate = format.format(extractedDate);
+
+                }else{
+                    text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                    text.append(": ");
+                    text.append(taskLocalValues.getLocal_value());
+                    text.append("\n");
+                }
+
             }
 //            StringBuilder sb = new StringBuilder();
 //            sb.append("whenWasPosted: " + parsedDate + "\n");
@@ -455,6 +474,13 @@ public class ScriptFragment2 extends Fragment {
                     AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
                     WebView mWebview = new WebView(getApplicationContext());
+                    mWebview.setWebChromeClient(new WebChromeClient());
+                    mWebview.getSettings().setAllowContentAccess(true);
+                    mWebview.getSettings().setJavaScriptEnabled(true);
+                    mWebview.getSettings().setDomStorageEnabled(true);
+                    mWebview.getSettings().setAllowFileAccess(true);
+                    mWebview.getSettings().setUseWideViewPort(true);
+                    mWebview.getSettings().setAppCacheEnabled(true);
                     mWebview.loadUrl(((TextView) view).getText().toString().substring(i1));
                     alert.setView(mWebview);
                     alert.create();
