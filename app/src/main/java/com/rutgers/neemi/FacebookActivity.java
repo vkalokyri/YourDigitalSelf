@@ -769,6 +769,7 @@ public class FacebookActivity extends AppCompatActivity {
 
                         Bundle params = new Bundle();
 
+//,attachments{url,subattachments}
 
                         params.putString("fields", "message,link,place,message_tags,with_tags,description,created_time,from,object_id,picture,story,type");
                         params.putString("since", since.toString());
@@ -818,6 +819,23 @@ public class FacebookActivity extends AppCompatActivity {
                                             if (((JSONObject) rawFeedData.get(j)).has("picture")) {
                                                 feed.setPicture((String) ((JSONObject) rawFeedData.get(j)).get("picture"));
                                             }
+//                                            if(((JSONObject) rawFeedData.get(j)).has("attachments")){
+//                                                ArrayList<String> attachmentsIDs = new ArrayList<>();
+//                                                JSONArray feedAttachments = ((JSONObject)((JSONObject) rawFeedData.get(j)).get("attachments")).getJSONArray("data");
+//                                                for (int m = 0; m < feedAttachments.length(); m++) {
+//                                                    //save whatever data you want from the result
+//                                                    if(((JSONObject) feedAttachments.get(m)).has("subattachments")) {
+//                                                        JSONArray feedSubattachments = ((JSONObject)((JSONObject) rawFeedData.get(m)).get("subattachments")).getJSONArray("data");
+//                                                        for (int v = 0; v < feedSubattachments.length(); v++) {
+//                                                            //Photo feedPhoto = new Photo();
+//                                                            JSONObject target = (JSONObject) ((JSONObject)feedSubattachments.get(v)).get("target");
+//                                                            attachmentsIDs.add(target.getString("id"));
+//
+//                                                        }
+//
+//                                                    }
+//                                                }
+//                                            }
 
                                             if (((JSONObject) rawFeedData.get(j)).has("place")) {
                                                 JSONObject placeJson = (JSONObject) ((JSONObject) rawFeedData.get(j)).get("place");

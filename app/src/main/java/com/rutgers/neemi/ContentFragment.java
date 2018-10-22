@@ -286,8 +286,8 @@ public class ContentFragment extends Fragment {
             }
 
             ArrayList<ArrayList<Task>> tasks = mergeTasksByEventDate(tasksRunning);
-            ArrayList<ArrayList<Task>> tasksThreads = mergeThreads(tasks);
-            listOfScripts = createScriptPerTask(tasksThreads);
+           // ArrayList<ArrayList<Task>> tasksThreads = mergeThreads(tasks);
+            listOfScripts = createScriptPerTask(tasks);
             listOfScripts = mergeScriptsByWhenAndWhere(listOfScripts);
             //listOfScripts = mergeTransactionsAndBookings(listOfScripts);
 
@@ -556,13 +556,15 @@ public class ContentFragment extends Fragment {
                     e.printStackTrace();
                 }
             }else if (task.getPid() instanceof Email) {
-                if (((Email) task.getPid()).getSubjectDate() != null) {
+               // if (((Email) task.getPid()).getSubjectDate() != null) {
                     try {
                         extractedDate = sdf.parse(sdf.format(((Email) task.getPid()).getDate()));
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
-                }
+              //  }else{
+               //     extractedDate = sdf.parse(sdf.format(((Email) task.getPid()).getDate()));
+                //}
             } else if (task.getPid() instanceof Event) {
                 try {
                     extractedDate = sdf.parse(sdf.format(((Event) task.getPid()).getDateCreated()));
@@ -1607,9 +1609,6 @@ public class ContentFragment extends Fragment {
                 linearLayout.addView(textLayout);
 
 
-
-
-
                 //textLayout.addView();
 
 
@@ -1658,7 +1657,7 @@ public class ContentFragment extends Fragment {
                 for (ScriptLocalValues lv:curItem.getLocalValues()){
                     if (lv.getLocalProperties().getW5h_label().equalsIgnoreCase("when")){
                         if(lv.getLocal_value()!=null && startTrip!=null && endTrip!=null) {
-                            if (lv.getLocal_value().compareTo(startTrip) >= 0 && lv.getLocal_value().compareTo(endTrip) < 0) {
+                            if (lv.getLocal_value().compareTo(startTrip) >= 0 && lv.getLocal_value().compareTo(endTrip) <= 0) {
                                 tripRestaurants.add(curItem);
                             }
                         }

@@ -196,15 +196,15 @@ public class JsonLocals implements W5hLocals{
 						}else if (attributeName.toString().equalsIgnoreCase("\"endTime\"")) {
 							localValues.add(new Date(((Event)pid).getEndTime()).toString());
 						}else if (attributeName.toString().equalsIgnoreCase("\"location\"")){
-								localValues.add(String.valueOf(((Event)pid).getLocation()));
+							if(((Event)pid).getLocation()!=null) {
+								localValues.add(String.valueOf(((Event) pid).getLocation()));
+							}
 						}else if (attributeName.toString().equalsIgnoreCase("\"organizer_id\"")) {
 							if (((Event) pid).getOrganizer().getName()!=null) {
 								localValues.add(((Event) pid).getOrganizer().getName());
 							}else{
 								localValues.add(((Event) pid).getOrganizer().getEmail());
 							}
-						}else if (attributeName.toString().equalsIgnoreCase("\"location\"")){
-								localValues.add(String.valueOf(((Event)pid).getLocation()));
 						}else if (attributeName.toString().equalsIgnoreCase("\"place_id\"")){
 							if (((Photo)pid).getPlace().getName()!=null){
 								localValues.add(String.valueOf(((Photo) pid).getPlace().getName()));

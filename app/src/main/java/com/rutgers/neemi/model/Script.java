@@ -141,14 +141,20 @@ public class Script implements Serializable {
 			ArrayList<Script> temp = new ArrayList<Script>();
 			if (this.getSubscripts().size()>0){
 				if(b.getSubscripts().size()>0){
-					for(Script thisSubscript: this.getSubscripts()) {
-						for (Script bSubscript : b.getSubscripts()) {
-							if(thisSubscript.getScriptDefinition().getOfType().equalsIgnoreCase(bSubscript.getScriptDefinition().getOfType())) {
+					for (Script bSubscript : b.getSubscripts()) {
+						boolean merged=false;
+						for(Script thisSubscript: this.getSubscripts()) {
+
+							if(thisSubscript.getScriptDefinition().getName().equalsIgnoreCase(bSubscript.getScriptDefinition().getName()) && thisSubscript.getScriptDefinition().getOfType().equalsIgnoreCase(bSubscript.getScriptDefinition().getOfType())) {
 								thisSubscript.merge(bSubscript);
+								merged=true;
 							}else{
-								temp.add(bSubscript);
+
+
 							}
 						}
+						if(!merged)
+							temp.add(bSubscript);
 					}
 					if (temp!=null){
 						if(temp.size()>0){
