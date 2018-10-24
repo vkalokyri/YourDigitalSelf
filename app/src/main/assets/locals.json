@@ -111,7 +111,7 @@
 	"whoAttended":["whoIsTheEventCreator","whoWillBeInTheEvent","whoSentEmail","whoReceivedEmail","whoWasCCed","whoWasBCCed","whoMadeThePost", "whoIsIncludedInPost", "whoCreatedEvent", "whoIsIncludedInPhoto"],
 	"whenEatingOccurred": ["whenIsTheProposedEvent","whenPaid", "whenWasEvent","whenWasPosted","whenWasPhotoUploaded","whenTheEventStarts","whenTheEventEnds"],
 	"whenTripOccurred":["whenIsTheProposedEvent", "whenTheEventStarts","whenTheEventEnds", "whenWasEvent"],
-	"whereTripOccurred":["whereWasTheReservation", "whereWasPosted", "whereIsTheEvent"],
+	"whereTripOccurred":[ "whereWasPosted", "whereIsTheEvent"],
 	"whenTripBooked":["whenPaid","whenEventWasCreated"],
 	"whereEatingOccurred":["wherePaymentOccurred","whereWasTheReservation","whereWasPosted","whereWasUploaded","whereIsTheEvent"],
 	"whenWasTheReservationScheduled":["whenWasEvent"],

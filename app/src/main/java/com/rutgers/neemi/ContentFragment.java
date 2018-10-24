@@ -77,6 +77,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import javax.json.JsonString;
 import javax.xml.parsers.ParserConfigurationException;
@@ -1583,7 +1584,15 @@ public class ContentFragment extends Fragment {
 
             for (String localLabel:map.keySet()) {
                 StringBuilder sb = new StringBuilder();
-                for (String localValue : map.get(localLabel)) {
+
+                ArrayList<String> list = map.get(localLabel);
+                Set<String> hs = new HashSet<>();
+                hs.addAll(list);
+                list.clear();
+                list.addAll(hs);
+
+                for (String localValue :list) {
+                //for (String localValue : map.get(localLabel)) {
                     sb.append(localValue);
                     sb.append(", ");
                 }
@@ -1633,8 +1642,6 @@ public class ContentFragment extends Fragment {
                         restaurantsfragmentTrans.add(R.id.frame, restFragment);
                         restaurantsfragmentTrans.addToBackStack(null);
                         restaurantsfragmentTrans.commit();
-
-
                        // Toast.makeText(getContext(), "Restaurants!", Toast.LENGTH_LONG).show();
                     }
                 });
@@ -1657,8 +1664,9 @@ public class ContentFragment extends Fragment {
                 for (ScriptLocalValues lv:curItem.getLocalValues()){
                     if (lv.getLocalProperties().getW5h_label().equalsIgnoreCase("when")){
                         if(lv.getLocal_value()!=null && startTrip!=null && endTrip!=null) {
-                            if (lv.getLocal_value().compareTo(startTrip) >= 0 && lv.getLocal_value().compareTo(endTrip) <= 0) {
+                            if (lv.getLocal_value().compareTo(startTrip) > 0 && lv.getLocal_value().compareTo(endTrip) <= 0) {
                                 tripRestaurants.add(curItem);
+                                break;
                             }
                         }
                     }

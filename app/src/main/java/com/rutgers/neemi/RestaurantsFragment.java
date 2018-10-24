@@ -75,6 +75,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import javax.json.JsonString;
 import javax.xml.parsers.ParserConfigurationException;
@@ -1276,7 +1277,13 @@ public class RestaurantsFragment extends Fragment {
 
             for (String localLabel:map.keySet()) {
                 StringBuilder sb = new StringBuilder();
-                    for (String localValue : map.get(localLabel)) {
+                ArrayList<String> list = map.get(localLabel);
+                Set<String> hs = new HashSet<>();
+                hs.addAll(list);
+                list.clear();
+                list.addAll(hs);
+
+                for (String localValue :list) {
                         sb.append(localValue);
                         sb.append(", ");
                     }
