@@ -116,6 +116,8 @@ public class ContentFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
 
         super.onActivityCreated(savedInstanceState);
+        getActivity().setTitle("Trips");
+
 
 
         findScriptInstances("trip");

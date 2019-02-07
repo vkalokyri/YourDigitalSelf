@@ -1224,4 +1224,25 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	}
 
 
+
+	public ArrayList<GPSLocation> getGPSLocations() throws SQLException {
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT *  from gpslocation order by timestamp asc");
+
+		GenericRawResults<GPSLocation> rawResults =
+				gpsLocationtRuntimeDao.queryRaw(sb.toString(),
+						new RawRowMapper<GPSLocation>() {
+							public GPSLocation mapRow(String[] columnNames,
+												 String[] resultColumns) {
+								return new GPSLocation(Long.parseLong(resultColumns[0]),Double.parseDouble(resultColumns[1]), Double.parseDouble(resultColumns[2]));
+							}
+						});
+
+		return (ArrayList<GPSLocation>) rawResults.getResults();
+
+	}
+
+
+
 }

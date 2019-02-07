@@ -63,7 +63,8 @@ public class SettingsFragment extends Fragment {
             R.drawable.google_calendar,
             R.drawable.gmail_icon,
             R.drawable.bank,
-            R.drawable.location
+            R.drawable.location,
+            R.drawable.gmaps
     };
 
     @Override
@@ -136,7 +137,12 @@ public class SettingsFragment extends Fragment {
         ch5_2.setName("Foursquare");
         ch5_2.setImg(R.drawable.foursquare);
         list2.add(ch5_2);
+        ExpandListChild ch5_3 = new ExpandListChild();
+        ch5_3.setName("Google Maps");
+        ch5_3.setImg(R.drawable.gmaps);
+        list2.add(ch5_3);
         gru5.setItems(list2);
+
 
         list.add(gru1);
         list.add(gru2);
@@ -232,6 +238,12 @@ public class SettingsFragment extends Fragment {
                 if (Selecteditem.equalsIgnoreCase("GPS data")){
                     System.err.println("clickedGPS");
                     Intent myIntent = new Intent(getActivity(), LocationActivity.class);
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(myIntent);
+                }
+                if (Selecteditem.equalsIgnoreCase("Google Maps")){
+                    Intent myIntent = new Intent(getActivity(), GmapsActivity.class);
+                    myIntent.putExtra("action", "sync");
                     myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(myIntent);
                 }

@@ -10,10 +10,17 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 
+import com.google.maps.GeoApiContext;
+import com.google.maps.PlacesApi;
+import com.google.maps.errors.ApiException;
+import com.google.maps.model.LatLng;
+import com.google.maps.model.PlacesSearchResponse;
+import com.google.maps.model.RankBy;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.rutgers.neemi.model.GPSLocation;
 import com.rutgers.neemi.model.Photo;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
@@ -62,6 +69,16 @@ class LocationResultHelper {
             sb.append("\n");
             //save gps in sqlite db
             GPSLocation gpsLocation = new GPSLocation(System.currentTimeMillis(),location.getLatitude(),location.getLongitude());
+            try {
+               String placeName = getPlaceName(location.getLatitude(),location.getLongitude());
+               sb.append(placeName);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ApiException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             gpsDao.create(gpsLocation);
         }
         return sb.toString();
@@ -106,6 +123,7 @@ class LocationResultHelper {
      * Displays a notification with the location results.
      */
     void showNotification() {
+
         Intent notificationIntent = new Intent(mContext, LocationActivity.class);
 
         // Construct a task stack.
@@ -144,6 +162,25 @@ class LocationResultHelper {
             getNotificationManager().notify(0, notificationBuilder.build());
 
         }
+
+    }
+
+
+    public String getPlaceName(double lat, double lon) throws InterruptedException, ApiException, IOException {
+        LatLng location =  new LatLng(lat, lon);
+        GeoApiContext geoApiContext = new GeoApiContext.Builder()
+                .apiKey("AIzaSyDe8nWbXFA6ESFS6GnQtYPPsXzYmLz3Lf0")
+                .build();
+
+        PlacesSearchResponse gmapsResponse = PlacesApi.nearbySearchQuery(geoApiContext, location)
+                .radius(100)
+                .await();
+        if (gmapsResponse.results != null) {
+            if (gmapsResponse.results.length > 0) {
+                return gmapsResponse.results[0].name;
+            }
+        }
+        return null;
 
     }
 

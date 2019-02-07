@@ -14,12 +14,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.rutgers.neemi.model.PhotoTags;
+import com.rutgers.neemi.model.Report;
 import com.rutgers.neemi.util.ApplicationManager;
 import com.rutgers.neemi.util.NER;
 
 import java.util.ArrayList;
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -28,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private NavigationView navigationView;
     private DrawerLayout drawerLayout;
+    DatabaseReference mDatabase;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,24 +43,11 @@ public class MainActivity extends AppCompatActivity {
         DatabaseHelper helper= DatabaseHelper.getHelper(this);
         setContentView(R.layout.activity_main);
 
-//        ConnectionSource connectionSource = new AndroidConnectionSource(helper);
-//        RuntimeExceptionDao<PhotoTags, String> subScriptDao = helper.getPhotoTagsDao();
-//        subScriptDao.queryRaw("delete from `Transaction` where merchant_name='Payment Thank You-Mobile';");
-//        subScriptDao.queryRaw("delete from `Transaction` where merchant_name='FOREIGN TRANSACTION FEE';");
-//        subScriptDao.queryRaw("delete from `Transaction` where merchant_name='GERLANDAS-BUSH CAMPUS';");
 
-        //        subScriptDao.queryRaw("delete from `Feed`;");
-//        subScriptDao.queryRaw("delete from `Album`;");
+        // Write a message to the database
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
-//        subScriptDao.queryRaw("delete from Transaction;");
-//        subScriptDao.queryRaw("insert into Person values (170, null, 'Merve Yuksel' ,null, 0, null);");
-//        subScriptDao.queryRaw("insert into Person values (171, null, 'Vilmoula Kala' ,null, 0, null);");
-//        subScriptDao.queryRaw("insert into PhotoTags values (71, 170, 7);");
-//        subScriptDao.queryRaw("insert into PhotoTags values (72, 171, 7);");
-
-
-
-
+       // mDatabase.child("users").child("12345").child("instance2").setValue(new Report(true,"correct","correct",true,"correct"));
 
 
 //        ConnectionSource connectionSource = new AndroidConnectionSource(helper);
@@ -98,6 +92,9 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (!prefs.getBoolean("firstTime", false)) {
+
+            DataSyncJob.schedulePeriodicJob();
+
             // <---- run your one time code here
             ApplicationManager appManager = new ApplicationManager();
             appManager.initScript(helper, getApplicationContext(),"restaurant");
@@ -125,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
 //        PersistableBundle pb = new PersistableBundle();
 //        pb.putBoolean("gmailPermission" , gmailPermission);
 
-       // DataSyncJob.scheduleAdvancedJob();
+       //
 
 
 
