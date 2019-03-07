@@ -212,6 +212,21 @@
 							"source":"instagram"
 						}
 					}
+				},
+				"StayingInVenue":{
+					"from": ["Place", "PlaceHasCategory", "Category", "StayPointHasPlaces"],
+					"where": {
+						"and": {
+							"category": [
+								"Food and Drink",
+								"restaurant",
+								"Fast Food"
+							],
+							"Place._id": "PlaceHasCategory.place_id",
+							"Category._id": "PlaceHasCategory.category_id",
+							"StayPointHasPlaces.place_id" : "Place._id"
+						}
+					}
 				}
 		}]
 	}

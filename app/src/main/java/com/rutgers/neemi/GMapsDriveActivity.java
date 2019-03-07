@@ -22,7 +22,11 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -59,6 +63,9 @@ import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.GPSLocation;
 import com.rutgers.neemi.model.Place;
+import com.rutgers.neemi.model.PlaceHasCategory;
+import com.rutgers.neemi.model.StayPoint;
+import com.rutgers.neemi.model.StayPointHasPlaces;
 import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.TransactionHasCategory;
 import com.rutgers.neemi.parser.BankDescriptionParser;
@@ -98,7 +105,7 @@ import javax.json.JsonValue;
  * An abstract activity that handles authorization and connection to the Drive
  * services.
  */
-public class GMapsDriveActivity extends Activity {
+public class GMapsDriveActivity extends AppCompatActivity {
 
     GeoApiContext geoApiContext = new GeoApiContext.Builder()
             .apiKey("AIzaSyDe8nWbXFA6ESFS6GnQtYPPsXzYmLz3Lf0")
@@ -144,7 +151,7 @@ public class GMapsDriveActivity extends Activity {
 
     SimpleDateFormat format = new SimpleDateFormat("MM/dd/yy");
     DatabaseHelper helper;
-    RuntimeExceptionDao<Place, String> placeDao;
+    RuntimeExceptionDao<StayPoint, String> stayPointDao;
     int items=1;
 
 
@@ -152,47 +159,31 @@ public class GMapsDriveActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-       // setContentView(R.layout.activity_gdrive);
-//        mProgressBar = findViewById(R.id.progressBar);
-//        //mProgressBar.setMax(100);
-//        mProgressBar.isIndeterminate();
-//
-//        GoogleSignInClient mGoogleSignInClient = buildGoogleSignInClient();
-//        startActivityForResult(mGoogleSignInClient.getSignInIntent(), REQUEST_CODE_SIGN_IN);
+        setContentView(R.layout.activity_gmaps);
+        mProgressBar = findViewById(R.id.downloadBar);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar ab = getSupportActionBar();
 
+        // Enable the Up button
+        ab.setDisplayHomeAsUpEnabled(true);
+        //mProgressBar.setMax(100);
+        //mProgressBar.isIndeterminate();
 
+        GoogleSignInClient mGoogleSignInClient = buildGoogleSignInClient();
+        startActivityForResult(mGoogleSignInClient.getSignInIntent(), REQUEST_CODE_SIGN_IN);
 
 
 
         helper=DatabaseHelper.getHelper(this);
         gpsDao = helper.getGpsLocationtRuntimeDao();
-        placeDao = helper.getPlaceDao();
-
-
-        try {
-            ArrayList<StayPoint> stayPoints = listOfStayPoints(helper.getGPSLocations());
-            for (StayPoint sp: stayPoints) {
-                try {
-                    String placeName = getPlaceName(sp.getCoord().getLatitude(), sp.getCoord().getLongitude());
-                  //  System.out.println(placeName);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ApiException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-
-
-
 
     }
+
+
+
+
 
     /**
      * Called when the activity will start interacting with the user.
@@ -355,9 +346,9 @@ public class GMapsDriveActivity extends Activity {
             @Override
             public void onProgress(long bytesDownloaded, long bytesExpected) {
                 // Update progress dialog with the latest progress.
-               // int progress = (int) (bytesDownloaded * 100 / bytesExpected);
+                int progress = (int) (bytesDownloaded * 100 / bytesExpected);
               //  Log.d(TAG, String.format("Loading progress: %d percent", progress));
-                //mProgressBar.setProgress(progress);
+                mProgressBar.setProgress(progress);
             }
 
             private void readZipFile(DriveContents contents){
@@ -385,57 +376,38 @@ public class GMapsDriveActivity extends Activity {
                             try {
                                 jsonObject = jsonReader.readObject();
                             }catch (Exception e){
-                                System.err.println(e);
+                                System.err.println("Reading zip json error= "+e);
                             }
-                                if (jsonObject != null) {
-                                    for (String key : jsonObject.keySet()) {
-                                        JsonArray locations = (JsonArray) jsonObject.get(key);
-                                        for (int j = 0; j < locations.size(); j++) {
-                                            JsonObject location = (JsonObject) locations.get(j);
-                                            Long timestamp = null;
-                                            Double latitude = null;
-                                            Double longitude = null;
-                                          //  if (location.get("velocity")!=null) {
-                                          //      int velocity = Integer.parseInt(location.get("velocity").toString());
-                                          //      if (velocity ==0) {
-                                          //          System.out.println("I FOUND ACTIVITY STILL");
-                                                    for (String locationKey : location.keySet()) {
-                                                        if (locationKey.startsWith("timestampMs")) {
-                                                            timestamp = Long.parseLong(location.get(locationKey).toString().substring(1, location.get(locationKey).toString().length() - 1));
-                                                            if (timestamp < oneMonthTimestamp)
-                                                                break;
-                                                            System.out.println("TIMESTAMP HERE" + timestamp);
-                                                        } else if (locationKey.startsWith("latitude")) {
-                                                            latitude = Double.parseDouble(location.get(locationKey).toString()) / 10000000;
-                                                        } else if (locationKey.startsWith("longitude")) {
-                                                            longitude = Double.parseDouble(location.get(locationKey).toString()) / 10000000;
+                            if (jsonObject != null) {
+                                for (String key : jsonObject.keySet()) {
+                                    JsonArray locations = (JsonArray) jsonObject.get(key);
+                                    for (int j = 0; j < locations.size(); j++) {
+                                        JsonObject location = (JsonObject) locations.get(j);
+                                        Long timestamp = null;
+                                        Double latitude = null;
+                                        Double longitude = null;
+                                        for (String locationKey : location.keySet()) {
+                                            if (locationKey.startsWith("timestampMs")) {
+                                                timestamp = Long.parseLong(location.get(locationKey).toString().substring(1, location.get(locationKey).toString().length() - 1));
+                                                if (timestamp < oneMonthTimestamp)
+                                                    break;
+                                                System.out.println("TIMESTAMP HERE" + timestamp);
+                                            } else if (locationKey.startsWith("latitude")) {
+                                                latitude = Double.parseDouble(location.get(locationKey).toString()) / 10000000;
+                                            } else if (locationKey.startsWith("longitude")) {
+                                                longitude = Double.parseDouble(location.get(locationKey).toString()) / 10000000;
 
-                                                        }
-
-                                                    }
-                                                    if (timestamp != null && latitude != null && longitude != null) {
-                                                        GPSLocation gpsLocation = new GPSLocation(timestamp, latitude, longitude);
-
-//                                                        try {
-//                                                            String placeName = getPlaceName(latitude, longitude);
-//                                                            System.out.println(placeName);
-//                                                        } catch (InterruptedException e) {
-//                                                            e.printStackTrace();
-//                                                        } catch (ApiException e) {
-//                                                            e.printStackTrace();
-//                                                        } catch (IOException e) {
-//                                                            e.printStackTrace();
-//                                                        }
-
-                                                        gpsDao.create(gpsLocation);
-                                                    }
-                                                }
                                             }
 
-                                        //}
-                                    //}
-                                }
+                                        }
+                                        if (timestamp != null && latitude != null && longitude != null) {
+                                            GPSLocation gpsLocation = new GPSLocation(timestamp, latitude, longitude);
 
+                                            gpsDao.create(gpsLocation);
+                                        }
+                                    }
+                                }
+                            }
 
                         }
 
@@ -444,6 +416,8 @@ public class GMapsDriveActivity extends Activity {
                     }
 
                     zis.close();
+
+
                 } catch(IOException e) {
                     showMessage("error unzipping file");
                     e.printStackTrace();
@@ -455,7 +429,37 @@ public class GMapsDriveActivity extends Activity {
             @Override
             public void onContents(@NonNull DriveContents driveContents) {
 
+                mProgressBar.setVisibility(View.INVISIBLE);
+
                 readZipFile(driveContents);
+
+                stayPointDao = helper.getStayPointRuntimeDao();
+                try {
+
+                    ArrayList<StayPoint> stayPoints = listOfStayPoints(helper.getGPSLocations());
+                    for (StayPoint sp: stayPoints) {
+                        System.err.println("Saving staypoints");
+                        stayPointDao.create(sp);
+                        try {
+                            ArrayList<Place> places = getPlaces(sp.getCoord().getLatitude(), sp.getCoord().getLongitude());
+                            if (places!=null){
+                                for(Place p: places) {
+                                    Place pl = savePlace(p);
+                                    StayPointHasPlaces spHasPlaces = new StayPointHasPlaces(pl,sp);
+                                    helper.getStayPointHasPlacesDao().create(spHasPlaces);
+                                }
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (ApiException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
 
 
             }
@@ -476,11 +480,35 @@ public class GMapsDriveActivity extends Activity {
     }
 
 
+    public Place savePlace(Place place) {
+        //Place placeExists = helper.placeExistsByLatLong(place.getLatitude(), place.getLongitude());
+        //if (placeExists == null) {
+            helper.getPlaceDao().create(place);
+            if (place.getCategories() != null) {
+                for(String placeCategory: place.getCategories()){
+                    Category categoryExists = helper.placeCategoryExists(placeCategory);
+                    if (categoryExists == null) {
+                        Category newCategory = new Category();
+                        newCategory.setCategoryName(placeCategory);
+                        helper.getCategoryDao().create(newCategory);
+                        PlaceHasCategory placeHasCategories = new PlaceHasCategory(place, newCategory);
+                        helper.getPlaceHasCategoryRuntimeDao().create(placeHasCategories);
+                    } else {
+                        PlaceHasCategory place_categories = new PlaceHasCategory(place, categoryExists);
+                        helper.getPlaceHasCategoryRuntimeDao().create(place_categories);
+                    }
+                }
+            }
+            return place;
+        //}else{
+        //    return placeExists;
+       // }
+    }
 
 
-
-    public String getPlaceName(double lat, double lon) throws InterruptedException, ApiException, IOException {
-        LatLng location =  new LatLng(lat, lon);
+    public ArrayList<Place> getPlaces(double lat, double lon) throws InterruptedException, ApiException, IOException {
+        LatLng location = new LatLng(lat, lon);
+        ArrayList<Place> places = new ArrayList<>();
 
         PlacesSearchResponse gmapsResponse = PlacesApi.nearbySearchQuery(geoApiContext, location)
                 .radius(100)
@@ -488,18 +516,38 @@ public class GMapsDriveActivity extends Activity {
                 .await();
         if (gmapsResponse.results != null) {
             if (gmapsResponse.results.length > 0) {
-                for(int i=0;i<gmapsResponse.results.length;i++)
-                {
-                    System.out.println(gmapsResponse.results[i].name);
-                }
-                System.out.println("##############################");
+                for (int i = 0; i < gmapsResponse.results.length; i++) {
+                    if (gmapsResponse.results[i] != null) {
+                        PlacesSearchResult place = gmapsResponse.results[i];
+                        Place newPlace = new Place();
+                        newPlace.setLatitude(lat);
+                        newPlace.setLongitude(lon);
+                        if (place.vicinity != null) {
+                            newPlace.setStreet(place.vicinity);
+                        }
+                        if (place.placeId != null) {
+                            newPlace.setId(place.placeId);
+                        }
+                        if (place.name != null) {
+                            newPlace.setName(place.name);
+                        }
 
-                return gmapsResponse.results[0].name;
+                        if (place.types != null) {
+                            for(String placeCategory: gmapsResponse.results[0].types){
+                                newPlace.addCategory(placeCategory);
+
+                            }
+                        }
+                        places.add(newPlace);
+                    }
+                }
             }
         }
-        return null;
 
+        return places;
     }
+
+
 
     public ArrayList<StayPoint> listOfStayPoints(ArrayList<GPSLocation> points){
         int distThres=100;
@@ -528,6 +576,7 @@ public class GMapsDriveActivity extends Activity {
                         sp.setCoord(computeMeanCoord(points.subList(i,j+1)));
                         sp.setArrive(field_pointi.getTimestamp());
                         sp.setLeave(field_pointj.getTimestamp());
+                        sp.setDuration(deltaT);
                         stayPointList.add(sp);
                     }
                     i = j;
@@ -573,48 +622,6 @@ public class GMapsDriveActivity extends Activity {
         }
         return new GPSLocation(0, lat/N, lon/N );
     }
-
-
-
-    class StayPoint {
-        private GPSLocation coord;
-        private long arrive;
-        private long leave;
-
-        public StayPoint() {
-        }
-
-        public StayPoint(GPSLocation coord, long arrive, long leave) {
-            this.coord = coord;
-            this.arrive = arrive;
-            this.leave = leave;
-        }
-
-        public GPSLocation getCoord() {
-            return coord;
-        }
-
-        public void setCoord(GPSLocation coord) {
-            this.coord = coord;
-        }
-
-        public long getArrive() {
-            return arrive;
-        }
-
-        public void setArrive(long arrive) {
-            this.arrive = arrive;
-        }
-
-        public long getLeave() {
-            return leave;
-        }
-
-        public void setLeave(long leave) {
-            this.leave = leave;
-        }
-    }
-
 
 
 }

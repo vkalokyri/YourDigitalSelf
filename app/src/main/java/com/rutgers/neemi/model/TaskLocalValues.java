@@ -9,10 +9,10 @@ import java.io.Serializable;
 public class TaskLocalValues implements Serializable {
 
 
-	@DatabaseField(foreign=true, foreignAutoRefresh=true)
+	@DatabaseField(foreign=true, foreignAutoRefresh=true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Task(_id) ON DELETE CASCADE")
 	Task task;
 
-	@DatabaseField(foreign=true, foreignAutoRefresh=true)
+	@DatabaseField(foreign=true, foreignAutoRefresh=true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES LocalProperties(_id) ON DELETE CASCADE")
 	LocalProperties localProperties;
 
 	@DatabaseField

@@ -6,11 +6,16 @@ import com.google.maps.errors.ApiException;
 import com.google.maps.model.LatLng;
 import com.google.maps.model.PlacesSearchResponse;
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
 
 import java.io.IOException;
+import java.io.Serializable;
 
-public class GPSLocation {
+@DatabaseTable(tableName = "GPSLocation")
+public class GPSLocation implements Serializable {
 
+    @DatabaseField(generatedId = true)
+    int _id;
     @DatabaseField
     long timestamp;
     @DatabaseField

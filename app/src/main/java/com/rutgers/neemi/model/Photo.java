@@ -23,15 +23,15 @@ public class Photo implements Serializable {
     String name;
     @DatabaseField
     String link;
-    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true)
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Album(_id) ON DELETE CASCADE")
     Album album;
     @DatabaseField
     long created_time;
-    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true)
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Event(_id) ON DELETE CASCADE")
     Event event;
-    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true)
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE")
     Place place;
-    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true)
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE")
     Person creator;
     @DatabaseField
     String picture;

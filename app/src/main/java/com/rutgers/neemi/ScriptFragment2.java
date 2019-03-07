@@ -7,22 +7,36 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.rutgers.neemi.interfaces.NLevelView;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
@@ -33,27 +47,26 @@ import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Place;
 import com.rutgers.neemi.model.Script;
 import com.rutgers.neemi.model.ScriptLocalValues;
+import com.rutgers.neemi.model.StayPoint;
 import com.rutgers.neemi.model.Task;
 import com.rutgers.neemi.model.TaskDefinition;
 import com.rutgers.neemi.model.TaskLocalValues;
 import com.rutgers.neemi.model.Transaction;
 
+import java.sql.SQLException;
 import java.text.Format;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
-import java.util.zip.Inflater;
+
 
 import static com.facebook.FacebookSdk.getApplicationContext;
 
 
-public class ScriptFragment2 extends Fragment {
+public class ScriptFragment2 extends Fragment{
 
     List<NLevelItem> list;
     ListView listView;
@@ -62,6 +75,11 @@ public class ScriptFragment2 extends Fragment {
             R.drawable.restaurant,
             R.drawable.trips
     };
+
+    //private GoogleMap mMap;
+
+    //SupportMapFragment mapFragment;
+
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -74,9 +92,14 @@ public class ScriptFragment2 extends Fragment {
 
 
 
+
         LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
         // TextView txtTitle = (TextView) rowView.findViewById(R.id.item);
         ImageView imageView = (ImageView) view.findViewById(R.id.icon);
+//
+//        mapFragment = (SupportMapFragment) getChildFragmentManager()
+//                .findFragmentById(R.id.scriptmap);
+//        mapFragment.getMapAsync(this);
 
 
         Script script = (Script)listOfProcesses.get(position);//.getScriptDefinition();
@@ -187,7 +210,7 @@ public class ScriptFragment2 extends Fragment {
 
                     @Override
                     public View getView(NLevelItem item) {
-                        return getTaskView(inflater,task); //PostOnFacebook
+                        return getTaskView(inflater,task, savedInstanceState); //PostOnFacebook
                     }
                 });
 
@@ -216,7 +239,7 @@ public class ScriptFragment2 extends Fragment {
 
                         @Override
                         public View getView(NLevelItem item) {
-                            return getTaskView(inflater,task); //payByCredit
+                            return getTaskView(inflater,task, savedInstanceState); //payByCredit
                         }
                     });
 
@@ -242,6 +265,7 @@ public class ScriptFragment2 extends Fragment {
 
             }
         });
+
 
         return view;
     }
@@ -295,13 +319,17 @@ public class ScriptFragment2 extends Fragment {
     }
 
 
-    public View getTaskView(LayoutInflater inflater, Task childTask){
+    public View getTaskView(LayoutInflater inflater, Task childTask, Bundle savedInstanceState){
 
         View view = inflater.inflate(R.layout.list_item, null);
+
+
+
         view.setBackgroundColor(Color.parseColor("#999999"));
 
         TextView txtListChild = (TextView) view.findViewById(R.id.lblListItem);
         txtListChild.setText(childTask.getName());
+        LinearLayout list_item_layout = (LinearLayout)view.findViewById(R.id.list_item_layout);
         TextView txtListHeader = (TextView) view.findViewById(R.id.relItemHeader);
         TextView txtListHeaderBody = (TextView) view.findViewById(R.id.relItem);
         final ImageView imageView = (ImageView) view.findViewById(R.id.icon);
@@ -379,7 +407,147 @@ public class ScriptFragment2 extends Fragment {
                 }
             }
             txtListHeaderBody.setText(text);
-        }else if(childTask.getPid() instanceof Event){
+        }else if(childTask.getList_of_pids().get(0) instanceof Place){
+            imageView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.gmaps));
+            txtListHeader.setText(((Place) childTask.getList_of_pids().get(0) ).getName());
+            txtListHeaderBody.setText(((Place) childTask.getList_of_pids().get(0)).getStreet());
+            StringBuilder text = new StringBuilder();
+            for(TaskLocalValues taskLocalValues : childTask.getLocalValues()){
+                if (taskLocalValues.getLocalProperties().getW5h_label().equalsIgnoreCase("when")){
+                    Date date = new Date(taskLocalValues.getLocal_value());
+                    SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+                    text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                    text.append(": ");
+                    text.append(sf.format(date));
+                    text.append("\n");
+                }else{
+                    text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                    text.append(": ");
+                    text.append(taskLocalValues.getLocal_value());
+                    text.append("\n");
+                }
+            }
+
+            LinearLayout horizontalButtons = new LinearLayout(getApplicationContext());
+            horizontalButtons.setOrientation(LinearLayout.HORIZONTAL);
+
+            Button yesButton = new Button(getApplicationContext());
+            yesButton.setText("Yes");
+            horizontalButtons.addView(yesButton);
+
+            yesButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    try {
+                        DatabaseHelper.getHelper(getApplicationContext()).confirmPlace(((Place) childTask.getList_of_pids().get(0)).get_id()) ;
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+
+            Button noButton = new Button(getApplicationContext());
+            noButton.setText("No");
+            horizontalButtons.addView(noButton);
+            noButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    try {
+                        DatabaseHelper.getHelper(getApplicationContext()).deletePlaces(((Place) childTask.getList_of_pids().get(0)).get_id()); ;
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+
+            Button other = new Button(getApplicationContext());
+            other.setText("> Other");
+            horizontalButtons.addView(other);
+
+            other.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    LinearLayout horizontalButtons = new LinearLayout(getApplicationContext());
+                    horizontalButtons.setOrientation(LinearLayout.VERTICAL);
+                    LinearLayout.LayoutParams params = new  LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+                    params.setMargins(20,10,20,10);
+                    horizontalButtons.setLayoutParams(params);
+
+                    for (Object pid: childTask.getList_of_pids()) {
+                       // LinearLayout optionButtons = new LinearLayout(getApplicationContext());
+                       // optionButtons.setOrientation(LinearLayout.VERTICAL);
+
+                        TextView tView = new TextView(getApplicationContext());
+                        SpannableString styledString = new SpannableString(((Place) pid ).getName()+"\n"+"New Brunswick, NJ");
+                        styledString.setSpan(new ForegroundColorSpan(Color.GRAY), ((Place) pid ).getName().length(), styledString.length(), 0);
+                        tView.setGravity(Gravity.CENTER);
+                        tView.setText(styledString);
+                        tView.setLayoutParams(params);
+                        tView.setBackgroundColor(Color.parseColor("#CCCCCC"));
+                        tView.setClickable(true);
+
+                        tView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                try {
+                                    DatabaseHelper.getHelper(getApplicationContext()).confirmPlace(((Place)pid).get_id()) ;
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+
+                        horizontalButtons.addView(tView);
+
+
+
+
+                    }
+
+                    AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                    alert.setView(horizontalButtons);
+                    alert.create();
+                    alert.show();
+                    alert.setCancelable(true);
+
+                }
+            });
+
+
+
+
+            list_item_layout.addView(horizontalButtons);
+
+
+//            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+//
+//            LatLng latLng1 = new LatLng(-25.63356, -47.440722);
+//
+////
+////            this.mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+////                @Override
+////                public void onMapLoaded() {
+////                    LatLng sydney = new LatLng(latLng1.latitude, latLng1.longitude);
+////                    mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in here"));
+////                    mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+////                }
+////            });
+//
+//            mapFragment.getMapAsync(this);
+//            this.mMap.addMarker(new MarkerOptions()
+//                        .position(latLng1)
+//                        .title("Testando")
+//                        .snippet("Population: 776733"));
+//            this.mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng1));
+
+
+
+
+
+
+        } else if(childTask.getPid() instanceof Event){
             imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.google_calendar));
             txtListHeader.setText(((Event) childTask.getPid()).getTitle());
             StringBuilder text = new StringBuilder();
@@ -521,7 +689,54 @@ public class ScriptFragment2 extends Fragment {
 
         super.onActivityCreated(savedInstanceState);
 
+
     }
+
+//    @Override
+//    public void onMapReady(GoogleMap googleMap) {
+//        mMap = googleMap;
+//        mMap.setOnCameraIdleListener(this);
+//        mMap.setOnCameraMoveStartedListener(this);
+//        mMap.setOnCameraMoveListener(this);
+//        mMap.setOnCameraMoveCanceledListener(this);
+//
+//        // Add a marker in Sydney and move the camera
+//        LatLng sydney = new LatLng(-34, 151);
+//        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+//    }
+//
+//    @Override
+//    public void onCameraIdle() {
+//
+//    }
+//
+//    @Override
+//    public void onCameraMoveCanceled() {
+//
+//    }
+//
+//    @Override
+//    public void onCameraMove() {
+//
+//    }
+//
+//    @Override
+//    public void onCameraMoveStarted(int reason) {
+//        if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
+//            Toast.makeText(getApplicationContext(), "The user gestured on the map.",
+//                    Toast.LENGTH_SHORT).show();
+//        } else if (reason == GoogleMap.OnCameraMoveStartedListener
+//                .REASON_API_ANIMATION) {
+//            Toast.makeText(getApplicationContext(), "The user tapped something on the map.",
+//                    Toast.LENGTH_SHORT).show();
+//        } else if (reason == GoogleMap.OnCameraMoveStartedListener
+//                .REASON_DEVELOPER_ANIMATION) {
+//            Toast.makeText(getApplicationContext(), "The app moved the camera.",
+//                    Toast.LENGTH_SHORT).show();
+//        }
+//
+//    }
 
     class SomeObject {
         public String name;

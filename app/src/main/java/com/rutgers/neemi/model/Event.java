@@ -28,7 +28,7 @@ public class Event implements Serializable {
     String description;
     //@ForeignCollectionField(eager = false, columnName="attendees")
     //ForeignCollection<Person> attendees;
-    @DatabaseField(foreign = true, foreignAutoRefresh = true)
+    @DatabaseField(foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE")
     Person creator;
     @DatabaseField
     long dateCreated;
@@ -38,11 +38,11 @@ public class Event implements Serializable {
     long endTime;
     @DatabaseField
     String location;
-    @DatabaseField(canBeNull = true, foreign = true, foreignAutoCreate = true, foreignAutoRefresh = true)
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoCreate = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE")
     Person organizer;
     @DatabaseField
     String source;
-    @DatabaseField(canBeNull = true, foreign = true, foreignAutoCreate = true, foreignAutoRefresh = true)
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoCreate = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE")
     Place place;
 
     public Event() {

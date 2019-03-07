@@ -1,5 +1,5 @@
 #
-# generated on 2018/10/09 05:38:14
+# generated on 2019/03/06 02:00:58
 #
 # --table-start--
 dataClass=com.rutgers.neemi.model.Email
@@ -26,6 +26,7 @@ fieldName=from
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=date
@@ -63,12 +64,14 @@ fieldName=cc
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=email
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Email(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -82,12 +85,14 @@ fieldName=bcc
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=email
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -101,12 +106,14 @@ fieldName=to
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=email
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Εmail(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -137,6 +144,7 @@ fieldName=creator
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=dateCreated
@@ -155,6 +163,7 @@ fieldName=organizer
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 foreignAutoCreate=true
 # --field-end--
 # --field-start--
@@ -165,6 +174,7 @@ fieldName=place
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE
 foreignAutoCreate=true
 # --field-end--
 # --table-fields-end--
@@ -226,18 +236,21 @@ fieldName=event
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Event(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=place
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=creator
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -267,6 +280,7 @@ fieldName=album
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Album(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=created_time
@@ -276,18 +290,21 @@ fieldName=event
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Event(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=place
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=creator
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=picture
@@ -365,12 +382,14 @@ fieldName=attendee
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=event
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Event(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -388,12 +407,14 @@ fieldName=tagged
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=photo
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Photo(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -408,13 +429,17 @@ generatedId=true
 # --field-end--
 # --field-start--
 fieldName=transaction
-columnName=transaction_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES `Transaction`(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=category
-columnName=category_id
 foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Category(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -432,12 +457,14 @@ fieldName=place
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=category
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Category(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -476,11 +503,13 @@ fieldName=amount
 fieldName=payee
 columnName=payee_id
 foreign=true
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=payer
 columnName=payer_id
 foreign=true
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=payment_method
@@ -493,6 +522,7 @@ fieldName=place
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=pending
@@ -501,6 +531,7 @@ fieldName=pending
 fieldName=account_owner
 columnName=owner_id
 foreign=true
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -543,6 +574,7 @@ canBeNull=false
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Script(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=taskDefinition
@@ -550,6 +582,7 @@ canBeNull=false
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES TaskDefinition(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -567,6 +600,7 @@ fieldName=scriptDefinition
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES ScriptDefinition(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=timestamp
@@ -579,7 +613,7 @@ fieldName=score
 #################################
 # --table-start--
 dataClass=com.rutgers.neemi.model.TaskDefinition
-tableName=taskdefinition
+tableName=TaskDefinition
 # --table-fields-start--
 # --field-start--
 fieldName=id
@@ -634,12 +668,14 @@ fieldName=task
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Task(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=localProperties
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES LocalProperties(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=local_value
@@ -656,12 +692,14 @@ fieldName=script
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Script(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=localProperties
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES LocalProperties(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=local_value
@@ -678,31 +716,35 @@ fieldName=script
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES ScriptDefinition(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=task
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES TaskDefinition(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
 #################################
 # --table-start--
 dataClass=com.rutgers.neemi.model.Subscript
-tableName=subscript
+tableName=Subscript
 # --table-fields-start--
 # --field-start--
 fieldName=superscript
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES ScriptDefinition(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=subscript
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES ScriptDefinition(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -715,11 +757,13 @@ tableName=Transition
 fieldName=source
 columnName=source
 foreign=true
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Task(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=target
 columnName=target
 foreign=true
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Task(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -758,12 +802,14 @@ fieldName=place
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=creator
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=picture
@@ -793,12 +839,14 @@ fieldName=tagged
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=feed
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Feed(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -816,12 +864,14 @@ fieldName=tagged
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=feed
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Feed(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -835,20 +885,26 @@ fieldName=taskDefinition
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES TaskDefinition(_id) ON DELETE CASCADE
 # --field-end--
 # --field-start--
 fieldName=localProperties
 foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES LocalProperties(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--
 #################################
 # --table-start--
 dataClass=com.rutgers.neemi.model.GPSLocation
-tableName=gpslocation
+tableName=GPSLocation
 # --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
 # --field-start--
 fieldName=timestamp
 # --field-end--
@@ -857,6 +913,56 @@ fieldName=latitude
 # --field-end--
 # --field-start--
 fieldName=longitude
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.StayPoint
+tableName=StayPoint
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=coord
+canBeNull=false
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES GPSLocation(_id) ON DELETE CASCADE
+foreignAutoCreate=true
+# --field-end--
+# --field-start--
+fieldName=arrive
+# --field-end--
+# --field-start--
+fieldName=leave
+# --field-end--
+# --field-start--
+fieldName=duration
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.StayPointHasPlaces
+tableName=StayPointHasPlaces
+# --table-fields-start--
+# --field-start--
+fieldName=place
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE
+# --field-end--
+# --field-start--
+fieldName=stayPoint
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES StayPoint(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--

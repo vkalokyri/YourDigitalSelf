@@ -1,18 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<android.support.design.widget.CoordinatorLayout
+    android:theme="@style/Theme.AppCompat.Light"
+    android:id="@+id/fbCoordinatorLayout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".GmapsActivity">
 
+    <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/tool_bar"
+        />
 
-    <Button
-        android:id="@+id/saveDataButton"
-        android:layout_width="wrap_content"
+    <ProgressBar
+        android:id="@+id/downloadBar"
+        style="@style/Widget.AppCompat.ProgressBar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Save data into the app"
-        android:typeface="normal"
-        tools:layout_editor_absoluteX="94dp"
-        tools:layout_editor_absoluteY="259dp" />
-</android.support.constraint.ConstraintLayout>
+        android:layout_centerInParent="true"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:max="100" />
+    </android.support.constraint.ConstraintLayout>
+</android.support.design.widget.CoordinatorLayout>

@@ -10,10 +10,10 @@ import java.util.ArrayList;
 @DatabaseTable(tableName = "ScriptLocalValues")
 public class ScriptLocalValues implements Serializable {
 
-	@DatabaseField(foreign=true, foreignAutoRefresh=true)
+	@DatabaseField(foreign=true, foreignAutoRefresh=true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Script(_id) ON DELETE CASCADE")
 	Script script;
 
-	@DatabaseField(foreign=true, foreignAutoRefresh=true)
+	@DatabaseField(foreign=true, foreignAutoRefresh=true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES LocalProperties(_id) ON DELETE CASCADE")
 	LocalProperties localProperties;
 
 //	@DatabaseField(foreign=true, foreignAutoRefresh=true)

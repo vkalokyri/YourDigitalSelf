@@ -20,7 +20,7 @@ public class Script implements Serializable {
 
 	@DatabaseField(generatedId = true)
 	int id;
-	@DatabaseField(foreign = true, foreignAutoRefresh=true)
+	@DatabaseField(foreign = true, foreignAutoRefresh=true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES ScriptDefinition(_id) ON DELETE CASCADE")
 	ScriptDefinition scriptDefinition;
 	@DatabaseField
 	String timestamp;
@@ -183,24 +183,27 @@ public class Script implements Serializable {
 		float instanceScore = this.getScore();
 		for (Task processTask : tasks) {
 			Object pid = processTask.getPid();
-			float addedScore=0;
-			if (pid instanceof Transaction ){
-				addedScore = Float.parseFloat(config.getStr(PROPERTIES.BANK_WEIGHT));
-			}else if (pid instanceof Email){
-				addedScore = Float.parseFloat(config.getStr(PROPERTIES.EMAIL_WEIGHT));
-				String from =((Email)pid).getFrom().email;
-				if(((String)from).contains("opentable.com")){
-					addedScore = Float.parseFloat(config.getStr(PROPERTIES.OPENTABLE_WEIGHT));
-				}
-				else if(((String)from).contains("calendar-notification@google.com")){
+			float addedScore = 0;
+			if (pid != null) {
+				if (pid instanceof Transaction) {
+					addedScore = Float.parseFloat(config.getStr(PROPERTIES.BANK_WEIGHT));
+				} else if (pid instanceof Email) {
+					addedScore = Float.parseFloat(config.getStr(PROPERTIES.EMAIL_WEIGHT));
+					String from = ((Email) pid).getFrom().email;
+					if (((String) from).contains("opentable.com")) {
+						addedScore = Float.parseFloat(config.getStr(PROPERTIES.OPENTABLE_WEIGHT));
+					} else if (((String) from).contains("calendar-notification@google.com")) {
+						addedScore = Float.parseFloat(config.getStr(PROPERTIES.GCAL_WEIGHT));
+					}
+				} else if (pid instanceof Event) {
 					addedScore = Float.parseFloat(config.getStr(PROPERTIES.GCAL_WEIGHT));
+				} else if (pid instanceof Photo) {
+					addedScore = Float.parseFloat(config.getStr(PROPERTIES.FACEBOOK_WEIGHT));
 				}
-
-
-			}else if (pid instanceof Event){
-				addedScore = Float.parseFloat(config.getStr(PROPERTIES.GCAL_WEIGHT));
-			}else if (pid instanceof Photo){
-				addedScore = Float.parseFloat(config.getStr(PROPERTIES.FACEBOOK_WEIGHT));
+			} else if (processTask.getList_of_pids() != null) {
+			  	if (processTask.getList_of_pids().get(0) instanceof Place) {
+					addedScore = Float.parseFloat(config.getStr(PROPERTIES.GPS_WEIGHT));
+				}
 			}
 			float newScore = scoreFunction(instanceScore, addedScore);
 			instanceScore=newScore;

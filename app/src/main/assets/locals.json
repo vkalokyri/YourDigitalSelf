@@ -87,6 +87,12 @@
 	"whereWasPosted":{
 		"Feed":"place_id"
 	},
+	"whereIsTheVenue":{
+		"Place":"name"
+	},
+	"whenWasTheStayInVenue":{
+		"Place":"arrive"
+	},
 	"whereWasUploaded":{
 		"Photo":"place_id"
 	},
@@ -109,11 +115,11 @@
 	"whoWasIncludedInTheConversation":["whoReceivedEmail","whoWasCCed","whoWasBCCed"],
 	"whenWasTheConversationInitiated":"whenWasSent",
 	"whoAttended":["whoIsTheEventCreator","whoWillBeInTheEvent","whoSentEmail","whoReceivedEmail","whoWasCCed","whoWasBCCed","whoMadeThePost", "whoIsIncludedInPost", "whoCreatedEvent", "whoIsIncludedInPhoto"],
-	"whenEatingOccurred": ["whenIsTheProposedEvent","whenPaid", "whenWasEvent","whenWasPosted","whenWasPhotoUploaded","whenTheEventStarts","whenTheEventEnds"],
+	"whenEatingOccurred": ["whenIsTheProposedEvent","whenPaid", "whenWasEvent","whenWasPosted","whenWasPhotoUploaded","whenTheEventStarts","whenTheEventEnds","whenWasTheStayInVenue"],
 	"whenTripOccurred":["whenIsTheProposedEvent", "whenTheEventStarts","whenTheEventEnds", "whenWasEvent"],
 	"whereTripOccurred":[ "whereWasPosted", "whereIsTheEvent"],
 	"whenTripBooked":["whenPaid","whenEventWasCreated"],
-	"whereEatingOccurred":["wherePaymentOccurred","whereWasTheReservation","whereWasPosted","whereWasUploaded","whereIsTheEvent"],
+	"whereEatingOccurred":["wherePaymentOccurred","whereWasTheReservation","whereWasPosted","whereWasUploaded","whereIsTheEvent","whereIsTheVenue"],
 	"whenWasTheReservationScheduled":["whenWasEvent"],
 	"whatWasEatingAbout":["whatIsPostAbout","whatIsPhotoAbout","whatIsTheEventAbout"],
 	"whoMadeThePayment":"whoPaid",

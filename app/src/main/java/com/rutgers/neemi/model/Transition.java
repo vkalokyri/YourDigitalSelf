@@ -15,10 +15,10 @@ public class Transition implements Serializable {
     public static final String TARGET = "target";
 
 
-    @DatabaseField(foreign = true, columnName = SOURCE)
+    @DatabaseField(foreign = true, columnName = SOURCE, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Task(_id) ON DELETE CASCADE")
     Task source;
 
-    @DatabaseField(foreign = true, columnName = TARGET)
+    @DatabaseField(foreign = true, columnName = TARGET, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Task(_id) ON DELETE CASCADE")
     Task target;
 
 

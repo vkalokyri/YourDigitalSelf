@@ -20,6 +20,8 @@ import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.ScriptLocalValues;
 import com.rutgers.neemi.model.ScriptDefHasTaskDef;
 import com.rutgers.neemi.model.ScriptLocalValues;
+import com.rutgers.neemi.model.StayPoint;
+import com.rutgers.neemi.model.StayPointHasPlaces;
 import com.rutgers.neemi.model.TaskDefHasLocalProperties;
 import com.rutgers.neemi.model.TaskLocalValues;
 import com.rutgers.neemi.model.Transaction;
@@ -43,7 +45,7 @@ import com.rutgers.neemi.model.Transition;
 public class DatabaseConfigUtil extends OrmLiteConfigUtil {
 
     // put all your database classes in this array
-    private static final Class<?>[] classes = new Class[]{Email.class, EmailCc.class,EmailBcc.class,EmailTo.class, Event.class, Person.class, Album.class, Photo.class, Place.class, EventAttendees.class, PhotoTags.class, TransactionHasCategory.class, PlaceHasCategory.class, Transaction.class, Category.class, Task.class, Script.class, TaskDefinition.class, ScriptDefinition.class, LocalProperties.class, TaskLocalValues.class, ScriptLocalValues.class, ScriptDefHasTaskDef.class, Subscript.class, Transition.class, Feed.class, FeedMessageTags.class, FeedWithTags.class, TaskDefHasLocalProperties.class, GPSLocation.class};
+    private static final Class<?>[] classes = new Class[]{Email.class, EmailCc.class,EmailBcc.class,EmailTo.class, Event.class, Person.class, Album.class, Photo.class, Place.class, EventAttendees.class, PhotoTags.class, TransactionHasCategory.class, PlaceHasCategory.class, Transaction.class, Category.class, Task.class, Script.class, TaskDefinition.class, ScriptDefinition.class, LocalProperties.class, TaskLocalValues.class, ScriptLocalValues.class, ScriptDefHasTaskDef.class, Subscript.class, Transition.class, Feed.class, FeedMessageTags.class, FeedWithTags.class, TaskDefHasLocalProperties.class, GPSLocation.class, StayPoint.class, StayPointHasPlaces.class};
 
 
     public static void main(String[] args) throws SQLException, IOException {

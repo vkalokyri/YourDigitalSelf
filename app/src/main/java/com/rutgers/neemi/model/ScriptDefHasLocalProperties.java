@@ -9,11 +9,11 @@ import java.io.Serializable;
 public class ScriptDefHasLocalProperties implements Serializable {
 
 
-	@DatabaseField(foreign = true, foreignAutoRefresh = true )
+	@DatabaseField(foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES ScriptDefinition(_id) ON DELETE CASCADE" )
 	ScriptDefinition scriptDefinition;
 
 	// This is a foreign object which just stores the id from the Post object in this table.
-	@DatabaseField(foreign = true, foreignAutoRefresh = true)
+	@DatabaseField(foreign = true, foreignAutoRefresh = true,columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES LocalProperties(_id) ON DELETE CASCADE")
 	LocalProperties localProperties;
 
 

@@ -1,10 +1,12 @@
 package com.rutgers.neemi.model;
 
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
+@DatabaseTable(tableName = "TaskDefinition")
 public class TaskDefinition implements Serializable {
 
 	@DatabaseField(generatedId = true)

@@ -29,19 +29,19 @@ public class Transaction implements Serializable {
     String transaction_type;
     @DatabaseField
     double amount;
-    @DatabaseField(canBeNull = true, foreign = true, columnName = "payee_id")
+    @DatabaseField(canBeNull = true, foreign = true, columnName = "payee_id", columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE")
     Person payee;
-    @DatabaseField(canBeNull = true, foreign = true, columnName = "payer_id")
+    @DatabaseField(canBeNull = true, foreign = true, columnName = "payer_id", columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE")
     Person payer;
     @DatabaseField
     String payment_method;
     @DatabaseField
     long date;
-    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true)
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE")
     Place place;
     @DatabaseField
     boolean pending;
-    @DatabaseField(canBeNull = true, foreign = true, columnName = "owner_id")
+    @DatabaseField(canBeNull = true, foreign = true, columnName = "owner_id", columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE")
     Person account_owner;
 
 

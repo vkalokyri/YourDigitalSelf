@@ -12,11 +12,11 @@ import java.io.Serializable;
 public class ScriptDefHasTaskDef implements Serializable {
 
     // This is a foreign object which just stores the id from the Person object in this table.
-    @DatabaseField(foreign = true, foreignAutoRefresh = true)
+    @DatabaseField(foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES ScriptDefinition(_id) ON DELETE CASCADE")
     ScriptDefinition script;
 
     // This is a foreign object which just stores the id from the Post object in this table.
-    @DatabaseField(foreign = true, foreignAutoRefresh = true)
+    @DatabaseField(foreign = true, foreignAutoRefresh = true,columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES TaskDefinition(_id) ON DELETE CASCADE")
     TaskDefinition task;
 
     public ScriptDefHasTaskDef() {

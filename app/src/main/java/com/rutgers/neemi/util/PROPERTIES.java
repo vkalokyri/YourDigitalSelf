@@ -28,6 +28,7 @@ public enum PROPERTIES {
 	FACEBOOK_WEIGHT("facebook_weight"),
 	FOURSQUARE_WEIGHT("foursquare_weight"),
 	TWITTER_WEIGHT("twitter_weight"),
+	GPS_WEIGHT("gps_weight"),
 	GMAPS("google_maps_API"),
 	INSTAGRAM_BASE_URL("instagram_base_url"),
 	INSTAGRAM_CLIENT_ID("instagram_API"),

@@ -7,6 +7,7 @@
     <uses-permission
         android:name="android.permission.AUTHENTICATE_ACCOUNTS"
         android:maxSdkVersion="22" />
+    <uses-permission android:name="com.example.permission.MAPS_RECEIVE" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission
         android:name="android.permission.MANAGE_ACCOUNTS"
@@ -27,6 +28,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <uses-library
+            android:name="com.google.android.maps"
+            android:required="true" />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCVlC6lTNYWQ1nDyb_XjhjmOYNuFY-Zztc" />
+
         <activity
             android:name=".SplashActivity"
             android:theme="@style/SplashTheme">
@@ -38,11 +50,10 @@
         </activity>
         <activity
             android:name=".GDriveActivity"
-            android:exported="true"
-            android:label="DigitalSelf">
+            android:exported="true">
             <meta-data
-                android:name="com.google.android.apps.drive.APP_ID"
-                android:value="id=258155102735" />
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.rutgers.neemi.MainActivity" />
 
             <intent-filter>
                 <action android:name="com.google.android.apps.drive.DRIVE_OPEN" />
@@ -50,11 +61,10 @@
         </activity>
         <activity
             android:name=".GMapsDriveActivity"
-            android:exported="true"
-            android:label="DigitalSelf">
+            android:exported="true">
             <meta-data
-                android:name="com.google.android.apps.drive.APP_ID"
-                android:value="id=258155102735" />
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.rutgers.neemi.MainActivity" />
 
             <intent-filter>
                 <action android:name="com.google.android.apps.drive.DRIVE_OPEN" />
@@ -130,7 +140,10 @@
             android:name=".IntroActivity"
             android:label="@string/title_activity_intro"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <activity android:name=".GmapsActivity"></activity>
+        <activity android:name=".GmapsActivity" />
+        <activity
+            android:name=".MapsActivity"
+            android:label="@string/title_activity_maps"></activity>
     </application>
 
 </manifest>

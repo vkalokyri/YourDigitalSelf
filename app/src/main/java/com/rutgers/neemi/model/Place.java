@@ -5,6 +5,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * Created by suitcase on 7/19/17.
@@ -47,6 +48,10 @@ public class Place implements Serializable {
     String phone_number;
     @DatabaseField(dataType = DataType.BYTE_ARRAY)
     byte[] imageBytes;
+
+    StayPoint sp;
+
+    ArrayList<String> categories = new ArrayList<>();
 
     public Place() {
     }
@@ -153,5 +158,25 @@ public class Place implements Serializable {
 
     public void setImage(byte[] imageBytes) {
         this.imageBytes = imageBytes;
+    }
+
+    public ArrayList<String> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(ArrayList<String> categories) {
+        this.categories = categories;
+    }
+
+    public void addCategory(String category) {
+        this.categories.add(category);
+    }
+
+    public StayPoint getSp() {
+        return sp;
+    }
+
+    public void setSp(StayPoint sp) {
+        this.sp = sp;
     }
 }

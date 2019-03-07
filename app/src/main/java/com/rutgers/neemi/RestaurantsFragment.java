@@ -35,6 +35,7 @@ import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.ScriptLocalValues;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Place;
+import com.rutgers.neemi.model.StayPoint;
 import com.rutgers.neemi.model.TaskLocalValues;
 import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.Script;
@@ -372,7 +373,7 @@ public class RestaurantsFragment extends Fragment {
                 if (taskLocals!=null){
                     for(LocalProperties w5h:taskLocals){
                         W5hLocals locals = JsonTriggerFactory.getLocals(getContext());
-                        ArrayList<String> localValue = locals.getLocals(w5h.getW5h_value(), pid, getContext());
+                        ArrayList<String> localValue = locals.getLocals(w5h.getW5h_value(), task, getContext());
                         if (localValue.size()>0) {
                             for (String lValue:localValue) {
                                 TaskLocalValues w5hInfo = new TaskLocalValues();
@@ -553,7 +554,7 @@ public class RestaurantsFragment extends Fragment {
 
 
         for (LocalProperties localProp : script.getScriptDefinition().getLocalProperties()) {
-            ArrayList<String> constraints = locals.getConstraints(localProp.getW5h_value(), getContext(), task.getPid());
+            ArrayList<String> constraints = locals.getConstraints(localProp.getW5h_value(), getContext(), task);
             for (String constraint: constraints) {
                 HashSet<String> localvalues = map.get(constraint);
                 if (localvalues != null) {
@@ -920,7 +921,7 @@ public class RestaurantsFragment extends Fragment {
 
                                                 } else {
                                                     whereClause = whereClause + " " + andOrKey;
-                                                    if (andOrKey.contains("Transaction") || andOrKey.contains("Category") || andOrKey.contains("Feed") || andOrKey.contains("Person") || andOrKey.contains("Photo")){
+                                                    if (andOrKey.contains("Transaction") || andOrKey.contains("Category") || andOrKey.contains("Feed") || andOrKey.contains("Person") || andOrKey.contains("Photo") || andOrKey.contains("Place")){
                                                         whereClause = whereClause + " = " + andOrValue.toString().replace("\"", "");
                                                     }else {
                                                         //System.out.println("Clue value = " + andOrValue.toString().replace("\"", ""));
@@ -946,6 +947,9 @@ public class RestaurantsFragment extends Fragment {
                             }
                             if (fromClause.contains("Photo")){
                                 query="select distinct `Photo`._id, `Photo`.name, `Photo`.place_id ";
+                            }
+                            if (fromClause.contains("StayPointHasPlaces")){
+                                query="select distinct `StayPointHasPlaces`.stayPoint_id ";
                             }
                             query = query + fromClause + whereClause;
                             query=query.substring(0,query.length()-4) +");";
@@ -1111,6 +1115,30 @@ public class RestaurantsFragment extends Fragment {
                                 task.setScript(script);
                                 task.setTaskDefinition(new TaskDefinition(subtask));
                                 tasks.add(task);
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }else if (fromTable.contains("StayPointHasPlaces")){
+                    for (String[] tuple:rawResults.getResults()) {
+
+
+                        String tempQuery = "select Place.* from `Place`,`StayPointHasPlaces` where StayPointHasPlaces.stayPoint_id=" + tuple[0]+ " and StayPointHasPlaces.place_id = Place._id ";
+                        GenericRawResults<Place> placeData = helper.getPlaceDao().queryRaw(tempQuery, helper.getPlaceDao().getRawRowMapper());
+
+                        Task task = new Task();
+                        task.setName(subtask);
+                        task.setScript(script);
+                        task.setTaskDefinition(new TaskDefinition(subtask));
+                        tasks.add(task);
+                        try {
+                            for (Place fullplace : placeData.getResults()) {
+                                String tempQ = "select * from StayPoint where _id=" + tuple[0];
+                                GenericRawResults<StayPoint> sp = helper.getStayPointRuntimeDao().queryRaw(tempQ, helper.getStayPointRuntimeDao().getRawRowMapper());
+                                fullplace.setSp(sp.getFirstResult());
+                                task.addOid(fullplace.getId());
+                                task.addPid(fullplace);
                             }
                         } catch (SQLException e) {
                             e.printStackTrace();

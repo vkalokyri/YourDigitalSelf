@@ -27,9 +27,9 @@ public class Feed implements Serializable {
     String object_id;
     @DatabaseField
     long created_time;
-    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh=true)
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh=true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE")
     Place place;
-    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh=true)
+    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh=true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE")
     Person creator;
     @DatabaseField
     String picture;

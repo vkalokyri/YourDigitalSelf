@@ -16,11 +16,11 @@ public class TransactionHasCategory implements Serializable {
     int _id;
 
     // This is a foreign object which just stores the id from the Person object in this table.
-    @DatabaseField(foreign = true, columnName = "transaction_id")
+    @DatabaseField(foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES `Transaction`(_id) ON DELETE CASCADE")
     Transaction transaction;
 
     // This is a foreign object which just stores the id from the Post object in this table.
-    @DatabaseField(foreign = true, columnName = "category_id")
+    @DatabaseField(foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Category(_id) ON DELETE CASCADE")
     Category category;
 
     public TransactionHasCategory() {

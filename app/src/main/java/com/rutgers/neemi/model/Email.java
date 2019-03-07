@@ -28,7 +28,7 @@ public class Email implements Serializable{
         String threadId;
         @DatabaseField
         BigInteger historyId;
-        @DatabaseField (foreign = true,foreignAutoRefresh = true)
+        @DatabaseField (foreign = true,foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE")
         Person from;
         @DatabaseField
         long date;

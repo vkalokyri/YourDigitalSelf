@@ -8,28 +8,25 @@ import java.io.Serializable;
 /**
  * Created by suitcase on 7/19/17.
  */
-@DatabaseTable(tableName = "PlaceHasCategory")
-public class PlaceHasCategory implements Serializable {
+@DatabaseTable(tableName = "StayPointHasPlaces")
+public class StayPointHasPlaces implements Serializable {
 
-
-    @DatabaseField(generatedId = true)
-    int _id;
 
     // This is a foreign object which just stores the id from the Person object in this table.
     @DatabaseField(foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE")
     Place place;
 
     // This is a foreign object which just stores the id from the Post object in this table.
-    @DatabaseField(foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Category(_id) ON DELETE CASCADE")
-    Category category;
+    @DatabaseField(foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES StayPoint(_id) ON DELETE CASCADE")
+    StayPoint stayPoint;
 
-    public PlaceHasCategory() {
+    public StayPointHasPlaces() {
         // for ormlite
     }
 
-    public PlaceHasCategory(Place place, Category category) {
+    public StayPointHasPlaces(Place place, StayPoint stayPoint) {
         this.place = place;
-        this.category = category;
+        this.stayPoint = stayPoint;
     }
 
 }

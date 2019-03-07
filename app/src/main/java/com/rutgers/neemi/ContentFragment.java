@@ -273,7 +273,7 @@ public class ContentFragment extends Fragment {
                 if (taskLocals!=null){
                     for(LocalProperties w5h:taskLocals){
                         W5hLocals locals = JsonTriggerFactory.getLocals(getContext());
-                        ArrayList<String> localValue = locals.getLocals(w5h.getW5h_value(), pid, getContext());
+                        ArrayList<String> localValue = locals.getLocals(w5h.getW5h_value(), task, getContext());
                         if (localValue.size()>0) {
                             for (String lValue:localValue) {
                                 TaskLocalValues w5hInfo = new TaskLocalValues();
@@ -481,7 +481,7 @@ public class ContentFragment extends Fragment {
 
 
         for (LocalProperties localProp : script.getScriptDefinition().getLocalProperties()) {
-            ArrayList<String> constraints = locals.getConstraints(localProp.getW5h_value(), getContext(), task.getPid());
+            ArrayList<String> constraints = locals.getConstraints(localProp.getW5h_value(), getContext(), task);
             for (String constraint: constraints) {
                 HashSet<String> localvalues = map.get(constraint);
                 if (localvalues != null) {

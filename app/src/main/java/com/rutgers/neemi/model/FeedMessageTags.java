@@ -17,11 +17,11 @@ public class FeedMessageTags implements Serializable {
 
 
     // This is a foreign object which just stores the id from the Person object in this table.
-    @DatabaseField(foreign = true, foreignAutoRefresh=true)
+    @DatabaseField(foreign = true, foreignAutoRefresh=true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE")
     Person tagged;
 
     // This is a foreign object which just stores the id from the Post object in this table.
-    @DatabaseField(foreign = true, foreignAutoRefresh=true)
+    @DatabaseField(foreign = true, foreignAutoRefresh=true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Feed(_id) ON DELETE CASCADE")
     Feed feed;
 
     public FeedMessageTags() {

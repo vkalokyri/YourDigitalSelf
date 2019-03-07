@@ -15,6 +15,14 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <startEvent name="" id="SubProcessStart"/>
 <endEvent name="" id="SubProcessEnd"/>
 <parallelGateway gatewayDirection="Diverging" name="" id="whileInVenue"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="StayingInVenue" id="StayingInVenue">
+    <locals>
+        <who name="whoStayedInVenue"/>
+        <what name="whatIsStayAbout"/>
+        <when name="whenWasTheStayInVenue"/>
+        <where name="whereIsTheVenue"/>
+    </locals>
+</task>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="TakePictures" id="TakePictures"/>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="TakeVideo" id="TakeVideo"/>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="PostOnFacebook" id="PostOnFacebook">

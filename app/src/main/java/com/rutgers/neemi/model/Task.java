@@ -19,11 +19,13 @@ public class Task implements Serializable{
 	String oid;
 	@DatabaseField(canBeNull = true)
 	boolean isGateway;
-	@DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
+	@DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Script(_id) ON DELETE CASCADE")
 	Script script;
-	@DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true)
+	@DatabaseField(canBeNull = false, foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES TaskDefinition(_id) ON DELETE CASCADE")
 	TaskDefinition taskDefinition;
 
+	ArrayList<String> list_of_oids = new ArrayList<>();
+	ArrayList<Object> list_of_pids = new ArrayList<>();
 
 	Object pid;
 
@@ -91,5 +93,29 @@ public class Task implements Serializable{
 
 	public void setTaskDefinition(TaskDefinition taskDefinition) {
 		this.taskDefinition = taskDefinition;
+	}
+
+	public void addPid(Object pid){
+		this.list_of_pids.add(pid);
+	}
+
+	public void addOid(String oid){
+		this.list_of_oids.add(oid);
+	}
+
+	public ArrayList<String> getList_of_oids() {
+		return list_of_oids;
+	}
+
+	public void setList_of_oids(ArrayList<String> list_of_oids) {
+		this.list_of_oids = list_of_oids;
+	}
+
+	public ArrayList<Object> getList_of_pids() {
+		return list_of_pids;
+	}
+
+	public void setList_of_pids(ArrayList<Object> list_of_pids) {
+		this.list_of_pids = list_of_pids;
 	}
 }
