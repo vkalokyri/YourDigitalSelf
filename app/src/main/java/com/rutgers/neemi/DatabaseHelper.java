@@ -51,6 +51,7 @@ import com.rutgers.neemi.model.ScriptDefinition;
 import com.rutgers.neemi.model.Subscript;
 import com.rutgers.neemi.model.Task;
 import com.rutgers.neemi.model.TaskDefinition;
+import com.rutgers.neemi.model.TransactionHasPlaces;
 
 /**
  * Database helper class used to manage the creation and upgrading of your database. This class also usually provides
@@ -95,7 +96,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private RuntimeExceptionDao<Subscript, String> subscriptRuntimeDao = null;
 	private RuntimeExceptionDao<GPSLocation, String> gpsLocationtRuntimeDao = null;
 	private RuntimeExceptionDao<StayPoint, String> stayPointRuntimeDao = null;
-	private RuntimeExceptionDao<StayPointHasPlaces, String> StayPointHasPlacesDao = null;
+	private RuntimeExceptionDao<StayPointHasPlaces, String> stayPointHasPlacesDao = null;
+	private RuntimeExceptionDao<TransactionHasPlaces, String> transactionHasPlacesDao = null;
+
 
 
 
@@ -161,6 +164,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, GPSLocation.class);
 			TableUtils.createTable(connectionSource, StayPoint.class);
 			TableUtils.createTable(connectionSource, StayPointHasPlaces.class);
+			TableUtils.createTable(connectionSource, TransactionHasPlaces.class);
 
 
 			createIndexes();
@@ -226,9 +230,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, GPSLocation.class, true);
 			TableUtils.dropTable(connectionSource, StayPoint.class, true);
 			TableUtils.dropTable(connectionSource, StayPointHasPlaces.class, true);
-
-
-
+			TableUtils.dropTable(connectionSource, TransactionHasPlaces.class, true);
 
 
 			// after we drop the old databases, we create the new ones
@@ -480,10 +482,18 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	}
 
 	public RuntimeExceptionDao<StayPointHasPlaces, String> getStayPointHasPlacesDao() {
-		if ( StayPointHasPlacesDao == null) {
-			StayPointHasPlacesDao = getRuntimeExceptionDao(StayPointHasPlaces.class);
+		if ( stayPointHasPlacesDao == null) {
+			stayPointHasPlacesDao = getRuntimeExceptionDao(StayPointHasPlaces.class);
 		}
-		return  StayPointHasPlacesDao;
+		return  stayPointHasPlacesDao;
+	}
+
+
+	public RuntimeExceptionDao<TransactionHasPlaces, String> getTransactionHasPlacesDao() {
+		if ( transactionHasPlacesDao == null) {
+			transactionHasPlacesDao = getRuntimeExceptionDao(TransactionHasPlaces.class);
+		}
+		return  transactionHasPlacesDao;
 	}
 
 	/**
@@ -510,6 +520,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         subscriptRuntimeDao =null;
         gpsLocationtRuntimeDao = null;
 		stayPointRuntimeDao = null;
+		transactionHasPlacesDao = null;
 
 	}
 
@@ -1259,14 +1270,14 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	public ArrayList<GPSLocation> getGPSLocations() throws SQLException {
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT *  from gpslocation order by timestamp asc");
+		sb.append("SELECT timestamp, latitude, longitude  from gpslocation order by timestamp asc");
 
 		GenericRawResults<GPSLocation> rawResults =
 				gpsLocationtRuntimeDao.queryRaw(sb.toString(),
 						new RawRowMapper<GPSLocation>() {
 							public GPSLocation mapRow(String[] columnNames,
 												 String[] resultColumns) {
-								return new GPSLocation(Long.parseLong(resultColumns[1]),Double.parseDouble(resultColumns[2]), Double.parseDouble(resultColumns[3]));
+								return new GPSLocation(Long.parseLong(resultColumns[0]),Double.parseDouble(resultColumns[1]), Double.parseDouble(resultColumns[2]));
 							}
 						});
 
@@ -1286,7 +1297,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	public void deletePlaces(int place_id) throws SQLException {
 		StringBuilder sb = new StringBuilder();
-		sb.append("delete from Place where _id IN (select p.place_id from StayPointHasPlaces p where p.StayPoint_id = (select  stayPoint_id from StayPointHasPlaces where place_id="+ place_id +")");
+		sb.append("delete from Place where _id IN (select p.place_id from StayPointHasPlaces p where p.StayPoint_id = (select  stayPoint_id from StayPointHasPlaces where place_id="+ place_id +"))");
 
 		placeRuntimeDao.queryRaw(sb.toString());
 

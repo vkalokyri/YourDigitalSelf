@@ -55,6 +55,7 @@ import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Place;
 import com.rutgers.neemi.model.TransactionHasCategory;
 import com.rutgers.neemi.model.Transaction;
+import com.rutgers.neemi.model.TransactionHasPlaces;
 import com.rutgers.neemi.parser.BankDescriptionParser;
 
 import org.apache.commons.csv.CSVFormat;
@@ -408,6 +409,8 @@ public class GDriveActivity extends Activity {
                             }
                             placeDao.create(placeExists);
                             payment.setPlace(placeExists);
+                            TransactionHasPlaces tranHasPlaces = new TransactionHasPlaces(payment,placeExists);
+                            helper.getTransactionHasPlacesDao().create(tranHasPlaces);
                             transactionDao.create(payment);
 
 

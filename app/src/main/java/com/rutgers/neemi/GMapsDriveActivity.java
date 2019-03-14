@@ -90,6 +90,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -100,6 +101,8 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * An abstract activity that handles authorization and connection to the Drive
@@ -407,6 +410,10 @@ public class GMapsDriveActivity extends AppCompatActivity {
                                         }
                                     }
                                 }
+
+
+
+
                             }
 
                         }
@@ -550,8 +557,9 @@ public class GMapsDriveActivity extends AppCompatActivity {
 
 
     public ArrayList<StayPoint> listOfStayPoints(ArrayList<GPSLocation> points){
-        int distThres=100;
-        int timeThres = 40*60;
+        Collections.sort(points);
+        int distThres=200; //distance in meters
+        int timeThres = 30*60;
         ArrayList<StayPoint> stayPointList = new ArrayList<StayPoint>();
         int pointNum = points.size();
         int i = 0;
@@ -584,7 +592,7 @@ public class GMapsDriveActivity extends AppCompatActivity {
                 }
                 j += 1;
             }
-            i += 1;
+           // i += 1;
         }
 
         return stayPointList;

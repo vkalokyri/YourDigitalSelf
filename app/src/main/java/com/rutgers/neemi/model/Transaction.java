@@ -4,6 +4,7 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * Created by suitcase on 7/19/17.
@@ -37,12 +38,14 @@ public class Transaction implements Serializable {
     String payment_method;
     @DatabaseField
     long date;
-    @DatabaseField(canBeNull = true, foreign = true, foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE")
-    Place place;
     @DatabaseField
     boolean pending;
     @DatabaseField(canBeNull = true, foreign = true, columnName = "owner_id", columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE")
     Person account_owner;
+
+    Place place;
+
+    ArrayList<Place> places = new ArrayList();
 
 
     public Transaction() {
@@ -160,5 +163,13 @@ public class Transaction implements Serializable {
 
     public void setPayment_method(String payment_method) {
         this.payment_method = payment_method;
+    }
+
+    public ArrayList<Place> getPlaces() {
+        return places;
+    }
+
+    public void setPlaces(ArrayList<Place> places) {
+        this.places = places;
     }
 }

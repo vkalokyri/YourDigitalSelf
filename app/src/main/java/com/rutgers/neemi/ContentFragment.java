@@ -1495,18 +1495,18 @@ public class ContentFragment extends Fragment {
             Place place = null;
 
 
-            for (Task task: itemname.get(position).getTasks()) {
-                if (task.getPid() instanceof Transaction) {
-                    place = ((Transaction) task.getPid()).getPlace();
-                    break;
-                } else if (task.getPid() instanceof Photo) {
-                    place = ((Photo) task.getPid()).getPlace();
-                    break;
-                } else if (task.getPid() instanceof Feed) {
-                    place = ((Feed) task.getPid()).getPlace();
-                    break;
-                }
-            }
+//            for (Task task: itemname.get(position).getTasks()) {
+//                if (task.getPid() instanceof Transaction) {
+//                    place = ((Transaction) task.getPid()).getPlace();
+//                    break;
+//                } else if (task.getPid() instanceof Photo) {
+//                    place = ((Photo) task.getPid()).getPlace();
+//                    break;
+//                } else if (task.getPid() instanceof Feed) {
+//                    place = ((Feed) task.getPid()).getPlace();
+//                    break;
+//                }
+//            }
 
 //            if (place != null) {
 //                byte[] image = place.getImage();

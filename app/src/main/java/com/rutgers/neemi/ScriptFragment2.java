@@ -105,20 +105,20 @@ public class ScriptFragment2 extends Fragment{
         Script script = (Script)listOfProcesses.get(position);//.getScriptDefinition();
         HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
 
-        Place place = null;
-
-        for (Task task: script.getTasks()) {
-            if (task.getPid() instanceof Transaction) {
-                place = ((Transaction) task.getPid()).getPlace();
-                break;
-            } else if (task.getPid() instanceof Photo) {
-                place = ((Photo) task.getPid()).getPlace();
-                break;
-            } else if (task.getPid() instanceof Feed) {
-                place = ((Feed) task.getPid()).getPlace();
-                break;
-            }
-        }
+//        Place place = null;
+//
+//        for (Task task: script.getTasks()) {
+//            if (task.getPid() instanceof Transaction) {
+//                place = ((Transaction) task.getPid()).getPlace();
+//                break;
+//            } else if (task.getPid() instanceof Photo) {
+//                place = ((Photo) task.getPid()).getPlace();
+//                break;
+//            } else if (task.getPid() instanceof Feed) {
+//                place = ((Feed) task.getPid()).getPlace();
+//                break;
+//            }
+//        }
 
 //        if (place != null) {
 //            byte[] image = place.getImage();
@@ -407,118 +407,116 @@ public class ScriptFragment2 extends Fragment{
                 }
             }
             txtListHeaderBody.setText(text);
-        }else if(childTask.getList_of_pids().get(0) instanceof Place){
-            imageView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.gmaps));
-            txtListHeader.setText(((Place) childTask.getList_of_pids().get(0) ).getName());
-            txtListHeaderBody.setText(((Place) childTask.getList_of_pids().get(0)).getStreet());
-            StringBuilder text = new StringBuilder();
-            for(TaskLocalValues taskLocalValues : childTask.getLocalValues()){
-                if (taskLocalValues.getLocalProperties().getW5h_label().equalsIgnoreCase("when")){
-                    Date date = new Date(taskLocalValues.getLocal_value());
-                    SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
-                    text.append(taskLocalValues.getLocalProperties().getW5h_value());
-                    text.append(": ");
-                    text.append(sf.format(date));
-                    text.append("\n");
-                }else{
-                    text.append(taskLocalValues.getLocalProperties().getW5h_value());
-                    text.append(": ");
-                    text.append(taskLocalValues.getLocal_value());
-                    text.append("\n");
-                }
-            }
-
-            LinearLayout horizontalButtons = new LinearLayout(getApplicationContext());
-            horizontalButtons.setOrientation(LinearLayout.HORIZONTAL);
-
-            Button yesButton = new Button(getApplicationContext());
-            yesButton.setText("Yes");
-            horizontalButtons.addView(yesButton);
-
-            yesButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    try {
-                        DatabaseHelper.getHelper(getApplicationContext()).confirmPlace(((Place) childTask.getList_of_pids().get(0)).get_id()) ;
-                    } catch (SQLException e) {
-                        e.printStackTrace();
+        }else if(childTask.getList_of_pids().size()>0){
+            if(childTask.getList_of_pids().get(0) instanceof Place) {
+                imageView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.gmaps));
+                txtListHeader.setText(((Place) childTask.getList_of_pids().get(0)).getName());
+                txtListHeaderBody.setText(((Place) childTask.getList_of_pids().get(0)).getStreet());
+                StringBuilder text = new StringBuilder();
+                for (TaskLocalValues taskLocalValues : childTask.getLocalValues()) {
+                    if (taskLocalValues.getLocalProperties().getW5h_label().equalsIgnoreCase("when")) {
+                        Date date = new Date(taskLocalValues.getLocal_value());
+                        SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+                        text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                        text.append(": ");
+                        text.append(sf.format(date));
+                        text.append("\n");
+                    } else {
+                        text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                        text.append(": ");
+                        text.append(taskLocalValues.getLocal_value());
+                        text.append("\n");
                     }
                 }
-            });
 
+                LinearLayout horizontalButtons = new LinearLayout(getApplicationContext());
+                horizontalButtons.setOrientation(LinearLayout.HORIZONTAL);
 
-            Button noButton = new Button(getApplicationContext());
-            noButton.setText("No");
-            horizontalButtons.addView(noButton);
-            noButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    try {
-                        DatabaseHelper.getHelper(getApplicationContext()).deletePlaces(((Place) childTask.getList_of_pids().get(0)).get_id()); ;
-                    } catch (SQLException e) {
-                        e.printStackTrace();
+                Button yesButton = new Button(getApplicationContext());
+                yesButton.setText("Yes");
+                horizontalButtons.addView(yesButton);
+
+                yesButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        try {
+                            DatabaseHelper.getHelper(getApplicationContext()).confirmPlace(((Place) childTask.getList_of_pids().get(0)).get_id());
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
-            });
+                });
 
 
-            Button other = new Button(getApplicationContext());
-            other.setText("> Other");
-            horizontalButtons.addView(other);
+                Button noButton = new Button(getApplicationContext());
+                noButton.setText("No");
+                horizontalButtons.addView(noButton);
+                noButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        try {
+                            DatabaseHelper.getHelper(getApplicationContext()).deletePlaces(((Place) childTask.getList_of_pids().get(0)).get_id());
+                            ;
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
 
-            other.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    LinearLayout horizontalButtons = new LinearLayout(getApplicationContext());
-                    horizontalButtons.setOrientation(LinearLayout.VERTICAL);
-                    LinearLayout.LayoutParams params = new  LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-                    params.setMargins(20,10,20,10);
-                    horizontalButtons.setLayoutParams(params);
 
-                    for (Object pid: childTask.getList_of_pids()) {
-                       // LinearLayout optionButtons = new LinearLayout(getApplicationContext());
-                       // optionButtons.setOrientation(LinearLayout.VERTICAL);
+                Button other = new Button(getApplicationContext());
+                other.setText("> Other");
+                horizontalButtons.addView(other);
 
-                        TextView tView = new TextView(getApplicationContext());
-                        SpannableString styledString = new SpannableString(((Place) pid ).getName()+"\n"+"New Brunswick, NJ");
-                        styledString.setSpan(new ForegroundColorSpan(Color.GRAY), ((Place) pid ).getName().length(), styledString.length(), 0);
-                        tView.setGravity(Gravity.CENTER);
-                        tView.setText(styledString);
-                        tView.setLayoutParams(params);
-                        tView.setBackgroundColor(Color.parseColor("#CCCCCC"));
-                        tView.setClickable(true);
+                other.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        LinearLayout horizontalButtons = new LinearLayout(getApplicationContext());
+                        horizontalButtons.setOrientation(LinearLayout.VERTICAL);
+                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+                        params.setMargins(20, 10, 20, 10);
+                        horizontalButtons.setLayoutParams(params);
 
-                        tView.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                try {
-                                    DatabaseHelper.getHelper(getApplicationContext()).confirmPlace(((Place)pid).get_id()) ;
-                                } catch (SQLException e) {
-                                    e.printStackTrace();
+                        for (Object pid : childTask.getList_of_pids()) {
+                            // LinearLayout optionButtons = new LinearLayout(getApplicationContext());
+                            // optionButtons.setOrientation(LinearLayout.VERTICAL);
+
+                            TextView tView = new TextView(getApplicationContext());
+                            SpannableString styledString = new SpannableString(((Place) pid).getName() + "\n" + "New Brunswick, NJ");
+                            styledString.setSpan(new ForegroundColorSpan(Color.GRAY), ((Place) pid).getName().length(), styledString.length(), 0);
+                            tView.setGravity(Gravity.CENTER);
+                            tView.setText(styledString);
+                            tView.setLayoutParams(params);
+                            tView.setBackgroundColor(Color.parseColor("#CCCCCC"));
+                            tView.setClickable(true);
+
+                            tView.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    try {
+                                        DatabaseHelper.getHelper(getApplicationContext()).confirmPlace(((Place) pid).get_id());
+                                    } catch (SQLException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
-                            }
-                        });
+                            });
 
-                        horizontalButtons.addView(tView);
-
+                            horizontalButtons.addView(tView);
 
 
+                        }
+
+                        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                        alert.setView(horizontalButtons);
+                        alert.create();
+                        alert.show();
+                        alert.setCancelable(true);
 
                     }
-
-                    AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-                    alert.setView(horizontalButtons);
-                    alert.create();
-                    alert.show();
-                    alert.setCancelable(true);
-
-                }
-            });
+                });
 
 
-
-
-            list_item_layout.addView(horizontalButtons);
+                list_item_layout.addView(horizontalButtons);
 
 
 //            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -543,10 +541,7 @@ public class ScriptFragment2 extends Fragment{
 //            this.mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng1));
 
 
-
-
-
-
+            }
         } else if(childTask.getPid() instanceof Event){
             imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.google_calendar));
             txtListHeader.setText(((Event) childTask.getPid()).getTitle());

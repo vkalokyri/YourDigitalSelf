@@ -63,6 +63,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.sql.Array;
 import java.sql.SQLException;
 import java.text.Format;
 import java.text.ParseException;
@@ -392,6 +393,7 @@ public class RestaurantsFragment extends Fragment {
             ArrayList<ArrayList<Task>> tasksThreads = mergeThreads(tasks);
             listOfScripts = createScriptPerTask(tasksThreads);
             listOfScripts = mergeScriptsByWhenAndWhere(listOfScripts);
+
 
             //sort them
             Collections.sort(listOfScripts, new Comparator<Script>() {
@@ -728,32 +730,74 @@ public class RestaurantsFragment extends Fragment {
     }
 
 
+
     public ArrayList<Script> mergeScriptsByWhenAndWhere(List<Script> scripts){
         Log.d(TAG,"SIZE OF scripts: " +scripts.size());
         ArrayList<Script> listofMergedScripts = new ArrayList<Script>();
         HashMap<String, ArrayList<Script>> hashMap = new HashMap<String, ArrayList<Script>>();
+        HashMap<String, String> whereWhenHashMap = new HashMap<String, String>();
+
 
         for (Script script:scripts){
             String when=null;
             String where=null;
+            ArrayList<String> possiblePlaces = new ArrayList<>();
+
             for (ScriptLocalValues scriptLocalValues:script.getLocalValues()) {
                 String label = scriptLocalValues.getLocalProperties().getW5h_label();
                 if (label.equals("when")) {
                     when = scriptLocalValues.getLocal_value();
                 } else if (label.equals("where")) {
                     where = scriptLocalValues.getLocal_value();
+                    for(Task t : script.getTasks()){
+                        if (t.getPid() instanceof Transaction){
+
+                        }
+                    }
+
+
                 }
             }
 
             if (when != null && where !=null) {
-                String whenAndWhere = when+where;
+                String whenAndWhere = where;
                 if (!hashMap.containsKey(whenAndWhere)) {
                     ArrayList<Script> list = new ArrayList<Script>();
                     list.add(script);
                     hashMap.put(whenAndWhere, list);
+                    whereWhenHashMap.put(where,when);
                 } else {
-                    hashMap.get(whenAndWhere).add(script);
+
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    Calendar minusTwoDays = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+                    try {
+                        minusTwoDays.setTimeInMillis(simpleDateFormat.parse(when).getTime());
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    minusTwoDays.add(Calendar.DATE, -2);
+
+                    Calendar plusTwoDays = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+                    try {
+                        plusTwoDays.setTimeInMillis(simpleDateFormat.parse(when).getTime());
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    plusTwoDays.add(Calendar.DATE, +2);
+
+                    Calendar hashedWhen = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+                    try {
+                        plusTwoDays.setTimeInMillis(simpleDateFormat.parse(whereWhenHashMap.get(where)).getTime());
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (hashedWhen.compareTo(plusTwoDays)<=0 && hashedWhen.compareTo(minusTwoDays)>=0){
+                        hashMap.get(whenAndWhere).add(script);
+
+                    }
                 }
+
             } else {
                 //not mergedScript
                 listofMergedScripts.add(script);
@@ -1249,18 +1293,18 @@ public class RestaurantsFragment extends Fragment {
             Place place = null;
 
 
-            for (Task task: itemname.get(position).getTasks()) {
-                if (task.getPid() instanceof Transaction) {
-                    place = ((Transaction) task.getPid()).getPlace();
-                    break;
-                } else if (task.getPid() instanceof Photo) {
-                    place = ((Photo) task.getPid()).getPlace();
-                    break;
-                } else if (task.getPid() instanceof Feed) {
-                    place = ((Feed) task.getPid()).getPlace();
-                    break;
-                }
-            }
+//            for (Task task: itemname.get(position).getTasks()) {
+//                if (task.getPid() instanceof Transaction) {
+//                    place = ((Transaction) task.getPid()).getPlace();
+//                    break;
+//                } else if (task.getPid() instanceof Photo) {
+//                    place = ((Photo) task.getPid()).getPlace();
+//                    break;
+//                } else if (task.getPid() instanceof Feed) {
+//                    place = ((Feed) task.getPid()).getPlace();
+//                    break;
+//                }
+//            }
 
 //            if (place != null) {
 //                byte[] image = place.getImage();

@@ -1,5 +1,7 @@
 package com.rutgers.neemi.model;
 
+import android.support.annotation.NonNull;
+
 import com.google.maps.GeoApiContext;
 import com.google.maps.PlacesApi;
 import com.google.maps.errors.ApiException;
@@ -12,7 +14,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 @DatabaseTable(tableName = "GPSLocation")
-public class GPSLocation implements Serializable {
+public class GPSLocation implements Serializable, Comparable<GPSLocation> {
 
     @DatabaseField(generatedId = true)
     int _id;
@@ -76,5 +78,12 @@ public class GPSLocation implements Serializable {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+
+    @Override
+    public int compareTo(@NonNull GPSLocation gpsLocation) {
+        return Long.compare(this.getTimestamp(),gpsLocation.getTimestamp());
+
     }
 }

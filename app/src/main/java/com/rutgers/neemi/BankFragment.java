@@ -3,9 +3,12 @@ package com.rutgers.neemi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,12 +21,19 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.GeoApiContext;
 import com.google.maps.PlacesApi;
 import com.google.maps.errors.ApiException;
+import com.google.maps.model.AutocompletePrediction;
 import com.google.maps.model.LatLng;
 import com.google.maps.model.PhotoResult;
+import com.google.maps.model.PlaceAutocompleteType;
+import com.google.maps.model.PlaceType;
 import com.google.maps.model.PlacesSearchResponse;
+import com.google.maps.model.PlacesSearchResult;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.j256.ormlite.stmt.QueryBuilder;
@@ -37,6 +47,7 @@ import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Place;
 import com.rutgers.neemi.model.PlaceHasCategory;
+import com.rutgers.neemi.model.TransactionHasPlaces;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -77,8 +88,15 @@ public class BankFragment extends Fragment {
             //.sandboxBaseUrl()
             .build();
 
+    GeoApiContext context = new GeoApiContext.Builder()
+            .apiKey("AIzaSyDe8nWbXFA6ESFS6GnQtYPPsXzYmLz3Lf0")
+            .build();
 
-    Integer[] imgid={
+    FusedLocationProviderClient fusedLocationClient;
+    Location myLocation;
+
+
+    Integer[] imgid = {
             R.drawable.bank,
             R.drawable.bank,
             R.drawable.bank,
@@ -90,6 +108,7 @@ public class BankFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         myView = inflater.inflate(R.layout.fragment_bank, container, false);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
         return myView;
     }
@@ -248,9 +267,7 @@ public class BankFragment extends Fragment {
             protected Integer doInBackground(String... params) {
                 String accessToken = params[0];
 
-                GeoApiContext context = new GeoApiContext.Builder()
-                        .apiKey("AIzaSyDe8nWbXFA6ESFS6GnQtYPPsXzYmLz3Lf0")
-                        .build();
+
 
                 try {
                     try {
@@ -333,7 +350,6 @@ public class BankFragment extends Fragment {
                                         transaction.setAmount(txn.getAmount());
                                     }
                                     if (txn.getDate() != null) {
-                                        String date = txn.getDate();
                                         transaction.setDate(simpleDateFormat.parse(txn.getDate()).getTime());
                                     }
                                     if (txn.getName() != null) {
@@ -344,7 +360,6 @@ public class BankFragment extends Fragment {
                                     }
                                     if (txn.getPending() != null) {
                                         transaction.setPending(txn.getPending());
-                                        System.out.println();
                                     }
 
                                     if (txn.getTransactionId() != null) {
@@ -352,9 +367,6 @@ public class BankFragment extends Fragment {
                                     }
                                     if (txn.getTransactionType() != null) {
                                         transaction.setTransaction_type(txn.getTransactionType());
-                                    }
-                                    if (txn.getAccountId() != null) {
-                                        transaction.setAccount_id(txn.getAccountId());
                                     }
                                     if (txn.getPaymentMeta() != null) {
                                         TransactionsGetResponse.Transaction.PaymentMeta meta = txn.getPaymentMeta();
@@ -385,86 +397,89 @@ public class BankFragment extends Fragment {
                                             transaction.setPayment_method(meta.getPaymentMethod());
                                         }
                                     }
+                                    ArrayList<Place> listOfPlaces = new ArrayList();
                                     if (txn.getLocation() != null) {
                                         TransactionsGetResponse.Transaction.Location location = txn.getLocation();
                                         if (location.getLat() != null && location.getLon() != null) {
                                             Place placeExists = helper.placeExistsByLatLong(location.getLat(), location.getLon());
                                             if (placeExists == null) {
-                                                Place newPlace = new Place();
-                                                if (location.getAddress() != null) {
-                                                    newPlace.setStreet(location.getAddress());
-                                                }
-                                                if (location.getCity() != null) {
-                                                    newPlace.setCity(location.getCity());
-                                                }
-                                                if (location.getLat() != null) {
-                                                    newPlace.setLatitude(location.getLat());
-                                                }
-                                                if (location.getLon() != null) {
-                                                    newPlace.setLongitude(location.getLon());
-                                                }
-                                                if (location.getState() != null) {
-                                                    newPlace.setState(location.getState());
-                                                }
-                                                if (location.getZip() != null) {
-                                                    newPlace.setZip(location.getZip());
-                                                }
-                                                placeExists=newPlace;
-                                            } else {
-                                                transaction.setPlace(placeExists);
-                                            }
+                                                LatLng gmapslatLong = new LatLng(location.getLat(),location.getLon());
+                                                try {
+                                                    if (transaction.getMerchant_name()!=null) {
+                                                        PlacesSearchResponse gmapsResponse = PlacesApi.nearbySearchQuery(context, gmapslatLong)
+                                                                .radius(100)
+                                                                .keyword(transaction.getMerchant_name())
+                                                                .name(transaction.getMerchant_name())
+                                                                .await();
+                                                        if (gmapsResponse.results != null) {
+                                                            for  (PlacesSearchResult place: gmapsResponse.results) {
+                                                                placeExists= new Place();
+                                                                placeExists.setName(place.name);
+                                                                placeExists.setStreet(place.formattedAddress);
+                                                                placeExists.setId(place.placeId);
+                                                                placeExists.setLatitude(place.geometry.location.lat);
+                                                                placeExists.setLongitude(place.geometry.location.lng);
+                                                                if (place.photos != null) {
+                                                                    PhotoResult photoResult = PlacesApi.photo(context, place.photos[0].photoReference).maxWidth(400)
+                                                                            .await();
+                                                                    byte[] image = photoResult.imageData;
+                                                                    placeExists.setImage(image);
+                                                                }
+                                                                placeDao.create(placeExists);
+                                                                for (String placeCategory : place.types) {
+                                                                    Category categoryExists = helper.placeCategoryExists(placeCategory);
+                                                                    if (categoryExists == null) {
+                                                                        Category newCategory = new Category();
+                                                                        newCategory.setCategoryName(placeCategory);
+                                                                        helper.getCategoryDao().create(newCategory);
+                                                                        PlaceHasCategory placeHasCategories = new PlaceHasCategory(placeExists, newCategory);
+                                                                        helper.getPlaceHasCategoryRuntimeDao().create(placeHasCategories);
+                                                                    } else {
+                                                                        PlaceHasCategory trans_categories = new PlaceHasCategory(placeExists, categoryExists);
+                                                                        helper.getPlaceHasCategoryRuntimeDao().create(trans_categories);
+                                                                    }
+                                                                }
+                                                                listOfPlaces.add(placeExists);
 
-
-                                            LatLng gmapslatLong = new LatLng(location.getLat(),location.getLon());
-                                            try {
-                                                PlacesSearchResponse gmapsResponse = PlacesApi.nearbySearchQuery(context, gmapslatLong)
-                                                        .radius(100)
-                                                        .keyword(placeExists.getName())
-                                                        .name(placeExists.getName())
-                                                        .await();
-                                                if (gmapsResponse.results!=null){
-                                                    for(String placeCategory: gmapsResponse.results[0].types){
-                                                        if (gmapsResponse.results[0].photos!=null) {
-                                                            PhotoResult photoResult = PlacesApi.photo(context,gmapsResponse.results[0].photos[0].photoReference).maxWidth(400)
-                                                                    .await();
-                                                            byte[] image = photoResult.imageData;
-                                                            placeExists.setImage(image);
-                                                        }
-                                                        placeDao.create(placeExists);
-                                                        transaction.setPlace(placeExists);
-                                                        Category categoryExists = helper.placeCategoryExists(placeCategory);
-                                                        if (categoryExists == null) {
-                                                            Category newCategory = new Category();
-                                                            newCategory.setCategoryName(placeCategory);
-                                                            helper.getCategoryDao().create(newCategory);
-                                                            PlaceHasCategory placeHasCategories = new PlaceHasCategory(placeExists, newCategory);
-                                                            helper.getPlaceHasCategoryRuntimeDao().create(placeHasCategories);
-                                                        } else {
-                                                            PlaceHasCategory trans_categories = new PlaceHasCategory(placeExists, categoryExists);
-                                                            helper.getPlaceHasCategoryRuntimeDao().create(trans_categories);
+                                                            }
                                                         }
                                                     }
-                                                }else{
+                                                } catch (ApiException e) {
                                                     placeDao.create(placeExists);
-                                                    transaction.setPlace(placeExists);
+                                                    e.printStackTrace();
+                                                } catch (InterruptedException e) {
+                                                    placeDao.create(placeExists);
+                                                    e.printStackTrace();
+                                                } catch (IOException e) {
+                                                    placeDao.create(placeExists);
+                                                    e.printStackTrace();
                                                 }
-                                            } catch (ApiException e) {
-                                                placeDao.create(placeExists);
-                                                transaction.setPlace(placeExists);
-                                                e.printStackTrace();
-                                            } catch (InterruptedException e) {
-                                                placeDao.create(placeExists);
-                                                transaction.setPlace(placeExists);
-                                                e.printStackTrace();
-                                            } catch (IOException e) {
-                                                placeDao.create(placeExists);
-                                                transaction.setPlace(placeExists);
-                                                e.printStackTrace();
+                                            }else{
+                                                listOfPlaces.add(placeExists);
                                             }
 
+                                        }else {
+                                            StringBuilder locationString = new StringBuilder();
 
 
+                                            if (location.getAddress() != null) {
+                                                locationString.append(location.getAddress());
+                                            }
+                                            if (location.getCity() != null) {
+                                                locationString.append(" ");
+                                                locationString.append(location.getCity());
+                                            }
+                                            if (location.getState() != null) {
+                                                locationString.append(" ");
+                                                locationString.append(location.getState());
+                                            }
+                                            if (location.getZip() != null) {
+                                                locationString.append(" ");
+                                                locationString.append(location.getZip());
+                                            }
 
+                                            PlacesSearchResponse gmapsResponse = PlacesApi.textSearchQuery(context, transaction.getMerchant_name()+" "+locationString.toString()).await();
+                                            listOfPlaces.addAll(findTransactionPlaces(gmapsResponse));
 
 
                                         }
@@ -472,6 +487,12 @@ public class BankFragment extends Fragment {
 
                                     transaction.setTimestamp(System.currentTimeMillis() / 1000);
                                     transactionDao.create(transaction);
+
+                                    for (Place p:listOfPlaces){
+                                        TransactionHasPlaces transactionHasPlaces = new TransactionHasPlaces(transaction,p);
+                                        helper.getTransactionHasPlacesDao().create(transactionHasPlaces);
+
+                                    }
 
                                     if (txn.getCategory() != null) {
                                         List<Category> categoryList = new ArrayList<>();
@@ -517,6 +538,48 @@ public class BankFragment extends Fragment {
                 myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(myIntent);
 
+            }
+
+
+            private ArrayList<Place> findTransactionPlaces(PlacesSearchResponse gmapsResponse) throws InterruptedException, ApiException, IOException {
+                ArrayList<Place> listOfPlaces = new ArrayList();
+                if (gmapsResponse.results != null) {
+                    for  (PlacesSearchResult place: gmapsResponse.results) {
+                        Place placeExists = helper.placeExistsById(place.placeId);
+                        if (placeExists == null) {
+                            placeExists = new Place();
+                            placeExists.setName(place.name);
+                            placeExists.setStreet(place.formattedAddress);
+                            placeExists.setId(place.placeId);
+                            placeExists.setLatitude(place.geometry.location.lat);
+                            placeExists.setLongitude(place.geometry.location.lng);
+                            if (place.photos != null) {
+                                PhotoResult photoResult = PlacesApi.photo(context, place.photos[0].photoReference).maxWidth(400)
+                                        .await();
+                                byte[] image = photoResult.imageData;
+                                placeExists.setImage(image);
+                            }
+                            placeDao.create(placeExists);
+                            for (String placeCategory : place.types) {
+                                Category categoryExists = helper.placeCategoryExists(placeCategory);
+                                if (categoryExists == null) {
+                                    Category newCategory = new Category();
+                                    newCategory.setCategoryName(placeCategory);
+                                    helper.getCategoryDao().create(newCategory);
+                                    PlaceHasCategory placeHasCategories = new PlaceHasCategory(placeExists, newCategory);
+                                    helper.getPlaceHasCategoryRuntimeDao().create(placeHasCategories);
+                                } else {
+                                    PlaceHasCategory trans_categories = new PlaceHasCategory(placeExists, categoryExists);
+                                    helper.getPlaceHasCategoryRuntimeDao().create(trans_categories);
+                                }
+                            }
+                            listOfPlaces.add(placeExists);
+                        }else{
+                            listOfPlaces.add(placeExists);
+                        }
+                    }
+                }
+                return listOfPlaces;
             }
 
             public Category categoryExists(String name) {

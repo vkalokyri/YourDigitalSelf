@@ -181,7 +181,7 @@ public class BankDescriptionParser {
 	    String state_guess = memo.substring(memo.length()-2).trim();
 	    ZipData zipdata = new ZipData(this.fis);
 	    ArrayList<String> cities = zipdata.cities_by_state.get(state_guess);
-	   
+
 	    
 	    //We have a state match.
 	    if (zipdata.cities_by_state.containsKey(state_guess)) {

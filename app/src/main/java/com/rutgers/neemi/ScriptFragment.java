@@ -92,31 +92,31 @@ public class ScriptFragment extends Fragment {
         Script script = (Script)listOfProcesses.get(position);//.getScriptDefinition();
         HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
 
-        Place place = null;
-
-        for (Task task: script.getTasks()) {
-            if (task.getPid() instanceof Transaction) {
-                place = ((Transaction) task.getPid()).getPlace();
-                break;
-            } else if (task.getPid() instanceof Photo) {
-                place = ((Photo) task.getPid()).getPlace();
-                break;
-            } else if (task.getPid() instanceof Feed) {
-                place = ((Feed) task.getPid()).getPlace();
-                break;
-            }
-        }
-
-        if (place != null) {
-            byte[] image = place.getImage();
-            if (image != null) {
-                Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
-                imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
-            }
-        }else{
-            imageView.setImageResource(imgid[0]);
-
-        }
+//        Place place = null;
+//
+//        for (Task task: script.getTasks()) {
+//            if (task.getPid() instanceof Transaction) {
+//                place = ((Transaction) task.getPid()).getPlace();
+//                break;
+//            } else if (task.getPid() instanceof Photo) {
+//                place = ((Photo) task.getPid()).getPlace();
+//                break;
+//            } else if (task.getPid() instanceof Feed) {
+//                place = ((Feed) task.getPid()).getPlace();
+//                break;
+//            }
+//        }
+//
+//        if (place != null) {
+//            byte[] image = place.getImage();
+//            if (image != null) {
+//                Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
+//                imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
+//            }
+//        }else{
+//            imageView.setImageResource(imgid[0]);
+//
+//        }
 
         //imageView.setImageResource(imgid[0]);
         ArrayList<ScriptLocalValues> localValues = script.getLocalValues();
