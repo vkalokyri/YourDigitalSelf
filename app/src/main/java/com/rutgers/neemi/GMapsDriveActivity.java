@@ -356,7 +356,7 @@ public class GMapsDriveActivity extends AppCompatActivity {
 
             private void readZipFile(DriveContents contents){
                 Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                cal.add(Calendar.MONTH, -1); // substract 6 months
+                cal.add(Calendar.MONTH, -2); // substract 6 months
                 long oneMonthTimestamp = cal.getTimeInMillis();
 
                 InputStream is;
@@ -558,7 +558,7 @@ public class GMapsDriveActivity extends AppCompatActivity {
 
     public ArrayList<StayPoint> listOfStayPoints(ArrayList<GPSLocation> points){
         Collections.sort(points);
-        int distThres=200; //distance in meters
+        int distThres=80; //distance in meters
         int timeThres = 30*60;
         ArrayList<StayPoint> stayPointList = new ArrayList<StayPoint>();
         int pointNum = points.size();

@@ -105,35 +105,44 @@ public class ScriptFragment2 extends Fragment{
         Script script = (Script)listOfProcesses.get(position);//.getScriptDefinition();
         HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
 
-//        Place place = null;
-//
-//        for (Task task: script.getTasks()) {
-//            if (task.getPid() instanceof Transaction) {
-//                place = ((Transaction) task.getPid()).getPlace();
-//                break;
-//            } else if (task.getPid() instanceof Photo) {
-//                place = ((Photo) task.getPid()).getPlace();
-//                break;
-//            } else if (task.getPid() instanceof Feed) {
-//                place = ((Feed) task.getPid()).getPlace();
-//                break;
-//            }
-//        }
+        Place place = null;
 
-//        if (place != null) {
-//            byte[] image = place.getImage();
-//            if (image != null) {
-//                Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
-//                imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
-//            }
-//        }else{
+        for (Task task: script.getTasks()) {
+            if (task.getPid() instanceof Transaction) {
+                try {
+                    ArrayList<Place> places = DatabaseHelper.getHelper(getApplicationContext()).getOfficialNameOfTranscationPlace(((Transaction) task.getPid()).get_id());
+                    if (places!=null){
+                        place = DatabaseHelper.getHelper(getApplicationContext()).getPlace(places.get(0).get_id());
+                        //place=places.get(0);
+                        break;
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+            } else if (task.getPid() instanceof Photo) {
+                place = ((Photo) task.getPid()).getPlace();
+                break;
+            } else if (task.getPid() instanceof Feed) {
+                place = ((Feed) task.getPid()).getPlace();
+                break;
+            }
+        }
+
+        if (place != null) {
+            byte[] image = place.getImage();
+            if (image != null) {
+                Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
+                imageView.setImageBitmap(bmp);//Bitmap.createScaledBitmap(bmp, , 40, false));
+            }
+        }else{
             if(script.getScriptDefinition().getName().equals("goingForATrip")) {
                 imageView.setImageResource(imgid[1]);
             }else{
                 imageView.setImageResource(imgid[0]);
             }
 
-       // }
+        }
 
         //imageView.setImageResource(imgid[0]);
         ArrayList<ScriptLocalValues> localValues = script.getLocalValues();

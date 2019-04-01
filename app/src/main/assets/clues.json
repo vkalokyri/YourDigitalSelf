@@ -38,12 +38,13 @@
 	"makeAPayment": {
 		"restaurant": [{
 			"PayByCreditCard": {
-				"from": ["Category","Transaction","TransactionHasCategory"],
+				"from": ["Category","Transaction","TransactionHasPlaces","PlaceHasCategory"],
 				"where": {
 					"and": {
-						"category" :["Food and Drink", "Restaurants", "Fast Food"],
-						"`Transaction`._id": "TransactionHasCategory.transaction_id",
-						"Category._id":"TransactionHasCategory.category_id"
+						"category" :["restaurant", "food"],
+						"`Transaction`._id": "TransactionHasPlaces.transaction_id",
+						"TransactionHasPlaces.place_id": "PlaceHasCategory.place_id",
+						"Category._id":"PlaceHasCategory.category_id"
 					}
 				}
 			}

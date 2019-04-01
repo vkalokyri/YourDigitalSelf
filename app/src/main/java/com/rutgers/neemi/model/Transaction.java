@@ -52,6 +52,13 @@ public class Transaction implements Serializable {
         this.place = new Place();
     }
 
+    public int get_id() {
+        return _id;
+    }
+
+    public void set_id(int _id) {
+        this._id = _id;
+    }
 
     public String getId() {
         return id;

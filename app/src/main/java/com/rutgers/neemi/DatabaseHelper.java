@@ -1303,6 +1303,43 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	}
 
+	public ArrayList<Place> getOfficialNameOfTranscationPlace(int id) throws SQLException {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select Place._id, Place.name from TransactionHasPlaces, Place where TransactionHasPlaces.transaction_id="+id+" and Place._id=TransactionHasPlaces.place_id");
+
+		GenericRawResults<Place> rawResults =
+				placeRuntimeDao.queryRaw(sb.toString(),
+						new RawRowMapper<Place>() {
+							public Place mapRow(String[] columnNames,
+													  String[] resultColumns) {
+								return new Place(Integer.parseInt(resultColumns[0]),resultColumns[1]);
+							}
+						});
+
+		return (ArrayList<Place>) rawResults.getResults();
+
+
+	}
+
+	public Place getPlace(int _id) throws SQLException {
+
+		RuntimeExceptionDao<Place, String> placeDao = this.getPlaceDao();
+
+		QueryBuilder<Place, String> queryBuilder =
+				placeDao.queryBuilder();
+		Where<Place, String> where = queryBuilder.where();
+		try {
+			where.eq(Place.FIELD_AutoID, _id);
+			ArrayList<Place> results = (ArrayList<Place>) queryBuilder.query();
+			if (results.size() != 0) {
+				return results.get(0);
+			} else
+				return null;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 
 

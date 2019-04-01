@@ -14,6 +14,7 @@ import java.util.ArrayList;
 @DatabaseTable(tableName = "Place")
 public class Place implements Serializable {
 
+    public static final String FIELD_AutoID = "_id";
     public static final String FIELD_ID = "id";
     public static final String FIELD_LAT = "latitude";
     public static final String FIELD_LONG = "longitude";
@@ -22,7 +23,7 @@ public class Place implements Serializable {
     public static final String FIELD_STATE ="state";
 
 
-    @DatabaseField(generatedId = true)
+    @DatabaseField(generatedId = true, columnName = FIELD_AutoID)
     int _id;
     @DatabaseField(columnName = FIELD_ID)
     String id;
@@ -54,6 +55,11 @@ public class Place implements Serializable {
     ArrayList<String> categories = new ArrayList<>();
 
     public Place() {
+    }
+
+    public Place(int _id, String name) {
+        this._id=_id;
+        this.name=name;
     }
 
     public int get_id() {

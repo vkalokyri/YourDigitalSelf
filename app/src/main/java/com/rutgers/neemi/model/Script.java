@@ -179,11 +179,11 @@ public class Script implements Serializable {
 	public Script assignScore(Context context){
 		ConfigReader config = new ConfigReader(context);
 		List<Task> tasks = this.getTasks();
+		float addedScore = 0;
 
 		float instanceScore = this.getScore();
 		for (Task processTask : tasks) {
 			Object pid = processTask.getPid();
-			float addedScore = 0;
 			if (pid != null) {
 				if (pid instanceof Transaction) {
 					addedScore = Float.parseFloat(config.getStr(PROPERTIES.BANK_WEIGHT));

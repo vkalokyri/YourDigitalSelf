@@ -305,8 +305,6 @@ public class RestaurantsFragment extends Fragment {
         scriptlocalValuesDao = helper.getScriptLocalValuesDao();
         tasklocalValuesDao = helper.getTaskLocalValuesDao();
 
-//        scriptDefDao.queryRaw("delete from LocalValues;");
-
 
         try{
             ConfigReader config = new ConfigReader(getContext());
@@ -464,7 +462,6 @@ public class RestaurantsFragment extends Fragment {
                             String localValue = taskLocalValues.getLocal_value();
                             Date extractedDate = null;
                             String parsedDate = null;
-                            System.err.println(localValue);
                            // values.add(localValue);
                             try {
 //                                long timestamp = Long.valueOf(localValue);
@@ -731,70 +728,55 @@ public class RestaurantsFragment extends Fragment {
 
 
 
-    public ArrayList<Script> mergeScriptsByWhenAndWhere(List<Script> scripts){
+    public ArrayList<Script> mergeScriptsByWhenAndWhere(List<Script> scripts) throws SQLException {
         Log.d(TAG,"SIZE OF scripts: " +scripts.size());
-        ArrayList<Script> listofMergedScripts = new ArrayList<Script>();
-        HashMap<String, ArrayList<Script>> hashMap = new HashMap<String, ArrayList<Script>>();
-        HashMap<String, String> whereWhenHashMap = new HashMap<String, String>();
+        ArrayList<Script> listofMergedScripts = new ArrayList<>();
+        HashMap<String, ArrayList<Script>> scriptHashMap = new HashMap<>();
+        HashMap<String, String> whereWhenHashMap = new HashMap<>();
+        HashMap<String, ArrayList<Place>> gpsPlacesHashMap = new HashMap<>();
+        HashMap<String, Script> whereScriptPlacesHashMap = new HashMap<>();
 
 
         for (Script script:scripts){
             String when=null;
-            String where=null;
-            ArrayList<String> possiblePlaces = new ArrayList<>();
+            ArrayList<Place> whereList=new ArrayList<>();
 
             for (ScriptLocalValues scriptLocalValues:script.getLocalValues()) {
                 String label = scriptLocalValues.getLocalProperties().getW5h_label();
                 if (label.equals("when")) {
                     when = scriptLocalValues.getLocal_value();
                 } else if (label.equals("where")) {
-                    where = scriptLocalValues.getLocal_value();
-                    for(Task t : script.getTasks()){
-                        if (t.getPid() instanceof Transaction){
-
+                    if (script.getTasks().get(0).getPid()!=null ) {
+                        if (script.getTasks().get(0).getPid() instanceof Transaction) {
+                            ArrayList<Place> officialPlaces = helper.getOfficialNameOfTranscationPlace(((Transaction) script.getTasks().get(0).getPid()).get_id());
+                            whereList.add(officialPlaces.get(0));
                         }
+
+                    }else {
+                        whereList.add(new Place(0,scriptLocalValues.getLocal_value()));
                     }
-
-
                 }
             }
 
-            if (when != null && where !=null) {
-                String whenAndWhere = where;
-                if (!hashMap.containsKey(whenAndWhere)) {
-                    ArrayList<Script> list = new ArrayList<Script>();
-                    list.add(script);
-                    hashMap.put(whenAndWhere, list);
-                    whereWhenHashMap.put(where,when);
-                } else {
-
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                    Calendar minusTwoDays = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                    try {
-                        minusTwoDays.setTimeInMillis(simpleDateFormat.parse(when).getTime());
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+            if (when != null && whereList !=null) {
+                if(whereList.size()>1){
+                    gpsPlacesHashMap.put(when,whereList);
+                    for (Place where:whereList) {
+                        whereScriptPlacesHashMap.put(where.getName(),script);
                     }
-                    minusTwoDays.add(Calendar.DATE, -2);
+                }else {
+                    for (Place where : whereList) {
+                        if (!scriptHashMap.containsKey(where.getName())) {
+                            ArrayList<Script> list = new ArrayList<Script>();
+                            list.add(script);
+                            scriptHashMap.put(where.getName(), list);
+                            whereWhenHashMap.put(where.getName(), when);
+                        } else {
 
-                    Calendar plusTwoDays = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                    try {
-                        plusTwoDays.setTimeInMillis(simpleDateFormat.parse(when).getTime());
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    plusTwoDays.add(Calendar.DATE, +2);
-
-                    Calendar hashedWhen = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                    try {
-                        plusTwoDays.setTimeInMillis(simpleDateFormat.parse(whereWhenHashMap.get(where)).getTime());
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-
-                    if (hashedWhen.compareTo(plusTwoDays)<=0 && hashedWhen.compareTo(minusTwoDays)>=0){
-                        hashMap.get(whenAndWhere).add(script);
-
+                            if (hasNdaysDifference(when,whereWhenHashMap.get(where.getName()),2 )) {
+                                scriptHashMap.get(where.getName()).add(script);
+                            }
+                        }
                     }
                 }
 
@@ -805,12 +787,37 @@ public class RestaurantsFragment extends Fragment {
         }
 
 
-        for (String whenAndWhere: hashMap.keySet()) {
-            Script mergedScript;
-            mergedScript = hashMap.get(whenAndWhere).get(0);
-            for (int i=1; i< hashMap.get(whenAndWhere).size();i++) {
-                mergedScript.merge(hashMap.get(whenAndWhere).get(i));
+        for (String when: gpsPlacesHashMap.keySet()) {
+            ArrayList<Place> possiblePlaces = gpsPlacesHashMap.get(when);
+            for(Place place :possiblePlaces){
+                if (scriptHashMap.containsKey(place.getName())){
+
+                    if (hasNdaysDifference(when,whereWhenHashMap.get(place.getName()),2 )) {
+                        Script placeScript = whereScriptPlacesHashMap.get(place.getName());
+
+                        for (ScriptLocalValues scriptLocalValues:placeScript.getLocalValues()) {
+                            String label = scriptLocalValues.getLocalProperties().getW5h_label();
+                            if (label.equals("where") && !scriptLocalValues.getLocal_value().equals(place.getName())) {
+                                scriptLocalValues.setLocal_value("");
+                            }
+                        }
+                        scriptHashMap.get(place.getName()).add(whereScriptPlacesHashMap.get(place.getName()));
+                    }
+
+                }
+
             }
+
+        }
+
+
+        for (String whenAndWhere: scriptHashMap.keySet()) {
+            Script mergedScript;
+            mergedScript = scriptHashMap.get(whenAndWhere).get(0);
+            for (int i=1; i< scriptHashMap.get(whenAndWhere).size();i++) {
+                mergedScript.merge(scriptHashMap.get(whenAndWhere).get(i));
+            }
+            mergedScript.assignScore(getContext());
             listofMergedScripts.add(mergedScript);
         }
 
@@ -819,6 +826,38 @@ public class RestaurantsFragment extends Fragment {
         return listofMergedScripts;
 
     }
+
+    public boolean hasNdaysDifference(String day1, String day2, int difference){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar minusTwoDays = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+        try {
+            minusTwoDays.setTimeInMillis(simpleDateFormat.parse(day1).getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        minusTwoDays.add(Calendar.DATE, -difference);
+
+        Calendar plusTwoDays = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+        try {
+            plusTwoDays.setTimeInMillis(simpleDateFormat.parse(day1).getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        plusTwoDays.add(Calendar.DATE, +difference);
+
+        Calendar hashedWhen = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+        try {
+            hashedWhen.setTimeInMillis(simpleDateFormat.parse(day2).getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        if (hashedWhen.compareTo(plusTwoDays) <= 0 && hashedWhen.compareTo(minusTwoDays) >= 0) {
+            return true;
+        }
+        return false;
+    }
+
 
 
 	public ArrayList<ArrayList<Task>> mergeThreads(ArrayList<ArrayList<Task>> tasks){
@@ -1293,29 +1332,38 @@ public class RestaurantsFragment extends Fragment {
             Place place = null;
 
 
-//            for (Task task: itemname.get(position).getTasks()) {
-//                if (task.getPid() instanceof Transaction) {
-//                    place = ((Transaction) task.getPid()).getPlace();
-//                    break;
-//                } else if (task.getPid() instanceof Photo) {
-//                    place = ((Photo) task.getPid()).getPlace();
-//                    break;
-//                } else if (task.getPid() instanceof Feed) {
-//                    place = ((Feed) task.getPid()).getPlace();
-//                    break;
-//                }
-//            }
+            for (Task task: itemname.get(position).getTasks()) {
+                if (task.getPid() instanceof Transaction) {
+                    try {
+                        ArrayList<Place> places = helper.getOfficialNameOfTranscationPlace(((Transaction) task.getPid()).get_id());
+                        if (places!=null){
+                            place = helper.getPlace(places.get(0).get_id());
+                            //place=places.get(0);
+                            break;
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
 
-//            if (place != null) {
-//                byte[] image = place.getImage();
-//                if (image != null) {
-//                    Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
-//                    imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
-//                }
-//            }else{
+                } else if (task.getPid() instanceof Photo) {
+                    place = ((Photo) task.getPid()).getPlace();
+                    break;
+                } else if (task.getPid() instanceof Feed) {
+                    place = ((Feed) task.getPid()).getPlace();
+                    break;
+                }
+            }
+
+            if (place != null) {
+                byte[] image = place.getImage();
+                if (image != null) {
+                    Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
+                    imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
+                }
+            }else{
                 imageView.setImageResource(imgid[0]);
 
- //           }
+            }
 
 
 
