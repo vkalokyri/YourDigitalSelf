@@ -83,6 +83,14 @@
 							"subject": "KEYWORDS_FILE"
 						}
 					}
+				},
+				"SendFacebookInboxMsg": {
+					"from": "Message",
+					"where": {
+						"or": {
+							"content":	"KEYWORDS_FILE"
+						}
+					}
 				}
 			}],
 		"trip": [{

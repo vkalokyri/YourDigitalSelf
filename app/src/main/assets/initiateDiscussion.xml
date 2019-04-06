@@ -31,8 +31,8 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <locals>
 <who name="whoSentMessage"/>
 <who name="whoReceivedMessage"/>
-<what name="whatAbout"/>
-<when name="whenWasSent"/>
+<what name="whatMessageAbout"/>
+<when name="whenMessageWasSent"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="PostOnFacebook" id="PostOnFacebook">

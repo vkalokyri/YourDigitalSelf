@@ -31,6 +31,7 @@ import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.KeyValuePair;
 import com.rutgers.neemi.model.LocalProperties;
+import com.rutgers.neemi.model.Message;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.ScriptLocalValues;
 import com.rutgers.neemi.model.Photo;
@@ -364,6 +365,9 @@ public class RestaurantsFragment extends Fragment {
 
                 } else if (pid instanceof Feed) {
                     System.err.println("Task = " + taskName + ", Feed = " + ((Feed) pid).getMessage());
+                } else if (pid instanceof Message) {
+                    System.err.println("Task = " + taskName + ", Message = " + ((Message) pid).get_id());
+
                 }
                 ArrayList<LocalProperties> taskLocals = helper.extractTaskLocals(taskName);
 
@@ -1075,6 +1079,19 @@ public class RestaurantsFragment extends Fragment {
                     Email emailUpdated = helper.getToCcBcc(email);
                     Task task = new Task();
                     task.setPid(emailUpdated);
+                    task.setName(subtask);
+                    task.setScript(script);
+                    task.setTaskDefinition(new TaskDefinition(subtask));
+                    tasks.add(task);
+                }
+            }
+        }if (fromTable.equals("Message")){
+            GenericRawResults<Message> rawResults = helper.getMessageDao().queryRaw(query,helper.getMessageDao().getRawRowMapper());
+            if (rawResults!=null) {
+                for (Message msg : rawResults.getResults()) {
+                    Message msgUpdated = helper.getToMessage(msg);
+                    Task task = new Task();
+                    task.setPid(msgUpdated);
                     task.setName(subtask);
                     task.setScript(script);
                     task.setTaskDefinition(new TaskDefinition(subtask));

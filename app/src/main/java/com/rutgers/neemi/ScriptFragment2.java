@@ -42,6 +42,7 @@ import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.LocalProperties;
+import com.rutgers.neemi.model.Message;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Place;
@@ -383,6 +384,34 @@ public class ScriptFragment2 extends Fragment{
                 sb.delete(sb.length() - 2, sb.length() - 1);
             }
             txtListHeader.setText(((Email) childTask.getPid()).getSubject());
+            StringBuilder text = new StringBuilder();
+            for(TaskLocalValues taskLocalValues : childTask.getLocalValues()){
+                text.append(taskLocalValues.getLocalProperties().getW5h_value());
+                text.append(": ");
+                text.append(taskLocalValues.getLocal_value());
+                text.append("\n");
+            }
+            //String text = "whoSent: "+((Email) childTask.getPid()).getFrom().getName()+" \n whoReceived: "+ sb.toString()+" \n whenSent: "+ ((Email) childTask.getPid()).getDate();
+            txtListHeaderBody.setText(text);
+        }else if(childTask.getPid() instanceof Message){
+            imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.messenger));
+            StringBuilder sb = new StringBuilder();
+            for (Person p: ((Message) childTask.getPid()).getTo()){
+                if(p!=null) {
+                    if (p.getName()!=null && !p.getName().isEmpty()) {
+                        sb.append(p.getName());
+                        sb.append(", ");
+                    } else if (p.getEmail()!=null && !p.getEmail().isEmpty()){
+                        sb.append(p.getEmail());
+                        sb.append(", ");
+                    }
+                }
+            }
+
+            if(sb.length()>0) {
+                sb.delete(sb.length() - 2, sb.length() - 1);
+            }
+            txtListHeader.setText(((Message) childTask.getPid()).getContent());
             StringBuilder text = new StringBuilder();
             for(TaskLocalValues taskLocalValues : childTask.getLocalValues()){
                 text.append(taskLocalValues.getLocalProperties().getW5h_value());

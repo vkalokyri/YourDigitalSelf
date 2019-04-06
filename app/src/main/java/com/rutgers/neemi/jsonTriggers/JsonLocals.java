@@ -29,6 +29,7 @@ import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.FeedWithTags;
+import com.rutgers.neemi.model.Message;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Place;
@@ -139,6 +140,24 @@ public class JsonLocals implements W5hLocals{
 							} else if (attributeName.toString().equalsIgnoreCase("\"bodyDate\"")) {
 								if (((Email) pid).getBodyDate() != null) {
 									localValues.add(((Email) pid).getBodyDate().toString());
+								}
+							}
+						} if (objectClass.equalsIgnoreCase("Message")) {
+							if (attributeName.toString().equalsIgnoreCase("\"from\"")) {
+								localValues.add(((Message) pid).getFrom().getName());
+							} else if (attributeName.toString().equalsIgnoreCase("\"to\"")) {
+								for (Person to : ((Message) pid).getTo()) {
+									if (to != null) {
+										if (to.getName() != null && !to.getName().isEmpty()) {
+											localValues.add(to.getName());
+										}
+									}
+								}
+							} else if (attributeName.toString().equalsIgnoreCase("\"timestamp\"")) {
+								localValues.add(new Date(((Message) pid).getTimestamp()).toString());
+							} else if (attributeName.toString().equalsIgnoreCase("\"contentDate\"")) {
+								if (((Message) pid).getContentDate() != null) {
+									localValues.add(((Message) pid).getContentDate().toString());
 								}
 							}
 						} else if (objectClass.equalsIgnoreCase("Transaction")) {

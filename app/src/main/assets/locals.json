@@ -5,8 +5,14 @@
 	"whoSentEmail":
 	{	"Email":"from"
 	},
+	"whoSentMessage":
+	{	"Message":"from"
+	},
 	"whoReceivedEmail":
 	{	"Email":"to"
+	},
+	"whoReceivedMessage":
+	{	"Message":"to"
 	},
 	"whoWasCCed":
 	{	"Email":"cc"
@@ -19,6 +25,9 @@
 	},
 	"whenWasSent":
 	{	"Email":"date"
+	},
+	"whenMessageWasSent":
+	{	"Message":"timestamp"
 	},
 	"whoPaid":
 	{	"Transaction": "payer"
@@ -111,10 +120,10 @@
 	"whoMadeTheReservation":"whoReceivedEmail",
 	"whenWasTheReservationMade":"whenWasSent",
 	"whereWasTheReservationMade":"whereWasTheReservation",
-	"whoInitiatedTheConversation":"whoSentEmail",
-	"whoWasIncludedInTheConversation":["whoReceivedEmail","whoWasCCed","whoWasBCCed"],
-	"whenWasTheConversationInitiated":"whenWasSent",
-	"whoAttended":["whoIsTheEventCreator","whoWillBeInTheEvent","whoSentEmail","whoReceivedEmail","whoWasCCed","whoWasBCCed","whoMadeThePost", "whoIsIncludedInPost", "whoCreatedEvent", "whoIsIncludedInPhoto"],
+	"whoInitiatedTheConversation":["whoSentEmail","whoSentMessage"],
+	"whoWasIncludedInTheConversation":["whoReceivedEmail","whoWasCCed","whoWasBCCed","whoReceivedMessage"],
+	"whenWasTheConversationInitiated":["whenWasSent","whenMessageWasSent"],
+	"whoAttended":["whoIsTheEventCreator","whoWillBeInTheEvent","whoSentEmail","whoReceivedMessage","whoReceivedEmail","whoWasCCed","whoWasBCCed","whoMadeThePost", "whoIsIncludedInPost", "whoCreatedEvent", "whoIsIncludedInPhoto"],
 	"whenEatingOccurred": ["whenIsTheProposedEvent","whenPaid", "whenWasEvent","whenWasPosted","whenWasPhotoUploaded","whenTheEventStarts","whenTheEventEnds","whenWasTheStayInVenue"],
 	"whenTripOccurred":["whenIsTheProposedEvent", "whenTheEventStarts","whenTheEventEnds", "whenWasEvent"],
 	"whereTripOccurred":[ "whereWasPosted", "whereIsTheEvent"],

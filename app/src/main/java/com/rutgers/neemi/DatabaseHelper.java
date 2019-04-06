@@ -31,6 +31,8 @@ import com.rutgers.neemi.model.FeedMessageTags;
 import com.rutgers.neemi.model.FeedWithTags;
 import com.rutgers.neemi.model.GPSLocation;
 import com.rutgers.neemi.model.LocalProperties;
+import com.rutgers.neemi.model.Message;
+import com.rutgers.neemi.model.MessageParticipants;
 import com.rutgers.neemi.model.ScriptDefHasLocalProperties;
 import com.rutgers.neemi.model.ScriptLocalValues;
 import com.rutgers.neemi.model.ScriptDefHasTaskDef;
@@ -98,13 +100,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private RuntimeExceptionDao<StayPoint, String> stayPointRuntimeDao = null;
 	private RuntimeExceptionDao<StayPointHasPlaces, String> stayPointHasPlacesDao = null;
 	private RuntimeExceptionDao<TransactionHasPlaces, String> transactionHasPlacesDao = null;
-
-
+	private RuntimeExceptionDao<Message, String> messageDao = null;
+	private RuntimeExceptionDao<MessageParticipants, String> messageParticipantsDao = null;
 
 
 
 	Context context;
-
 
 	public static SQLiteDatabase myDB;
 
@@ -165,6 +166,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, StayPoint.class);
 			TableUtils.createTable(connectionSource, StayPointHasPlaces.class);
 			TableUtils.createTable(connectionSource, TransactionHasPlaces.class);
+			TableUtils.createTable(connectionSource, Message.class);
+			TableUtils.createTable(connectionSource, MessageParticipants.class);
 
 
 			createIndexes();
@@ -188,6 +191,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	public void createIndexes(){
 		getEmailDao().queryRaw("CREATE VIRTUAL TABLE Email_fts USING fts4 ( \"_id\", \"textContent\", \"subject\"  )");
 		getEventDao().queryRaw("CREATE VIRTUAL TABLE Event_fts USING fts4 ( \"_id\", \"title\" )");
+		getMessageDao().queryRaw("CREATE VIRTUAL TABLE Message_fts USING fts4 ( \"_id\", \"content\" )");
+
 	}
 
 	/**
@@ -231,6 +236,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, StayPoint.class, true);
 			TableUtils.dropTable(connectionSource, StayPointHasPlaces.class, true);
 			TableUtils.dropTable(connectionSource, TransactionHasPlaces.class, true);
+			TableUtils.dropTable(connectionSource, Message.class, true);
+			TableUtils.dropTable(connectionSource, MessageParticipants.class, true);
 
 
 			// after we drop the old databases, we create the new ones
@@ -496,6 +503,22 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		return  transactionHasPlacesDao;
 	}
 
+	public RuntimeExceptionDao<Message, String> getMessageDao() {
+		if ( messageDao == null) {
+			messageDao = getRuntimeExceptionDao(Message.class);
+		}
+		return  messageDao;
+	}
+
+	public RuntimeExceptionDao<MessageParticipants, String> getMessageParticipantsDao() {
+		if ( messageParticipantsDao == null) {
+			messageParticipantsDao = getRuntimeExceptionDao(MessageParticipants.class);
+		}
+		return  messageParticipantsDao;
+	}
+
+
+
 	/**
 	 * Close the database connections and clear any cached DAOs.
 	 */
@@ -521,7 +544,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         gpsLocationtRuntimeDao = null;
 		stayPointRuntimeDao = null;
 		transactionHasPlacesDao = null;
-
+		messageParticipantsDao = null;
+		messageDao = null;
 	}
 
 
@@ -1224,6 +1248,23 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 						});
 
 		return (ArrayList<Person>)rawResults.getResults();
+
+	}
+
+
+	public Message getToMessage(Message msg) throws SQLException {
+		String tempQuery = "select Person.name, Person.email from Person, MessageParticipants where Person._id=participant_id and thread_id='" +msg.getThread()+"'";
+		GenericRawResults<Person> to =
+				getEmailDao().queryRaw(tempQuery,
+						new RawRowMapper<Person>() {
+							public Person mapRow(String[] columnNames,
+												 String[] resultColumns) {
+								return new Person((String)resultColumns[0],(String)resultColumns[1]);
+							}
+						});
+		msg.setTo((ArrayList<Person>)to.getResults());
+
+		return msg;
 
 	}
 

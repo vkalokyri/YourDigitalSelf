@@ -39,34 +39,6 @@ public class SettingsFragment extends Fragment {
     private ExpandableListView ExpandList;
 
 
-    String[] itemname ={
-            "Facebook",
-            "Instagram",
-            "Google Calendar",
-            "Gmail",
-            "Bank data",
-            "Location data",
-    };
-
-    String[] sources ={
-            "Social Media",
-            "Calendar",
-            "Email",
-            "Bank transactions",
-            "Location data"
-    };
-
-
-    Integer[] imgid={
-            R.drawable.fb_logo,
-            R.drawable.insta_logo,
-            R.drawable.google_calendar,
-            R.drawable.gmail_icon,
-            R.drawable.bank,
-            R.drawable.location,
-            R.drawable.gmaps
-    };
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         myView = inflater.inflate(R.layout.fragment_settings, container, false);
@@ -88,6 +60,10 @@ public class SettingsFragment extends Fragment {
         ch1_2.setName("Instagram");
         ch1_2.setImg(R.drawable.insta_logo);
         list2.add(ch1_2);
+        ExpandListChild ch1_3 = new ExpandListChild();
+        ch1_3.setName("Messenger");
+        ch1_3.setImg(R.drawable.messenger);
+        list2.add(ch1_3);
         gru1.setItems(list2);
 
         list2 = new ArrayList<ExpandListChild>();
@@ -187,6 +163,12 @@ public class SettingsFragment extends Fragment {
                     myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(myIntent);
                 }
+                if (Selecteditem.equalsIgnoreCase("Messenger")) {
+                    Intent myIntent = new Intent(getActivity(), MessengerDriveActivity.class);
+                    myIntent.putExtra("action", "sync");
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(myIntent);
+                }
                 if (Selecteditem.equalsIgnoreCase("Gmail")){
                     Intent myIntent = new Intent(getActivity(), GmailActivity.class);
                     myIntent.putExtra("action", "sync");
@@ -197,37 +179,6 @@ public class SettingsFragment extends Fragment {
                     Intent myIntent = new Intent(getActivity(), BankActivity.class);
                     myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(myIntent);
-//                    ArrayList accountNames = new ArrayList();
-//                    String line;
-//                    try {
-//                        FileInputStream fis = getActivity().openFileInput("BankAccounts");
-//                        InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
-//                        BufferedReader br = new BufferedReader(isr);
-//                        while ((line = br.readLine()) != null) {
-//                            accountNames.add(line);
-//                        }
-//                        fis.close();
-//                    } catch (FileNotFoundException e) {
-//                        e.printStackTrace();
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//
-//                    if (accountNames.size()==0) {
-//                        Intent myIntent = new Intent(getActivity(), BankActivity.class);
-//                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                        startActivity(myIntent);
-//                    }else{
-//                        BankFragment bankfragment = new BankFragment();
-//                        Bundle args = new Bundle();
-//                        args.putStringArrayList("Accounts", accountNames);
-//                        bankfragment.setArguments(args);
-//                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-//                        setfragmentTransaction.replace(R.id.frame,bankfragment);
-//                        setfragmentTransaction.addToBackStack(null);
-//                        setfragmentTransaction.commit();
-//                    }
-
                 }
                 if (Selecteditem.equalsIgnoreCase("Google Drive")){
                     Intent myIntent = new Intent(getActivity(), GDriveActivity.class);
@@ -256,126 +207,11 @@ public class SettingsFragment extends Fragment {
         });
 
 
-//        CustomListAdapter adapter=new CustomListAdapter(getActivity(), itemname, imgid);
-//        ListView list=(ListView) myView.findViewById(R.id.list);
-//
-//        LayoutInflater inflater = getLayoutInflater();
-//        ViewGroup header = (ViewGroup)inflater.inflate(R.layout.list_sources,list,false);
-//        list.addHeaderView(header);
-//
-//        list.setAdapter(adapter);
-//
-//        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view,
-//                                    int position, long id) {
-//                String Selecteditem= itemname[+position];
-//
-//                if (Selecteditem.equalsIgnoreCase("Google Calendar")){
-//                    Intent myIntent = new Intent(getActivity(), GcalActivity.class);
-//                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                    startActivity(myIntent);
-//                }
-//                 if (Selecteditem.equalsIgnoreCase("Facebook")) {
-//                     Intent myIntent = new Intent(getActivity(), FacebookActivity.class);
-//                     myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                     startActivity(myIntent);
-//                 }
-//                if (Selecteditem.equalsIgnoreCase("Instagram")) {
-//                    Intent myIntent = new Intent(getActivity(), InstagramActivity.class);
-//                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                    startActivity(myIntent);
-//                }
-//                if (Selecteditem.equalsIgnoreCase("Gmail")){
-//                    Intent myIntent = new Intent(getActivity(), GmailActivity.class);
-//                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                    startActivity(myIntent);
-//                }
-//                if (Selecteditem.equalsIgnoreCase("Bank data")){
-//                    Intent myIntent = new Intent(getActivity(), BankActivity.class);
-//                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                    startActivity(myIntent);
-////                    ArrayList accountNames = new ArrayList();
-////                    String line;
-////                    try {
-////                        FileInputStream fis = getActivity().openFileInput("BankAccounts");
-////                        InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
-////                        BufferedReader br = new BufferedReader(isr);
-////                        while ((line = br.readLine()) != null) {
-////                            accountNames.add(line);
-////                        }
-////                        fis.close();
-////                    } catch (FileNotFoundException e) {
-////                        e.printStackTrace();
-////                    } catch (IOException e) {
-////                        e.printStackTrace();
-////                    }
-////
-////                    if (accountNames.size()==0) {
-////                        Intent myIntent = new Intent(getActivity(), BankActivity.class);
-////                        myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-////                        startActivity(myIntent);
-////                    }else{
-////                        BankFragment bankfragment = new BankFragment();
-////                        Bundle args = new Bundle();
-////                        args.putStringArrayList("Accounts", accountNames);
-////                        bankfragment.setArguments(args);
-////                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getActivity().getSupportFragmentManager().beginTransaction();
-////                        setfragmentTransaction.replace(R.id.frame,bankfragment);
-////                        setfragmentTransaction.addToBackStack(null);
-////                        setfragmentTransaction.commit();
-////                    }
-//
-//                }
-//
-//                if (Selecteditem.equalsIgnoreCase("Location data")){
-//                    Intent myIntent = new Intent(getActivity(), LocationActivity.class);
-//                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                    startActivity(myIntent);
-//                }
-//                Toast.makeText(getActivity(), Selecteditem, Toast.LENGTH_SHORT).show();
-//
-//            }
-//        });
 
 
     }
 
 
-//    private class CustomListAdapter extends ArrayAdapter<String> {
-//
-//        private final Activity context;
-//        private final String[] itemname;
-//        private final Integer[] imgid;
-//
-//        public CustomListAdapter(Activity context, String[] itemname, Integer[] imgid) {
-//            super(context, R.layout.listview, itemname);
-//            // TODO Auto-generated constructor stub
-//
-//            this.context=context;
-//            this.itemname=itemname;
-//            this.imgid=imgid;
-//        }
-//
-//        public View getView(int position,View view,ViewGroup parent) {
-//            LayoutInflater inflater=context.getLayoutInflater();
-//
-//            View rowView=inflater.inflate(R.layout.listview, null,true);
-//
-//            TextView txtTitle = (TextView) rowView.findViewById(R.id.item);
-//            ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
-//
-//            txtTitle.setText(itemname[position]);
-//            imageView.setImageResource(imgid[position]);
-//
-//            return rowView;
-//
-//        };
-//
-//
-//
-//    }
 
 
     public class ExpandListAdapter extends BaseExpandableListAdapter {

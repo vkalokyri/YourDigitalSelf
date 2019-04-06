@@ -882,8 +882,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                 if (totalItemsInserted>1) {
                     loadEmailIndex(totalItemsInserted);
                 }
-                //db.setTransactionSuccessful();
-                //db.endTransaction();
+
                 return totalItemsInserted;
 
         }
