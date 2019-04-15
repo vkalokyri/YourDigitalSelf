@@ -1,14 +1,10 @@
 package com.rutgers.neemi;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.format.DateFormat;
 import android.util.Log;
-import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.j256.ormlite.dao.GenericRawResults;
-import com.j256.ormlite.dao.RawRowMapper;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.rutgers.neemi.interfaces.Clues;
 import com.rutgers.neemi.interfaces.Triggers;
@@ -30,9 +25,7 @@ import com.rutgers.neemi.interfaces.W5hLocals;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Feed;
-import com.rutgers.neemi.model.KeyValuePair;
 import com.rutgers.neemi.model.LocalProperties;
-import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.ScriptLocalValues;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Place;
@@ -44,20 +37,11 @@ import com.rutgers.neemi.model.ScriptDefHasTaskDef;
 import com.rutgers.neemi.model.Subscript;
 import com.rutgers.neemi.model.Task;
 import com.rutgers.neemi.model.TaskDefinition;
-import com.rutgers.neemi.parser.PersonParser;
 import com.rutgers.neemi.parser.TriggersFactory;
 import com.rutgers.neemi.util.ConfigReader;
-import com.rutgers.neemi.util.ER;
 import com.rutgers.neemi.util.PROPERTIES;
-import com.rutgers.neemi.util.XMLifyData;
-
-import org.apache.poi.hpsf.wellknown.SectionIDMap;
-import org.xml.sax.SAXException;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,7 +52,6 @@ import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -76,15 +59,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import javax.json.JsonString;
-import javax.xml.parsers.ParserConfigurationException;
-
-
-import serf.*;
-import serf.test.TestException;
 
 
 public class ContentFragment extends Fragment {
@@ -177,7 +154,7 @@ public class ContentFragment extends Fragment {
                     @Override
                     public void onItemClick(AdapterView<?> arg0, View view,
                                             int position, long id) {
-                        ScriptFragment2 scriptFragment = new ScriptFragment2();
+                        ScriptFragment scriptFragment = new ScriptFragment();
                         Bundle arguments = new Bundle();
                         arguments.putSerializable("processes", listOfScripts);
                         arguments.putSerializable("position",position);
@@ -314,7 +291,7 @@ public class ContentFragment extends Fragment {
                      @Override
                      public void onItemClick(AdapterView<?> arg0, View view,
                                              int position, long id) {
-                         ScriptFragment2 scriptFragment = new ScriptFragment2();
+                         ScriptFragment scriptFragment = new ScriptFragment();
                          Bundle arguments = new Bundle();
                          arguments.putSerializable("processes", listOfScripts);
                          arguments.putSerializable("position",position);

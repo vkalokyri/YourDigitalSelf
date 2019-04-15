@@ -6,9 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.format.DateFormat;
 import android.util.Log;
-import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +19,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.j256.ormlite.dao.GenericRawResults;
-import com.j256.ormlite.dao.RawRowMapper;
 import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.rutgers.neemi.interfaces.Clues;
 import com.rutgers.neemi.interfaces.Triggers;
@@ -29,10 +26,8 @@ import com.rutgers.neemi.interfaces.W5hLocals;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Feed;
-import com.rutgers.neemi.model.KeyValuePair;
 import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.Message;
-import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.ScriptLocalValues;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Place;
@@ -45,26 +40,19 @@ import com.rutgers.neemi.model.ScriptDefHasTaskDef;
 import com.rutgers.neemi.model.Subscript;
 import com.rutgers.neemi.model.Task;
 import com.rutgers.neemi.model.TaskDefinition;
-import com.rutgers.neemi.parser.PersonParser;
 import com.rutgers.neemi.parser.TriggersFactory;
 import com.rutgers.neemi.util.ConfigReader;
-import com.rutgers.neemi.util.ER;
 import com.rutgers.neemi.util.PROPERTIES;
-import com.rutgers.neemi.util.XMLifyData;
 
-import org.apache.poi.hpsf.wellknown.SectionIDMap;
-import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.sql.Array;
 import java.sql.SQLException;
 import java.text.Format;
 import java.text.ParseException;
@@ -77,15 +65,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import javax.json.JsonString;
-import javax.xml.parsers.ParserConfigurationException;
-
-
-import serf.*;
-import serf.test.TestException;
 
 
 public class RestaurantsFragment extends Fragment {
@@ -275,7 +257,7 @@ public class RestaurantsFragment extends Fragment {
                     @Override
                     public void onItemClick(AdapterView<?> arg0, View view,
                                             int position, long id) {
-                        ScriptFragment2 scriptFragment = new ScriptFragment2();
+                        ScriptFragment scriptFragment = new ScriptFragment();
                         Bundle arguments = new Bundle();
                         arguments.putSerializable("processes", listOfScripts);
                         arguments.putSerializable("position",position);
@@ -882,12 +864,26 @@ public class RestaurantsFragment extends Fragment {
                     previous_thread_id=key;
                     ArrayList<Task> list = mergeTasksByThread.get(key);
                     if (list == null) {
-                        list = new ArrayList<Task>();
+                        list = new ArrayList<>();
                         list.add(task);
                         mergeTasksByThread.put(key, list);
                     }else{
                         list.add(task);
                     }
+                }else if(task.getPid() instanceof Message){
+                    String thread = ((Message) task.getPid()).getThread();
+                    int thread_id = ((Message) task.getPid()).getThread_id();
+                    previous_thread_id=thread+"_"+thread_id;
+                    ArrayList<Task> list = mergeTasksByThread.get(previous_thread_id);
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        list.add(task);
+                        mergeTasksByThread.put(previous_thread_id, list);
+                    }else{
+                        list.add(task);
+                    }
+
+
                 }else {
                     if(previous_thread_id!=null){
                         ArrayList<Task> list = mergeTasksByThread.get(previous_thread_id);

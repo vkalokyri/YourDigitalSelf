@@ -91,6 +91,7 @@ dependencies {
     implementation 'com.evernote:android-job:1.2.6'
     implementation 'com.google.firebase:firebase-database:11.8.0'
     implementation 'com.google.firebase:firebase-core:11.8.0'
+    implementation files('libs/opennlp-tools.jar')
 }
 
 apply plugin: 'com.google.gms.google-services'

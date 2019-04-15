@@ -25,6 +25,7 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <who name="whoWasBCCed"/>
 <what name="whatAbout"/>
 <when name="whenWasSent"/>
+<when name="whenIsEmailEvent"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="SendFacebookInboxMsg" id="SendFacebookInboxMsg">
@@ -33,6 +34,7 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <who name="whoReceivedMessage"/>
 <what name="whatMessageAbout"/>
 <when name="whenMessageWasSent"/>
+<when name="whenIsMessageEvent"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="PostOnFacebook" id="PostOnFacebook">

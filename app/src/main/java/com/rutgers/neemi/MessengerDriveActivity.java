@@ -14,6 +14,7 @@
 
 package com.rutgers.neemi;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
@@ -77,6 +78,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -98,9 +100,6 @@ import edu.emory.mathcs.backport.java.util.Collections;
  */
 public class MessengerDriveActivity extends AppCompatActivity {
 
-    GeoApiContext geoApiContext = new GeoApiContext.Builder()
-            .apiKey("AIzaSyDe8nWbXFA6ESFS6GnQtYPPsXzYmLz3Lf0")
-            .build();
 
     private static final String TAG = "Messenger Drive Activity";
 
@@ -133,7 +132,7 @@ public class MessengerDriveActivity extends AppCompatActivity {
 
     public DriveFile file;
 
-    private ProgressBar mProgressBar;
+    private ProgressDialog mProgressDialog;
 
     RuntimeExceptionDao<GPSLocation, String> gpsDao;
 
@@ -151,7 +150,7 @@ public class MessengerDriveActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gmaps);
-        mProgressBar = findViewById(R.id.downloadBar);
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -159,8 +158,11 @@ public class MessengerDriveActivity extends AppCompatActivity {
 
         // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
-        mProgressBar.setMax(100);
-        mProgressBar.isIndeterminate();
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setMessage("Getting your Messenger messages ...");
+        mProgressDialog.setIndeterminate(false);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+
 
         GoogleSignInClient mGoogleSignInClient = buildGoogleSignInClient();
         startActivityForResult(mGoogleSignInClient.getSignInIntent(), REQUEST_CODE_SIGN_IN);
@@ -339,7 +341,8 @@ public class MessengerDriveActivity extends AppCompatActivity {
                 // Update progress dialog with the latest progress.
                 int progress = (int) (bytesDownloaded * 100 / bytesExpected);
               //  Log.d(TAG, String.format("Loading progress: %d percent", progress));
-                mProgressBar.setProgress(progress);
+                mProgressDialog.setProgress(progress);
+                mProgressDialog.show();
             }
 
             private void readZipFile(DriveContents contents){
@@ -370,7 +373,7 @@ public class MessengerDriveActivity extends AppCompatActivity {
 
                                 String thread_path = jsonObject.get("thread_path").toString();
                                 String thread = thread_path.substring(thread_path.indexOf("/")+1,thread_path.length()-1);
-
+                                int thread_id=1;
 
                                 JsonArray participants = (JsonArray) jsonObject.get("participants");
                                 if(participants!=null) {
@@ -391,33 +394,39 @@ public class MessengerDriveActivity extends AppCompatActivity {
                                     }
                                 }
 
+                                //read thread's messages
                                 JsonArray messages = (JsonArray) jsonObject.get("messages");
                                 if(messages!=null) {
+                                    Long previous_timestamp = null;
                                     for (int j = 0; j < messages.size(); j++) {
                                         JsonObject msg = (JsonObject) messages.get(j);
-                                        Long timestamp = null;
                                         Message message = new Message();
                                         message.setThread(thread);
-                                        for (String msgKey : msg.keySet()) {
-                                            if (msgKey.startsWith("timestamp_ms")) {
-                                                timestamp = Long.parseLong(msg.get(msgKey).toString());
-                                                message.setTimestamp(timestamp);
-                                            } else if (msgKey.startsWith("sender_name")) {
-                                                Person p = new Person();
-                                                p.setName(msg.get(msgKey).toString().substring(1, msg.get(msgKey).toString().length() - 1));
-                                                Person person = helper.personExistsByName(p.getName());
-                                                if (person ==null) {
-                                                    helper.getPersonDao().create(p);
-                                                    message.setFrom(p);
-                                                }else {
-                                                    message.setFrom(person);
-                                                }
-                                            } else if (msgKey.startsWith("content")) {
-                                                message.setContent(convertToUTF8(msg.get(msgKey).toString()));
+                                        if(msg.containsKey("content")) {
+                                            //get message content
+                                            message.setContent(convertToUTF8(msg.getString("content")));
+                                            //get message Timestamp
+                                            Long timestamp = Long.parseLong(msg.getJsonNumber("timestamp_ms").toString());
+                                            message.setTimestamp(timestamp);
+                                            if (hasNminutesDifference(previous_timestamp, timestamp, 3)) {
+                                                thread_id++;
                                             }
+                                            previous_timestamp = timestamp;
+                                            //get message sender
+                                            Person p = new Person();
+                                            p.setName(msg.getString("sender_name"));
+                                            Person person = helper.personExistsByName(p.getName());
+                                            if (person == null) {
+                                                helper.getPersonDao().create(p);
+                                                message.setFrom(p);
+                                            } else {
+                                                message.setFrom(person);
+                                            }
+
+                                            message.setThread_id(thread_id);
+                                            helper.getMessageDao().create(message);
+                                            totalItemsInserted++;
                                         }
-                                        helper.getMessageDao().create(message);
-                                        totalItemsInserted++;
                                     }
                                 }
                             }
@@ -439,9 +448,31 @@ public class MessengerDriveActivity extends AppCompatActivity {
                 } catch(IOException e) {
                     showMessage("error unzipping file");
                     e.printStackTrace();
+                    mProgressDialog.dismiss();
                 }
 
             }
+
+
+            public boolean hasNminutesDifference(Long timestampAfter, Long timestampBefore, int hoursDifference){
+
+                if(timestampAfter==null)
+                    return false;
+
+                Long difference = Math.abs(timestampAfter - timestampBefore)/1000;
+
+
+                // calculate hours minutes and seconds
+                Long hours = difference / 3600;
+                Long minutes = (difference % 3600) / 60;
+                Long seconds = (difference % 3600) % 60;
+
+                if (hours>=hoursDifference){
+                    return true;
+                }
+                return false;
+            }
+
 
 
             private void loadEmailIndex(final int totalItemsInserted) {
@@ -482,10 +513,12 @@ public class MessengerDriveActivity extends AppCompatActivity {
 
             @Override
             public void onContents(@NonNull DriveContents driveContents) {
-
-                mProgressBar.setVisibility(View.INVISIBLE);
-
+                mProgressDialog.setMessage("Parsing your messages. Please wait...");
+                mProgressDialog.setIndeterminate(false);
+                mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                mProgressDialog.show();
                 readZipFile(driveContents);
+                mProgressDialog.dismiss();
 
             }
 
@@ -493,6 +526,7 @@ public class MessengerDriveActivity extends AppCompatActivity {
             public void onError(@NonNull Exception e) {
                 // Handle error
                 // [START_EXCLUDE]
+                mProgressDialog.dismiss();
                 Log.e(TAG, "Unable to read contents", e);
                 showMessage(getString(R.string.read_failed));
                 finish();
@@ -529,6 +563,7 @@ public class MessengerDriveActivity extends AppCompatActivity {
             } else {
                 Log.e(TAG,"There was an error while extracting message dates");
             }
+            mProgressDialog.dismiss();
         }
 
 

@@ -83,7 +83,6 @@ import pub.devrel.easypermissions.EasyPermissions;
 public class GmailActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
 
     public static GoogleAccountCredential mCredential;
-    private SignInButton gmailButton;
     ProgressDialog mProgress;
     private static final String TAG = "GmailActivity";
 

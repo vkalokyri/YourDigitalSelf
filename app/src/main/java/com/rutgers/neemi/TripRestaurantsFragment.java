@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,52 +15,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.j256.ormlite.dao.GenericRawResults;
-import com.j256.ormlite.dao.RuntimeExceptionDao;
-import com.rutgers.neemi.interfaces.Clues;
-import com.rutgers.neemi.interfaces.Triggers;
-import com.rutgers.neemi.interfaces.W5hLocals;
-import com.rutgers.neemi.model.Email;
-import com.rutgers.neemi.model.Event;
-import com.rutgers.neemi.model.Feed;
 import com.rutgers.neemi.model.LocalProperties;
-import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Place;
 import com.rutgers.neemi.model.Script;
-import com.rutgers.neemi.model.ScriptDefHasTaskDef;
-import com.rutgers.neemi.model.ScriptDefinition;
 import com.rutgers.neemi.model.ScriptLocalValues;
-import com.rutgers.neemi.model.Subscript;
-import com.rutgers.neemi.model.Task;
-import com.rutgers.neemi.model.TaskDefinition;
-import com.rutgers.neemi.model.TaskLocalValues;
-import com.rutgers.neemi.model.Transaction;
-import com.rutgers.neemi.parser.TriggersFactory;
-import com.rutgers.neemi.util.ConfigReader;
-import com.rutgers.neemi.util.PROPERTIES;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.sql.SQLException;
-import java.text.Format;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-
-import javax.json.JsonString;
 
 
 public class TripRestaurantsFragment extends Fragment {
@@ -230,7 +192,7 @@ public class TripRestaurantsFragment extends Fragment {
                     @Override
                     public void onItemClick(AdapterView<?> arg0, View view,
                                             int position, long id) {
-                        ScriptFragment2 scriptFragment = new ScriptFragment2();
+                        ScriptFragment scriptFragment = new ScriptFragment();
                         Bundle arguments = new Bundle();
                         arguments.putSerializable("processes", listOfScripts);
                         arguments.putSerializable("position",position);

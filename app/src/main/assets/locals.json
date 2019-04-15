@@ -105,8 +105,11 @@
 	"whereWasUploaded":{
 		"Photo":"place_id"
 	},
-	"whenIsTheProposedEvent":{
+	"whenIsEmailEvent":{
 		"Email":"subject_date"
+	},
+	"whenIsMessageEvent":{
+		"Message":"content_date"
 	},
 	"whereWasTheReservation":{
 		"Email":"from"
@@ -119,13 +122,14 @@
 	},
 	"whoMadeTheReservation":"whoReceivedEmail",
 	"whenWasTheReservationMade":"whenWasSent",
+	"whenIsTheProposedEvent":["whenIsEmailEvent","whenIsMessageEvent"],
 	"whereWasTheReservationMade":"whereWasTheReservation",
 	"whoInitiatedTheConversation":["whoSentEmail","whoSentMessage"],
 	"whoWasIncludedInTheConversation":["whoReceivedEmail","whoWasCCed","whoWasBCCed","whoReceivedMessage"],
 	"whenWasTheConversationInitiated":["whenWasSent","whenMessageWasSent"],
 	"whoAttended":["whoIsTheEventCreator","whoWillBeInTheEvent","whoSentEmail","whoReceivedMessage","whoReceivedEmail","whoWasCCed","whoWasBCCed","whoMadeThePost", "whoIsIncludedInPost", "whoCreatedEvent", "whoIsIncludedInPhoto"],
-	"whenEatingOccurred": ["whenIsTheProposedEvent","whenPaid", "whenWasEvent","whenWasPosted","whenWasPhotoUploaded","whenTheEventStarts","whenTheEventEnds","whenWasTheStayInVenue"],
-	"whenTripOccurred":["whenIsTheProposedEvent", "whenTheEventStarts","whenTheEventEnds", "whenWasEvent"],
+	"whenEatingOccurred": ["whenIsEmailEvent","whenIsMessageEvent","whenPaid", "whenWasEvent","whenWasPosted","whenWasPhotoUploaded","whenTheEventStarts","whenTheEventEnds","whenWasTheStayInVenue"],
+	"whenTripOccurred":["whenIsEmailEvent","whenIsMessageEvent", "whenTheEventStarts","whenTheEventEnds", "whenWasEvent","whenIsEmailEvent","whenIsMessageEvent"],
 	"whereTripOccurred":[ "whereWasPosted", "whereIsTheEvent"],
 	"whenTripBooked":["whenPaid","whenEventWasCreated"],
 	"whereEatingOccurred":["wherePaymentOccurred","whereWasTheReservation","whereWasPosted","whereWasUploaded","whereIsTheEvent","whereIsTheVenue"],

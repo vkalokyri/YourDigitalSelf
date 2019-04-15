@@ -20,6 +20,8 @@ public class Message implements Serializable{
         @DatabaseField
         String thread;
         @DatabaseField
+        int thread_id;
+        @DatabaseField
         long timestamp;
         @DatabaseField (foreign = true,foreignAutoRefresh = true, columnDefinition = "INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CASCADE")
         Person from;
@@ -66,6 +68,14 @@ public class Message implements Serializable{
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public int getThread_id() {
+        return thread_id;
+    }
+
+    public void setThread_id(int thread_id) {
+        this.thread_id = thread_id;
     }
 
     public String getContent() {
