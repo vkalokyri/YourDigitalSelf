@@ -115,6 +115,7 @@ public class GMapsDriveActivity extends AppCompatActivity {
             .build();
 
     private static final String TAG = "Google Maps Drive Activity";
+    Double overflow = Double.parseDouble("4294967296");
 
 
     /**
@@ -356,7 +357,7 @@ public class GMapsDriveActivity extends AppCompatActivity {
 
             private void readZipFile(DriveContents contents){
                 Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
-                cal.add(Calendar.MONTH, -2); // substract 6 months
+                cal.add(Calendar.MONTH, -1);
                 long oneMonthTimestamp = cal.getTimeInMillis();
 
                 InputStream is;
@@ -396,9 +397,17 @@ public class GMapsDriveActivity extends AppCompatActivity {
                                                     break;
                                                 System.out.println("TIMESTAMP HERE" + timestamp);
                                             } else if (locationKey.startsWith("latitude")) {
-                                                latitude = Double.parseDouble(location.get(locationKey).toString()) / 10000000;
+                                                if(Double.parseDouble(location.get(locationKey).toString())>900000000 || Double.parseDouble(location.get(locationKey).toString())<-900000000){
+                                                    latitude = (Double.parseDouble(location.get(locationKey).toString())-overflow) / 10000000;
+                                                }else {
+                                                    latitude = Double.parseDouble(location.get(locationKey).toString()) / 10000000;
+                                                }
                                             } else if (locationKey.startsWith("longitude")) {
-                                                longitude = Double.parseDouble(location.get(locationKey).toString()) / 10000000;
+                                                if(Double.parseDouble(location.get(locationKey).toString())>1800000000 || Double.parseDouble(location.get(locationKey).toString())<-1800000000){
+                                                    longitude = (Double.parseDouble(location.get(locationKey).toString())-overflow) / 10000000;
+                                                }else {
+                                                    longitude = Double.parseDouble(location.get(locationKey).toString()) / 10000000;
+                                                }
 
                                             }
 

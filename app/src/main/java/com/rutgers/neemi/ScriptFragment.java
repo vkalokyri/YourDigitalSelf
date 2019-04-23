@@ -113,9 +113,11 @@ public class ScriptFragment extends Fragment{
                 try {
                     ArrayList<Place> places = DatabaseHelper.getHelper(getApplicationContext()).getOfficialNameOfTranscationPlace(((Transaction) task.getPid()).get_id());
                     if (places!=null){
-                        place = DatabaseHelper.getHelper(getApplicationContext()).getPlace(places.get(0).get_id());
-                        //place=places.get(0);
-                        break;
+                        if (places.size()>0) {
+                            place = DatabaseHelper.getHelper(getApplicationContext()).getPlace(places.get(0).get_id());
+                            //place=places.get(0);
+                            break;
+                        }
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -446,10 +448,12 @@ public class ScriptFragment extends Fragment{
             }
             txtListHeaderBody.setText(text);
         }else if(childTask.getList_of_pids().size()>0){
-            if(childTask.getList_of_pids().get(0) instanceof Place) {
+
+            //if(childTask.getList_of_pids().get(0) instanceof Place) {
+
                 imageView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.gmaps));
-                txtListHeader.setText(((Place) childTask.getList_of_pids().get(0)).getName());
-                txtListHeaderBody.setText(((Place) childTask.getList_of_pids().get(0)).getStreet());
+                //txtListHeader.setText(((Place) childTask.getList_of_pids().get(0)).getName());
+                //txtListHeaderBody.setText(((Place) childTask.getList_of_pids().get(0)).getStreet());
                 StringBuilder text = new StringBuilder();
                 for (TaskLocalValues taskLocalValues : childTask.getLocalValues()) {
                     if (taskLocalValues.getLocalProperties().getW5h_label().equalsIgnoreCase("when")) {
@@ -459,7 +463,14 @@ public class ScriptFragment extends Fragment{
                         text.append(": ");
                         text.append(sf.format(date));
                         text.append("\n");
-                    } else {
+                    }else if(taskLocalValues.getLocalProperties().getW5h_label().equalsIgnoreCase("where")){
+                        txtListHeader.setText(taskLocalValues.getLocal_value());
+                        for (Object p:childTask.getList_of_pids()) {
+                            if(((Place)p).getName().equals(taskLocalValues.getLocal_value())) {
+                                txtListHeaderBody.setText(((Place) p).getStreet());
+                            }
+                        }
+                    }else {
                         text.append(taskLocalValues.getLocalProperties().getW5h_value());
                         text.append(": ");
                         text.append(taskLocalValues.getLocal_value());
@@ -579,7 +590,7 @@ public class ScriptFragment extends Fragment{
 //            this.mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng1));
 
 
-            }
+           // }
         } else if(childTask.getPid() instanceof Event){
             imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.google_calendar));
             txtListHeader.setText(((Event) childTask.getPid()).getTitle());

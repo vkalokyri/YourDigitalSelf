@@ -32,6 +32,7 @@ import com.rutgers.neemi.model.FeedWithTags;
 import com.rutgers.neemi.model.GPSLocation;
 import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.Message;
+import com.rutgers.neemi.model.MessageHasPlaces;
 import com.rutgers.neemi.model.MessageParticipants;
 import com.rutgers.neemi.model.ScriptDefHasLocalProperties;
 import com.rutgers.neemi.model.ScriptLocalValues;
@@ -102,6 +103,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private RuntimeExceptionDao<TransactionHasPlaces, String> transactionHasPlacesDao = null;
 	private RuntimeExceptionDao<Message, String> messageDao = null;
 	private RuntimeExceptionDao<MessageParticipants, String> messageParticipantsDao = null;
+	private RuntimeExceptionDao<MessageHasPlaces, String> messageHasPlacesDao = null;
+
+
 
 
 
@@ -168,6 +172,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, TransactionHasPlaces.class);
 			TableUtils.createTable(connectionSource, Message.class);
 			TableUtils.createTable(connectionSource, MessageParticipants.class);
+			TableUtils.createTable(connectionSource, MessageHasPlaces.class);
+
 
 
 			createIndexes();
@@ -238,6 +244,9 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, TransactionHasPlaces.class, true);
 			TableUtils.dropTable(connectionSource, Message.class, true);
 			TableUtils.dropTable(connectionSource, MessageParticipants.class, true);
+			TableUtils.dropTable(connectionSource, MessageHasPlaces.class, true);
+
+
 
 
 			// after we drop the old databases, we create the new ones
@@ -518,6 +527,14 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	}
 
 
+	public RuntimeExceptionDao<MessageHasPlaces, String> getMessageHasPlacesDao() {
+		if ( messageHasPlacesDao == null) {
+			messageHasPlacesDao = getRuntimeExceptionDao(MessageHasPlaces.class);
+		}
+		return  messageHasPlacesDao;
+	}
+
+
 
 	/**
 	 * Close the database connections and clear any cached DAOs.
@@ -546,6 +563,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		transactionHasPlacesDao = null;
 		messageParticipantsDao = null;
 		messageDao = null;
+		messageHasPlacesDao=null;
 	}
 
 
@@ -1349,7 +1367,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		sb.append("select Place._id, Place.name from TransactionHasPlaces, Place where TransactionHasPlaces.transaction_id="+id+" and Place._id=TransactionHasPlaces.place_id");
 
 		GenericRawResults<Place> rawResults =
-				placeRuntimeDao.queryRaw(sb.toString(),
+				getPlaceDao().queryRaw(sb.toString(),
 						new RawRowMapper<Place>() {
 							public Place mapRow(String[] columnNames,
 													  String[] resultColumns) {

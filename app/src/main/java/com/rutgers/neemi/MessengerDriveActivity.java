@@ -65,12 +65,16 @@ import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.GPSLocation;
 import com.rutgers.neemi.model.Message;
+import com.rutgers.neemi.model.MessageHasPlaces;
 import com.rutgers.neemi.model.MessageParticipants;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Place;
 import com.rutgers.neemi.model.PlaceHasCategory;
 import com.rutgers.neemi.model.StayPoint;
 import com.rutgers.neemi.model.StayPointHasPlaces;
+import com.rutgers.neemi.model.TransactionHasPlaces;
+import com.rutgers.neemi.util.OpenNLP;
+import com.rutgers.neemi.util.Utilities;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -135,6 +139,10 @@ public class MessengerDriveActivity extends AppCompatActivity {
     private ProgressDialog mProgressDialog;
 
     RuntimeExceptionDao<GPSLocation, String> gpsDao;
+
+    GeoApiContext gmapsContext = new GeoApiContext.Builder()
+            .apiKey("AIzaSyDe8nWbXFA6ESFS6GnQtYPPsXzYmLz3Lf0")
+            .build();
 
 
 
@@ -402,6 +410,7 @@ public class MessengerDriveActivity extends AppCompatActivity {
                                         JsonObject msg = (JsonObject) messages.get(j);
                                         Message message = new Message();
                                         message.setThread(thread);
+                                        ArrayList<Place> listOfPlaces=new ArrayList<>();
                                         if(msg.containsKey("content")) {
                                             //get message content
                                             message.setContent(convertToUTF8(msg.getString("content")));
@@ -425,6 +434,30 @@ public class MessengerDriveActivity extends AppCompatActivity {
 
                                             message.setThread_id(thread_id);
                                             helper.getMessageDao().create(message);
+
+//                                            try {
+//                                                System.out.println("-------Finding entities belonging to category : location------");
+//                                                OpenNLP openNLP = new OpenNLP(getApplicationContext());
+//                                                ArrayList<String> locations = openNLP.findLocation(message.getContent());
+//                                                for (String location:locations){
+//                                                    PlacesSearchResponse gmapsResponse = PlacesApi.textSearchQuery(gmapsContext, location).await();
+//                                                    listOfPlaces.addAll(Utilities.getUtilities(getApplicationContext()).findTransactionPlaces(gmapsResponse));
+//                                                }
+//                                                for (Place extractedPlace:listOfPlaces){
+//                                                    MessageHasPlaces msgHasPlaces = new MessageHasPlaces(message,extractedPlace);
+//                                                    helper.getMessageHasPlacesDao().create(msgHasPlaces);
+//                                                }
+//
+//                                            } catch (IOException e) {
+//                                                e.printStackTrace();
+//                                            } catch (InterruptedException e) {
+//                                                e.printStackTrace();
+//                                            } catch (ApiException e) {
+//                                                e.printStackTrace();
+//                                            }
+
+
+
                                             totalItemsInserted++;
                                         }
                                     }

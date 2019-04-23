@@ -6,7 +6,7 @@
     android:background="@color/white">
 
     <ListPreference
-        android:defaultValue="180"
+        android:defaultValue="30"
         android:entries="@array/pref_sync_frequency_titles"
         android:entryValues="@array/pref_sync_frequency_values"
         android:key="sync_frequency"

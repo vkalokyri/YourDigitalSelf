@@ -75,18 +75,7 @@ public class MainActivity extends AppCompatActivity {
 //
 //                } catch (SQLException e) {
 //                    e.printStackTrace();
-//                }
-
-
-
-        try {
-            System.out.println("-------Finding entities belonging to category : person name------");
-            new OpenNLP(this).findName();
-            System.out.println();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+//
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (!prefs.getBoolean("firstTime", false)) {

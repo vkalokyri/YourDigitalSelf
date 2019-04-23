@@ -1,5 +1,5 @@
 #
-# generated on 2019/04/10 07:12:27
+# generated on 2019/04/16 05:12:40
 #
 # --table-start--
 dataClass=com.rutgers.neemi.model.Email
@@ -1032,6 +1032,31 @@ columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Person(_id) ON DELETE CAS
 # --field-end--
 # --field-start--
 fieldName=thread_id
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.MessageHasPlaces
+tableName=MessageHasPlaces
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=message
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES `Message`(_id) ON DELETE CASCADE
+# --field-end--
+# --field-start--
+fieldName=place
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--

@@ -18,6 +18,7 @@ import com.rutgers.neemi.model.FeedWithTags;
 import com.rutgers.neemi.model.GPSLocation;
 import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.Message;
+import com.rutgers.neemi.model.MessageHasPlaces;
 import com.rutgers.neemi.model.MessageParticipants;
 import com.rutgers.neemi.model.ScriptLocalValues;
 import com.rutgers.neemi.model.ScriptDefHasTaskDef;
@@ -48,7 +49,7 @@ import com.rutgers.neemi.model.Transition;
 public class DatabaseConfigUtil extends OrmLiteConfigUtil {
 
     // put all your database classes in this array
-    private static final Class<?>[] classes = new Class[]{Email.class, EmailCc.class,EmailBcc.class,EmailTo.class, Event.class, Person.class, Album.class, Photo.class, Place.class, EventAttendees.class, PhotoTags.class, TransactionHasCategory.class, PlaceHasCategory.class, Transaction.class, Category.class, Task.class, Script.class, TaskDefinition.class, ScriptDefinition.class, LocalProperties.class, TaskLocalValues.class, ScriptLocalValues.class, ScriptDefHasTaskDef.class, Subscript.class, Transition.class, Feed.class, FeedMessageTags.class, FeedWithTags.class, TaskDefHasLocalProperties.class, GPSLocation.class, StayPoint.class, StayPointHasPlaces.class, TransactionHasPlaces.class, Message.class, MessageParticipants.class};
+    private static final Class<?>[] classes = new Class[]{Email.class, EmailCc.class,EmailBcc.class,EmailTo.class, Event.class, Person.class, Album.class, Photo.class, Place.class, EventAttendees.class, PhotoTags.class, TransactionHasCategory.class, PlaceHasCategory.class, Transaction.class, Category.class, Task.class, Script.class, TaskDefinition.class, ScriptDefinition.class, LocalProperties.class, TaskLocalValues.class, ScriptLocalValues.class, ScriptDefHasTaskDef.class, Subscript.class, Transition.class, Feed.class, FeedMessageTags.class, FeedWithTags.class, TaskDefHasLocalProperties.class, GPSLocation.class, StayPoint.class, StayPointHasPlaces.class, TransactionHasPlaces.class, Message.class, MessageParticipants.class, MessageHasPlaces.class};
 
 
     public static void main(String[] args) throws SQLException, IOException {

@@ -41,6 +41,7 @@ import com.rutgers.neemi.model.TransactionHasCategory;
 import com.rutgers.neemi.model.Person;
 import com.rutgers.neemi.model.Place;
 import com.rutgers.neemi.model.TransactionHasPlaces;
+import com.rutgers.neemi.util.Utilities;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -583,7 +584,7 @@ public class PlaidFragment extends Fragment {
                                     }
 
                                     PlacesSearchResponse gmapsResponse = PlacesApi.textSearchQuery(context, transaction.getMerchant_name()+" "+locationString.toString()).await();
-                                    listOfPlaces.addAll(findTransactionPlaces(gmapsResponse));
+                                    listOfPlaces.addAll(Utilities.getUtilities(getContext()).findTransactionPlaces(gmapsResponse));
 
 
                                 }
@@ -629,46 +630,7 @@ public class PlaidFragment extends Fragment {
 
 
 
-        private ArrayList<Place> findTransactionPlaces(PlacesSearchResponse gmapsResponse) throws InterruptedException, ApiException, IOException {
-            ArrayList<Place> listOfPlaces = new ArrayList();
-            if (gmapsResponse.results != null) {
-                for  (PlacesSearchResult place: gmapsResponse.results) {
-                    Place placeExists = helper.placeExistsById(place.placeId);
-                    if (placeExists == null) {
-                        placeExists = new Place();
-                        placeExists.setName(place.name);
-                        placeExists.setStreet(place.formattedAddress);
-                        placeExists.setId(place.placeId);
-                        placeExists.setLatitude(place.geometry.location.lat);
-                        placeExists.setLongitude(place.geometry.location.lng);
-                        if (place.photos != null) {
-                            PhotoResult photoResult = PlacesApi.photo(context, place.photos[0].photoReference).maxWidth(400)
-                                    .await();
-                            byte[] image = photoResult.imageData;
-                            placeExists.setImage(image);
-                        }
-                        placeDao.create(placeExists);
-                        for (String placeCategory : place.types) {
-                            Category categoryExists = helper.placeCategoryExists(placeCategory);
-                            if (categoryExists == null) {
-                                Category newCategory = new Category();
-                                newCategory.setCategoryName(placeCategory);
-                                helper.getCategoryDao().create(newCategory);
-                                PlaceHasCategory placeHasCategories = new PlaceHasCategory(placeExists, newCategory);
-                                helper.getPlaceHasCategoryRuntimeDao().create(placeHasCategories);
-                            } else {
-                                PlaceHasCategory trans_categories = new PlaceHasCategory(placeExists, categoryExists);
-                                helper.getPlaceHasCategoryRuntimeDao().create(trans_categories);
-                            }
-                        }
-                        listOfPlaces.add(placeExists);
-                    }else{
-                        listOfPlaces.add(placeExists);
-                    }
-                }
-            }
-            return listOfPlaces;
-        }
+
 
         protected void onPostExecute(Integer output) {
             mProgress.dismiss();

@@ -2,16 +2,96 @@ package com.rutgers.neemi.util;
 
 import android.content.Context;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.google.maps.GeoApiContext;
+import com.google.maps.PlacesApi;
+import com.google.maps.errors.ApiException;
+import com.google.maps.model.PhotoResult;
+import com.google.maps.model.PlacesSearchResponse;
+import com.google.maps.model.PlacesSearchResult;
+import com.rutgers.neemi.DatabaseHelper;
+import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
+import com.rutgers.neemi.model.Place;
+import com.rutgers.neemi.model.PlaceHasCategory;
 import com.rutgers.neemi.model.Transaction;
 import com.rutgers.neemi.model.Photo;
 import com.rutgers.neemi.model.Script;
 import com.rutgers.neemi.model.Task;
 
 public class Utilities {
+
+    static Context context;
+    static DatabaseHelper helper;
+
+    GeoApiContext gmapsContext = new GeoApiContext.Builder()
+            .apiKey("AIzaSyDe8nWbXFA6ESFS6GnQtYPPsXzYmLz3Lf0")
+            .build();
+
+    private static Utilities util;
+
+
+
+    public static synchronized Utilities getUtilities(Context context)
+    {
+        if (util == null) {
+            helper = DatabaseHelper.getHelper(context);
+            util = new Utilities(context);
+
+        }
+        return util;
+    }
+
+    public Utilities(Context context) {
+        this.context=context;
+        helper = DatabaseHelper.getHelper(context);
+    }
+
+
+    public ArrayList<Place> findTransactionPlaces(PlacesSearchResponse gmapsResponse) throws InterruptedException, ApiException, IOException {
+        ArrayList<Place> listOfPlaces = new ArrayList();
+        if (gmapsResponse.results != null) {
+            for  (PlacesSearchResult place: gmapsResponse.results) {
+                Place placeExists = helper.placeExistsById(place.placeId);
+                if (placeExists == null) {
+                    placeExists = new Place();
+                    placeExists.setName(place.name);
+                    placeExists.setStreet(place.formattedAddress);
+                    placeExists.setId(place.placeId);
+                    placeExists.setLatitude(place.geometry.location.lat);
+                    placeExists.setLongitude(place.geometry.location.lng);
+                    if (place.photos != null) {
+                        PhotoResult photoResult = PlacesApi.photo(gmapsContext, place.photos[0].photoReference).maxWidth(400)
+                                .await();
+                        byte[] image = photoResult.imageData;
+                        placeExists.setImage(image);
+                    }
+                    helper.getPlaceDao().create(placeExists);
+                    for (String placeCategory : place.types) {
+                        Category categoryExists = helper.placeCategoryExists(placeCategory);
+                        if (categoryExists == null) {
+                            Category newCategory = new Category();
+                            newCategory.setCategoryName(placeCategory);
+                            helper.getCategoryDao().create(newCategory);
+                            PlaceHasCategory placeHasCategories = new PlaceHasCategory(placeExists, newCategory);
+                            helper.getPlaceHasCategoryRuntimeDao().create(placeHasCategories);
+                        } else {
+                            PlaceHasCategory trans_categories = new PlaceHasCategory(placeExists, categoryExists);
+                            helper.getPlaceHasCategoryRuntimeDao().create(trans_categories);
+                        }
+                    }
+                    listOfPlaces.add(placeExists);
+                }else{
+                    listOfPlaces.add(placeExists);
+                }
+            }
+        }
+        return listOfPlaces;
+    }
 
 	
 //	public void saveInExcel(List<Process> listOfProcesses){
