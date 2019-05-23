@@ -1485,16 +1485,16 @@ public class ContentFragment extends Fragment {
 //                }
 //            }
 
-//            if (place != null) {
-//                byte[] image = place.getImage();
-//                if (image != null) {
-//                    Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
-//                    imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
-//                }
-//            }else{
-            imageView.setImageResource(imgid[0]);
+            if (place != null && place.get_id()!=0) {
+                byte[] image = place.getImage();
+                if (image != null) {
+                    Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
+                    imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
+                }
+            }else{
+                imageView.setImageResource(imgid[0]);
 
-            //}
+            }
 
 
 
