@@ -273,9 +273,9 @@ public class BankFragment extends Fragment {
                     try {
                         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-                        Calendar cal = Calendar.getInstance();
-                        //Calendar cal = getCalendarDate(frequency);
-                        cal.add(Calendar.MONTH, -7);
+                        //Calendar cal = Calendar.getInstance();
+                        Calendar cal = getCalendarDate(frequency);
+                        //cal.add(Calendar.MONTH, -7);
                         Date startDate = null;
                         Date endDate = null;
 
