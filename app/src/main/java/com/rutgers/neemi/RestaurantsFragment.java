@@ -730,10 +730,10 @@ public class RestaurantsFragment extends Fragment {
 
 
         for (Script script:scripts) {
+            String when = null;
+            String where = null;
 
             if (script.getTasks().get(0).getPid() instanceof Transaction) {
-                String when = null;
-                String where = null;
 
                 //get the when and where values from scripts (in case of GPS put all the possible wheres into whereList)
                 for (ScriptLocalValues scriptLocalValues : script.getLocalValues()) {
@@ -754,14 +754,29 @@ public class RestaurantsFragment extends Fragment {
                     transactionsHashMap.put(where_when,list);
                 }
                 copyOfScripts.remove(script);
+            }else if (script.getTasks().get(0).getPid() instanceof Email && ((Email) script.getTasks().get(0).getPid()).getFrom().getName().contains("OpenTable")){
+                for (ScriptLocalValues scriptLocalValues : script.getLocalValues()) {
+                    String label = scriptLocalValues.getLocalProperties().getW5h_label();
+                    if (label.equals("when")) {
+                        when = scriptLocalValues.getLocal_value();
+                    } else if (label.equals("where")) {
+                        where = scriptLocalValues.getLocal_value();
+                    }
+                }
+                String where_when = where+when;
+                if(transactionsHashMap.containsKey(where_when)){
+                    transactionsHashMap.get(where_when).add(script);
+                }else {
+                    ArrayList<Script> list = new ArrayList<>();
+                    list.add(script);
+                    transactionsHashMap.put(where_when,list);
+                }
+                copyOfScripts.remove(script);
             }
 
         }
 
         HashMap<String, ArrayList<Script>> leftTransactions = new HashMap<>(transactionsHashMap); //hashmap for where->scripts
-
-
-
 
 
         for (Script script:copyOfScripts){

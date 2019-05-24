@@ -21,6 +21,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -63,6 +64,11 @@ import com.rutgers.neemi.model.EmailCc;
 import com.rutgers.neemi.model.EmailTo;
 import com.rutgers.neemi.model.Person;
 
+import net.htmlparser.jericho.Source;
+
+import org.htmlcleaner.HtmlCleaner;
+import org.htmlcleaner.TagNode;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
@@ -75,6 +81,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import javax.xml.parsers.SAXParser;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -808,6 +816,8 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                                 if (msg.getPayload().getMimeType().contentEquals("text/html")) {
                                     String s = new String(Base64.decodeBase64(msg.getPayload().getBody().getData().getBytes()));
                                     email.setHtmlContent(s);
+                                    String plainText = new Source(s).getRenderer().toString();
+                                    email.setTextContent( plainText);
                                 }
                             }
 
@@ -957,12 +967,19 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
                         email.setTextContent(s);
                     } else if (mime.contentEquals("text/html")) {
                         String s = new String(Base64.decodeBase64(part.getBody().getData().getBytes()));
+                        String plainText = new Source(s).getRenderer().toString();
+                        email.setTextContent( plainText);
                         email.setHtmlContent(s);
                     } else if (mime.contentEquals("multipart/alternative") || mime.contentEquals("multipart/related") || mime.contentEquals("multipart/mixed")) {
                         List<MessagePart> subparts = part.getParts();
                         Email subreader = readParts(subparts);
-                        email.setHtmlContent(subreader.getHtmlContent());
-                        email.setTextContent(subreader.getTextContent());
+                        if (subreader.getTextContent()!=null && !subreader.getTextContent().isEmpty()){
+                            email.setTextContent(subreader.getTextContent());
+                        }else {
+                            email.setHtmlContent(subreader.getHtmlContent());
+                            String plainText = new Source(subreader.getHtmlContent()).getRenderer().toString();
+                            email.setTextContent(plainText);
+                        }
                     } else if (mime.contains("application") || mime.contains("image")) {
                         email.setHasAttachments(true);
                     }else{

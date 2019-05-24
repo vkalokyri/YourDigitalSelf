@@ -137,6 +137,19 @@ public class JsonLocals implements W5hLocals{
 								localValues.add(new Date(((Email) pid).getDate()).toString());
 							} else if (attributeName.toString().equalsIgnoreCase("\"subject\"")) {
 								localValues.add(((Email) pid).getSubject().toString());
+							} else if (attributeName.toString().equalsIgnoreCase("\"subjectAt\"")) {
+								String reservationConfirmation= "Your Reservation Confirmation for ";
+								String reservationSubject = ((Email) pid).getSubject().toString();
+
+								if(reservationSubject.startsWith(reservationConfirmation)){
+									String reservationName = (reservationSubject.substring(reservationConfirmation.length(),reservationSubject.length()));
+									localValues.add(reservationName);
+								}
+								String reservationReview= "How was ";
+								if(reservationSubject.startsWith(reservationReview)){
+									String reservationName = (reservationSubject.substring(reservationReview.length(),reservationSubject.length()-1));
+									localValues.add(reservationName);
+								}
 							} else if (attributeName.toString().equalsIgnoreCase("\"bodyDate\"")) {
 								if (((Email) pid).getBodyDate() != null) {
 									localValues.add(((Email) pid).getBodyDate().toString());

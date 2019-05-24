@@ -24,6 +24,7 @@ import com.rutgers.neemi.util.ApplicationManager;
 import com.rutgers.neemi.util.NER;
 import com.rutgers.neemi.util.OpenNLP;
 
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (!prefs.getBoolean("firstTime", false)) {
 
-            DataSyncJob.schedulePeriodicJob();
+            //DataSyncJob.schedulePeriodicJob();
 
             // <---- run your one time code here
             ApplicationManager appManager = new ApplicationManager();
@@ -110,8 +111,6 @@ public class MainActivity extends AppCompatActivity {
 //        pb.putBoolean("gmailPermission" , gmailPermission);
 
        //
-
-
 
 
             Intent i = getIntent();

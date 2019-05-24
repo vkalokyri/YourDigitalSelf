@@ -112,7 +112,7 @@
 		"Message":"content_date"
 	},
 	"whereWasTheReservation":{
-		"Email":"from"
+		"Email":"subjectAt"
 	},
 	"whenWasEvent":{
 		"Email":"bodyDate"
@@ -132,7 +132,7 @@
 	"whenTripOccurred":["whenIsEmailEvent","whenIsMessageEvent", "whenTheEventStarts","whenTheEventEnds", "whenWasEvent","whenIsEmailEvent","whenIsMessageEvent"],
 	"whereTripOccurred":[ "whereWasPosted", "whereIsTheEvent"],
 	"whenTripBooked":["whenPaid","whenEventWasCreated"],
-	"whereEatingOccurred":["wherePaymentOccurred","whereWasTheReservation","whereWasPosted","whereWasUploaded","whereIsTheEvent","whereIsTheVenue"],
+	"whereEatingOccurred":["wherePaymentOccurred","whereWasTheReservation","whereWasTheReservationMade","whereWasPosted","whereWasUploaded","whereIsTheEvent","whereIsTheVenue"],
 	"whenWasTheReservationScheduled":["whenWasEvent"],
 	"whatWasEatingAbout":["whatIsPostAbout","whatIsPhotoAbout","whatIsTheEventAbout"],
 	"whoMadeThePayment":"whoPaid",

@@ -92,6 +92,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-database:11.8.0'
     implementation 'com.google.firebase:firebase-core:11.8.0'
     implementation files('libs/opennlp-tools.jar')
+    implementation files('libs/htmlcleaner-2.22.jar')
+    implementation files('libs/jericho-html-3.4.jar')
 }
 
 apply plugin: 'com.google.gms.google-services'
