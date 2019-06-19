@@ -199,6 +199,8 @@ public class Script implements Serializable {
 					addedScore = Float.parseFloat(config.getStr(PROPERTIES.GCAL_WEIGHT));
 				} else if (pid instanceof Photo) {
 					addedScore = Float.parseFloat(config.getStr(PROPERTIES.FACEBOOK_WEIGHT));
+				}else if(pid instanceof Message){
+					addedScore = Float.parseFloat(config.getStr(PROPERTIES.MESSENGER_WEIGHT));
 				}
 			} else if (processTask.getList_of_pids() != null) {
 			  	if (processTask.getList_of_pids().get(0) instanceof Place) {

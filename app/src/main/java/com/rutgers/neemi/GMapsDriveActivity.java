@@ -453,8 +453,8 @@ public class GMapsDriveActivity extends AppCompatActivity {
                 try {
 
                     ArrayList<StayPoint> stayPoints = listOfStayPoints(helper.getGPSLocations());
+                    System.err.println("Saving staypoints...");
                     for (StayPoint sp: stayPoints) {
-                        System.err.println("Saving staypoints");
                         stayPointDao.create(sp);
                         try {
                             ArrayList<Place> places = getPlaces(sp.getCoord().getLatitude(), sp.getCoord().getLongitude());

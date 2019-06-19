@@ -102,109 +102,11 @@ public class RestaurantsFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
 
         super.onActivityCreated(savedInstanceState);
-//        ConfigReader config = new ConfigReader(getContext());
-//        helper=DatabaseHelper.getHelper(getActivity());
-//        PersonParser personParser = new PersonParser(helper);
-//        ArrayList<ArrayList<KeyValuePair>> keyValues = personParser.parse();
-//
-//        XMLifyData xmlData = null;
-//        try {
-//            xmlData = new XMLifyData("people.xml", getContext());
-//            XMLifyData.serializeRecord(keyValues, xmlData.fw);
-//            xmlData.parseEnd();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        try {
-//            ER er = new ER(getContext());
-//        } catch (TestException e) {
-//            e.printStackTrace();
-//        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (ParserConfigurationException e) {
-//            e.printStackTrace();
-//        } catch (SAXException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-//
-//        /*get the keywords to search in the documents*/
-//        Class matcherMerger = null;
-//
-//        try {
-//            matcherMerger = matcherMerger = Class.forName(getContext().getAssets().open(config.getStr(PROPERTIES.MatcherMerger));
-//            if (matcherMerger == null) {
-//                throw new Exception("No MatcherMerger Class specified!");
-//            } else if (!serf.ER.checkMatcherMergerInterface(matcherMerger)) {
-//                throw new Exception("Given MatcherMerger class does not implement SimpleMatcherMerger interface!");
-//            } else {
-//                er.runRSwoosh();
-//            }
-//        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
-//        try {
-//            FileInputStream fis = getActivity().openFileInput(config.getStr(PROPERTIES.OutputFile));
-//            XmlPullParser parser = Xml.newPullParser();
-//            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-//            parser.setInput(fis, null);
-//            parser.nextTag();
-//            parser.nextTag();
-//
-//            parser.require(XmlPullParser.START_TAG, null, parser.getName());
-//            int eventType = parser.getEventType();
-//            while(eventType!=XmlPullParser.END_DOCUMENT ) {//|| !parser.getName().equals("definitions")){
-//                //System.out.println("XMLPARSING = "+name);
-//                // Starts by looking for the process
-//                if (eventType != XmlPullParser.END_TAG) {
-//                    parseRecord(parser);
-//                    parser.nextTag();
-//
-//                }
-//            }
-//
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (XmlPullParserException e) {
-//            e.printStackTrace();
-//        }
-
 
         findScriptInstances("restaurant");
 
     }
 
-    public void parseAttributes(XmlPullParser parser) throws IOException, XmlPullParserException {
-        int eventType = parser.getEventType();
-        if (eventType == XmlPullParser.START_TAG && parser.getName().equals("attribute")) {
-            while (eventType != XmlPullParser.END_TAG && !parser.getName().equals("record")) {
-                String attributeName = parser.getAttributeValue(null, "name");
-                System.out.println("attributeName = " + attributeName);
-                parser.nextTag();
-                while (parser.getName().equals("value")) {
-                    String attributeValue = parser.nextText();
-                    System.out.println("Value = " + attributeValue);
-                    parser.nextTag();
-                }
-                parser.nextTag();
-            }
-        }
-    }
-
-    public void parseRecord(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, null, "record");
-        parser.nextTag();
-        parseAttributes(parser);
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -326,7 +228,7 @@ public class RestaurantsFragment extends Fragment {
 
             });
 
-            listOfScripts.removeIf(n -> (n.getScore() < 0.4));
+   //         listOfScripts.removeIf(n -> (n.getScore() < 0.3));
 
 
             CustomListAdapter adapter = new CustomListAdapter(getActivity(), listOfScripts, imgid);
@@ -343,11 +245,10 @@ public class RestaurantsFragment extends Fragment {
 
     public List<Task> eliminateCommonTasks(List<Task> tasks){
 
-        Set<Task> s= new HashSet<Task>();
+        Set<Task> s= new HashSet<>();
 
-        System.out.println("Java Find duplicate objects in list using Set");
         for (Task t:tasks){
-            if(!s.add(t)){   //  // java.util.Set only unique object so if object will not bee add in Set it will return false so can consider it as Duplicate
+            if(!s.add(t)){  // java.util.Set only unique object so if object will not bee add in Set it will return false so can consider it as Duplicate
                 System.out.println(t.getPid().getClass().getCanonicalName());
                 if(t.getPid() instanceof Email){
                     System.out.println(((Email)t.getPid()).getSubject());
@@ -358,22 +259,9 @@ public class RestaurantsFragment extends Fragment {
                 }
             }
         }
-
         s.addAll(tasks);
-        tasks = new ArrayList<Task>();
+        tasks = new ArrayList<>();
         tasks.addAll(s);
-        //Now the List ha
-
-//        List<Task> finalTasks = new ArrayList<>();
-//
-//        for (int i=0;i< tasks.size()-1;i++) {
-//            for (int j = 1; j < tasks.size(); j++){
-//                if (tasks.get(i).isSame(tasks.get(j))) {
-//                    continue;
-//                }
-//            }
-//            finalTasks.add(tasks.get(i));
-//        }
 
         return tasks;
     }
@@ -399,7 +287,7 @@ public class RestaurantsFragment extends Fragment {
             for (TaskLocalValues tLocalValues : task.getLocalValues()) {
                 String label = tLocalValues.getLocalProperties().getW5h_label();
                 if (label.equals("where")) {
-                    String whereValue = tLocalValues.getLocal_value();
+                    String whereValue = tLocalValues.getLocal_value().replace("'","''");
                     if (!whereValues.contains(whereValue)) {
                         whereValues.add(whereValue);
                         for (HashMap.Entry<Object, Object> entry : weakTriggers.entrySet()) {
@@ -803,7 +691,7 @@ public class RestaurantsFragment extends Fragment {
 
 
     public ArrayList<ArrayList<Task>> mergeTasksByEventDate(List<Task> tasks){
-        Log.d(TAG,"SIZE OF tasks: " +tasks.size());
+        Log.d(TAG,"SIZE OF tasks before merging by event date: " +tasks.size());
         ArrayList<ArrayList<Task>> listofMergedTasks = new ArrayList<ArrayList<Task>>();
         HashMap<Date, ArrayList<Task>> hashMap = new HashMap<Date, ArrayList<Task>>();
 
@@ -907,6 +795,8 @@ public class RestaurantsFragment extends Fragment {
             //listofMergedTasks.add(hashMap.get(date));
         }
 
+        Log.d(TAG,"SIZE OF tasks AFTER merging by event date: " +listofMergedTasks.size());
+
         return listofMergedTasks;
 
 
@@ -988,39 +878,41 @@ public class RestaurantsFragment extends Fragment {
 
         HashMap<String, ArrayList<Script>> leftTransactions = new HashMap<>(transactionsHashMap); //hashmap for where->scripts
 
+        if(copyOfScripts.size()<scripts.size()) { //that means we have bank transactions
 
-        for (Script script:copyOfScripts){
-            String when=null;
-            ArrayList<String> whereList=new ArrayList<>();
+            for (Script script : copyOfScripts) {
 
-            //get the when and where values from scripts (in case of GPS put all the possible wheres into whereList)
-            for (ScriptLocalValues scriptLocalValues: script.getLocalValues()) {
-                String label = scriptLocalValues.getLocalProperties().getW5h_label();
-                if (label.equals("when")) {
-                    when = scriptLocalValues.getLocal_value();
-                } else if (label.equals("where")) {
-                    whereList.add(scriptLocalValues.getLocal_value());
-               }
-            }
+                String when = null;
+                ArrayList<String> whereList = new ArrayList<>();
 
-            if (when != null && whereList.size() !=0) {
+                //get the when and where values from scripts (in case of GPS put all the possible wheres into whereList)
+                for (ScriptLocalValues scriptLocalValues : script.getLocalValues()) {
+                    String label = scriptLocalValues.getLocalProperties().getW5h_label();
+                    if (label.equals("when")) {
+                        when = scriptLocalValues.getLocal_value();
+                    } else if (label.equals("where")) {
+                        whereList.add(scriptLocalValues.getLocal_value());
+                    }
+                }
 
-                for (String where : whereList) {
-                    String where_when = where + when;
+                if (when != null && whereList.size() != 0) {
 
-                    //if where is the same and when is +-2days (because of Transactions)
-                    if(transactionsHashMap.size()!=0) {
-                        String plus2Days = plusNDays(when, 2);
-                        String plus1Day = plusNDays(when, 1);
-                        String where_when1 = where + plus1Day;
-                        String where_when2 = where + plus2Days;
+                    for (String where : whereList) {
+                        String where_when = where + when;
 
-                        if (transactionsHashMap.containsKey(where_when)) {
-                            try {
-                                script = deleteLocalValuesInSuperscripts(script, where);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                        //if where is the same and when is +-2days (because of Transactions)
+                        if (transactionsHashMap.size() != 0) {
+                            String plus2Days = plusNDays(when, 2);
+                            String plus1Day = plusNDays(when, 1);
+                            String where_when1 = where + plus1Day;
+                            String where_when2 = where + plus2Days;
+
+                            if (transactionsHashMap.containsKey(where_when)) {
+                                try {
+                                    script = deleteLocalValuesInSuperscripts(script, where);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
 //                            for(Task task: script.getTasks()) {
 //                                if(task.getList_of_pids()!=null) {
 //                                    ArrayList<TaskLocalValues> copyOfLocalValues = new ArrayList<>();
@@ -1040,105 +932,108 @@ public class RestaurantsFragment extends Fragment {
 //                                    }
 //                                }
 //                            }
+                                if (scriptHashMap.containsKey(where_when)) {
+                                    scriptHashMap.get(where_when).add(script);
+                                } else {
+                                    ArrayList<Script> list = new ArrayList<>();
+                                    list.add(script);
+                                    scriptHashMap.put(where_when, list);
+                                    list.addAll(transactionsHashMap.get(where_when));
+                                    leftTransactions.remove(where_when);
+                                }
+                                break;
+                            } else if (transactionsHashMap.containsKey(where_when1)) {
+                                try {
+                                    script = deleteLocalValuesInSuperscripts(script, where);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+//                            for(Task task: script.getTasks()) {
+//                                if(task.getList_of_pids()!=null) {
+//                                    ArrayList<TaskLocalValues> copyOfLocalValues = new ArrayList<>();
+//                                    copyOfLocalValues.addAll(task.getLocalValues());
+//                                    for (TaskLocalValues taskLocalValues : copyOfLocalValues) {
+//                                        String label = taskLocalValues.getLocalProperties().getW5h_label();
+//                                        if (label.equals("where") && !where.equals(taskLocalValues.getLocal_value())) {
+//                                            task.getLocalValues().remove(taskLocalValues);
+//                                            ArrayList<ScriptLocalValues> copyOfScriptLocalValues = new ArrayList<>();
+//                                            copyOfScriptLocalValues.addAll(script.getLocalValues());
+//                                            for(ScriptLocalValues scriptLocalValues : copyOfScriptLocalValues){
+//                                                if(scriptLocalValues.getLocal_value().equals(taskLocalValues.getLocal_value())){
+//                                                    script.getLocalValues().remove(scriptLocalValues);
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+                                if (scriptHashMap.containsKey(where + plus1Day)) {
+                                    scriptHashMap.get(where + plus1Day).add(script);
+                                } else {
+                                    ArrayList<Script> list = new ArrayList<>();
+                                    list.add(script);
+                                    scriptHashMap.put(where + plus1Day, list);
+                                    list.addAll(transactionsHashMap.get(where_when1));
+                                    leftTransactions.remove(where_when1);
+                                }
+                                break;
+                            } else if (transactionsHashMap.containsKey(where_when2)) {
+                                try {
+                                    script = deleteLocalValuesInSuperscripts(script, where);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+//                            for(Task task: script.getTasks()) {
+//                                if(task.getList_of_pids()!=null) {
+//                                    ArrayList<TaskLocalValues> copyOfLocalValues = new ArrayList<>();
+//                                    copyOfLocalValues.addAll(task.getLocalValues());
+//                                    for (TaskLocalValues taskLocalValues : copyOfLocalValues) {
+//                                        String label = taskLocalValues.getLocalProperties().getW5h_label();
+//                                        if (label.equals("where") && !where.equals(taskLocalValues.getLocal_value())) {
+//                                            task.getLocalValues().remove(taskLocalValues);
+//                                            ArrayList<ScriptLocalValues> copyOfScriptLocalValues = new ArrayList<>();
+//                                            copyOfScriptLocalValues.addAll(script.getLocalValues());
+//                                            for(ScriptLocalValues scriptLocalValues : copyOfScriptLocalValues){
+//                                                if(scriptLocalValues.getLocal_value().equals(taskLocalValues.getLocal_value())){
+//                                                    script.getLocalValues().remove(scriptLocalValues);
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+                                if (scriptHashMap.containsKey(where + plus2Days)) {
+                                    scriptHashMap.get(where + plus2Days).add(script);
+                                } else {
+                                    ArrayList<Script> list = new ArrayList<>();
+                                    list.add(script);
+                                    list.addAll(transactionsHashMap.get(where_when2));
+                                    scriptHashMap.put(where + plus2Days, list);
+                                    leftTransactions.remove(where_when2);
+                                }
+
+                                break;
+                            }
+                        } else {
                             if (scriptHashMap.containsKey(where_when)) {
                                 scriptHashMap.get(where_when).add(script);
                             } else {
                                 ArrayList<Script> list = new ArrayList<>();
                                 list.add(script);
                                 scriptHashMap.put(where_when, list);
-                                list.addAll(transactionsHashMap.get(where_when));
-                                leftTransactions.remove(where_when);
                             }
-                            break;
-                        } else if (transactionsHashMap.containsKey(where_when1)) {
-                            try {
-                                script = deleteLocalValuesInSuperscripts(script, where);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-//                            for(Task task: script.getTasks()) {
-//                                if(task.getList_of_pids()!=null) {
-//                                    ArrayList<TaskLocalValues> copyOfLocalValues = new ArrayList<>();
-//                                    copyOfLocalValues.addAll(task.getLocalValues());
-//                                    for (TaskLocalValues taskLocalValues : copyOfLocalValues) {
-//                                        String label = taskLocalValues.getLocalProperties().getW5h_label();
-//                                        if (label.equals("where") && !where.equals(taskLocalValues.getLocal_value())) {
-//                                            task.getLocalValues().remove(taskLocalValues);
-//                                            ArrayList<ScriptLocalValues> copyOfScriptLocalValues = new ArrayList<>();
-//                                            copyOfScriptLocalValues.addAll(script.getLocalValues());
-//                                            for(ScriptLocalValues scriptLocalValues : copyOfScriptLocalValues){
-//                                                if(scriptLocalValues.getLocal_value().equals(taskLocalValues.getLocal_value())){
-//                                                    script.getLocalValues().remove(scriptLocalValues);
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-                            if (scriptHashMap.containsKey(where + plus1Day)) {
-                                scriptHashMap.get(where + plus1Day).add(script);
-                            } else {
-                                ArrayList<Script> list = new ArrayList<>();
-                                list.add(script);
-                                scriptHashMap.put(where + plus1Day, list);
-                                list.addAll(transactionsHashMap.get(where_when1));
-                                leftTransactions.remove(where_when1);
-                            }
-                            break;
-                        } else if (transactionsHashMap.containsKey(where_when2)) {
-                            try {
-                                script = deleteLocalValuesInSuperscripts(script, where);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-//                            for(Task task: script.getTasks()) {
-//                                if(task.getList_of_pids()!=null) {
-//                                    ArrayList<TaskLocalValues> copyOfLocalValues = new ArrayList<>();
-//                                    copyOfLocalValues.addAll(task.getLocalValues());
-//                                    for (TaskLocalValues taskLocalValues : copyOfLocalValues) {
-//                                        String label = taskLocalValues.getLocalProperties().getW5h_label();
-//                                        if (label.equals("where") && !where.equals(taskLocalValues.getLocal_value())) {
-//                                            task.getLocalValues().remove(taskLocalValues);
-//                                            ArrayList<ScriptLocalValues> copyOfScriptLocalValues = new ArrayList<>();
-//                                            copyOfScriptLocalValues.addAll(script.getLocalValues());
-//                                            for(ScriptLocalValues scriptLocalValues : copyOfScriptLocalValues){
-//                                                if(scriptLocalValues.getLocal_value().equals(taskLocalValues.getLocal_value())){
-//                                                    script.getLocalValues().remove(scriptLocalValues);
-//                                                }
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-                            if (scriptHashMap.containsKey(where + plus2Days)) {
-                                scriptHashMap.get(where + plus2Days).add(script);
-                            } else {
-                                ArrayList<Script> list = new ArrayList<>();
-                                list.add(script);
-                                list.addAll(transactionsHashMap.get(where_when2));
-                                scriptHashMap.put(where + plus2Days, list);
-                                leftTransactions.remove(where_when2);
-                            }
-
-                            break;
-                        }
-                    }else{
-                        if (scriptHashMap.containsKey(where_when)) {
-                            scriptHashMap.get(where_when).add(script);
-                        } else {
-                            ArrayList<Script> list = new ArrayList<>();
-                            list.add(script);
-                            scriptHashMap.put(where_when, list);
                         }
                     }
-                }
 
-            } else {
-                //not mergedScript
-               // if (script.getScore()>0.5) {
+                } else {
+                    //not mergedScript
+                    // if (script.getScore()>0.5) {
                     listofMergedScripts.add(script);
-                //}
+                    //}
+                }
             }
+        }else{
+            listofMergedScripts.addAll(scripts);
         }
 
         for(String tr:leftTransactions.keySet()){
@@ -1226,52 +1121,57 @@ public class RestaurantsFragment extends Fragment {
 
 		//hashmap of key:threadId and value:task
         HashMap<String,ArrayList<Task>> mergeTasksByThread = new HashMap();
+        ArrayList<ArrayList<Task>> alreadyMergedTasks=new ArrayList<>();
 
 
         for (ArrayList<Task> tasksInAScript: tasks){
             String previous_thread_id=null;
             ArrayList<Task> tasklist = null;
-            for (Task task:tasksInAScript) {
+            if(tasksInAScript.size()>1) {
+                alreadyMergedTasks.add(tasksInAScript);
+                continue;
+            }
+            for (Task task : tasksInAScript) {
                 if (task.getPid() instanceof Email) {
                     String key = ((Email) task.getPid()).getThreadId();
-                    previous_thread_id=key;
+                    previous_thread_id = key;
                     ArrayList<Task> list = mergeTasksByThread.get(key);
                     if (list == null) {
                         list = new ArrayList<>();
                         list.add(task);
                         mergeTasksByThread.put(key, list);
-                    }else{
+                    } else {
                         list.add(task);
                     }
-                }else if(task.getPid() instanceof Message){
-                    String msg = ((Message)task.getPid()).getContent();
-                    if(msg.contains("voted for") || msg.contains("changed vote to") || msg.contains("removed vote for") || msg.contains("responded Going to") || msg.contains("responded Can't Go to")) {
+                } else if (task.getPid() instanceof Message) {
+                    String msg = ((Message) task.getPid()).getContent();
+                    if (msg.contains("voted for") || msg.contains("changed vote to") || msg.contains("removed vote for") || msg.contains("responded Going to") || msg.contains("responded Can't Go to")) {
                         continue;
                     }
                     String thread = ((Message) task.getPid()).getThread();
                     int thread_id = ((Message) task.getPid()).getThread_id();
-                    previous_thread_id=thread+"_"+thread_id;
+                    previous_thread_id = thread + "_" + thread_id;
 
                     ArrayList<Task> list = mergeTasksByThread.get(previous_thread_id);
                     if (list == null) {
                         list = new ArrayList<>();
                         list.add(task);
                         mergeTasksByThread.put(previous_thread_id, list);
-                    }else{
+                    } else {
                         list.add(task);
                     }
 
 
-                }else {
-                    if(previous_thread_id!=null){
+                } else {
+                    if (previous_thread_id != null) {
                         ArrayList<Task> list = mergeTasksByThread.get(previous_thread_id);
                         list.add(task);
                         mergeTasksByThread.put(previous_thread_id, list);
-                    }else{
-                        if (tasklist==null){
+                    } else {
+                        if (tasklist == null) {
                             tasklist = new ArrayList<>();
                             tasklist.add(task);
-                        }else{
+                        } else {
                             tasklist.add(task);
                         }
 
@@ -1282,6 +1182,53 @@ public class RestaurantsFragment extends Fragment {
                 listofMergedTasks.add(tasklist);
             }
         }
+
+
+        for (ArrayList<Task> alreadyMerged:alreadyMergedTasks) {
+            String previous_thread_id=null;
+            ArrayList<Task> tasklist = null;
+            for (Task task : alreadyMerged) {
+                if (task.getPid() instanceof Email) {
+                    String key = ((Email) task.getPid()).getThreadId();
+                    previous_thread_id = key;
+                    ArrayList<Task> list = mergeTasksByThread.get(key);
+                    if (list != null) {
+                        list.addAll(alreadyMerged);
+                        break;
+                    }
+                } else if (task.getPid() instanceof Message) {
+                    String msg = ((Message) task.getPid()).getContent();
+                    if (msg.contains("voted for") || msg.contains("changed vote to") || msg.contains("removed vote for") || msg.contains("responded Going to") || msg.contains("responded Can't Go to")) {
+                        continue;
+                    }
+                    String thread = ((Message) task.getPid()).getThread();
+                    int thread_id = ((Message) task.getPid()).getThread_id();
+                    previous_thread_id = thread + "_" + thread_id;
+
+                    ArrayList<Task> list = mergeTasksByThread.get(previous_thread_id);
+                    if (list != null) {
+                        list.addAll(alreadyMerged);
+                        break;
+                    }
+                } else {
+                    if (previous_thread_id != null) {
+                        ArrayList<Task> list = mergeTasksByThread.get(previous_thread_id);
+                        list.add(task);
+                        mergeTasksByThread.put(previous_thread_id, list);
+                    } else {
+                        tasklist.add(task);
+                    }
+
+                }
+            }
+            if(tasklist!=null) {
+                listofMergedTasks.add(tasklist);
+            }
+        }
+
+
+
+
 
 
 
@@ -1752,6 +1699,8 @@ public class RestaurantsFragment extends Fragment {
                 if (image != null) {
                     Bitmap bmp = BitmapFactory.decodeByteArray(image, 0, image.length);
                     imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 40, 40, false));
+                }else{
+                    imageView.setImageResource(imgid[0]);
                 }
             }else{
                 imageView.setImageResource(imgid[0]);

@@ -26,6 +26,7 @@ public enum PROPERTIES {
 	EMAIL_WEIGHT("email_weight"),
 	OPENTABLE_WEIGHT("openTable_weight"),
 	FACEBOOK_WEIGHT("facebook_weight"),
+	MESSENGER_WEIGHT("messenger_weight"),
 	FOURSQUARE_WEIGHT("foursquare_weight"),
 	TWITTER_WEIGHT("twitter_weight"),
 	GPS_WEIGHT("gps_weight"),

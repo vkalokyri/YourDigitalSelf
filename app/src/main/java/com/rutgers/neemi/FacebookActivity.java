@@ -735,10 +735,7 @@ public class FacebookActivity extends AppCompatActivity {
 
 
                         /* POSTTTTT*/
-                       // cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
                         cal = getCalendarDate(frequency);
-
-                        //cal.add(Calendar.MONTH, -36); // substract 6 months
                         since=new DateTime(cal.getTimeInMillis());
                         System.out.println("since = "+since);
                         timestamp = null;
@@ -1125,6 +1122,8 @@ public class FacebookActivity extends AppCompatActivity {
                         myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(myIntent);
                     }
+
+
                 });
     }
 
