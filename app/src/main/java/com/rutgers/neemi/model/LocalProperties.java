@@ -32,6 +32,11 @@ public class LocalProperties implements Serializable {
 		this.w5h_value=w5h_value;
 	}
 
+	public LocalProperties(String w5h_label, String w5h_value){
+		this.w5h_label=w5h_label;
+		this.w5h_value=w5h_value;
+	}
+
 	public LocalProperties(){
 	}
 	

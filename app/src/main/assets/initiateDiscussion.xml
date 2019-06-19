@@ -19,22 +19,24 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <inclusiveGateway gatewayDirection="Diverging" name="" id="SelectWaysOfCommunicating"/>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="SendEmail" id="SendEmail">
 <locals>
-<who name="whoSentEmail"/>
-<who name="whoReceivedEmail"/>
-<who name="whoWasCCed"/>
-<who name="whoWasBCCed"/>
-<what name="whatAbout"/>
-<when name="whenWasSent"/>
-<when name="whenIsEmailEvent"/>
+    <who name="whoSentEmail"/>
+    <who name="whoReceivedEmail"/>
+    <who name="whoWasCCed"/>
+    <who name="whoWasBCCed"/>
+    <what name="whatAbout"/>
+    <when name="whenWasSent"/>
+    <when name="whenIsEmailEvent"/>
+    <where name="whereIsEmailEvent"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="SendFacebookInboxMsg" id="SendFacebookInboxMsg">
 <locals>
-<who name="whoSentMessage"/>
-<who name="whoReceivedMessage"/>
-<what name="whatMessageAbout"/>
-<when name="whenMessageWasSent"/>
-<when name="whenIsMessageEvent"/>
+    <who name="whoSentMessage"/>
+    <who name="whoReceivedMessage"/>
+    <what name="whatMessageAbout"/>
+    <when name="whenMessageWasSent"/>
+    <when name="whenIsMessageEvent"/>
+    <where name="whereIsMessageEvent"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="PostOnFacebook" id="PostOnFacebook">
@@ -48,36 +50,41 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="SendFacebookEvent" id="SendFacebookEvent">
 <locals>
-<who name="whoIsTheCreator"/>
-<who name="whoIsInvited"/>
-<what name="whatEvent"/>
-<when name="whenTheInvitationWasSent"/>
-<when name="whenIsTheEvent"/>
-<where name="whereIsTheEvent"/>
+    <who name="whoIsTheCreator"/>
+    <who name="whoIsInvited"/>
+    <what name="whatEvent"/>
+    <when name="whenTheInvitationWasSent"/>
+    <when name="whenIsTheEvent"/>
+    <where name="whereIsTheEvent"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="SendHangoutsMessage" id="SendHangoutsMessage">
 <locals>
-<who name="whoSentMessage"/>
-<who name="whoReceivedMessage"/>
-<what name="whatAbout"/>
-<when name="whenWasSent"/>
+    <who name="whoSentMessage"/>
+    <who name="whoReceivedMessage"/>
+    <what name="whatAbout"/>
+    <when name="whenWasSent"/>
+    <where name="whereIsMessageEvent"/>
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="Tweet" id="Tweet">
 <locals>
-<who name="whoSentTweet"/>
-<who name="whoRepliedToTweet"/>
-<what name="whatAbout"/>
-<when name="whenWasSent"/>
+    <who name="whoSentTweet"/>
+    <who name="whoRepliedToTweet"/>
+    <what name="whatAbout"/>
+    <when name="whenWasSent"/>
+    <where name="whereIsTweetEvent"/>
+
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="SendTwitterInboxMsg" id="SendTwitterInboxMsg">
 <locals>
-<who name="whoSentMessage"/>
-<who name="whoReceivedMessage"/>
-<what name="whatAbout"/>
-<when name="whenWasSent"/>
+    <who name="whoSentMessage"/>
+    <who name="whoReceivedMessage"/>
+    <what name="whatAbout"/>
+    <when name="whenWasSent"/>
+    <where name="whereIsTweetEvent"/>
+
 </locals>
 </task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="CheckTrainSchedule" id="CheckTrainSchedule"/>

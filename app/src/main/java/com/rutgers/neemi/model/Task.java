@@ -118,4 +118,106 @@ public class Task implements Serializable{
 	public void setList_of_pids(ArrayList<Object> list_of_pids) {
 		this.list_of_pids = list_of_pids;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		// TODO Auto-generated method stub
+		if (obj instanceof Task) {
+			Task t2 = (Task) obj;
+			if (this.getPid() != null && t2.getPid() != null) {
+				if (!this.getPid().getClass().getCanonicalName().equals(t2.getPid().getClass().getCanonicalName())) {
+					return false;
+				} else {
+					if (this.getPid() instanceof Email) {
+						if (((Email) this.getPid()).getId().equals(((Email) t2.getPid()).getId())) {
+							return true;
+						}
+					} else if (this.getPid() instanceof Message) {
+						if (((Message) this.getPid()).get_id() == ((Message) t2.getPid()).get_id()) {
+							return true;
+						}
+					} else if (this.getPid() instanceof Transaction) {
+						if (((Transaction) this.getPid()).getId().equals(((Transaction) t2.getPid()).getId())) {
+							return true;
+						}
+					} else if (this.getPid() instanceof Event) {
+						if (((Event) this.getPid()).getId().equals(((Event) t2.getPid()).getId())) {
+							return true;
+						}
+					} else if (this.getPid() instanceof Photo) {
+						if (((Photo) this.getPid()).getId().equals(((Photo) t2.getPid()).getId())) {
+							return true;
+						}
+					} else if (this.getPid() instanceof Feed) {
+						if (((Feed) this.getPid()).getId().equals(((Feed) t2.getPid()).getId())) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+
+		return false;
+
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		if (this.getPid() instanceof Email) {
+			return ((Email) this.getPid()).getId().hashCode();
+		} else if (this.getPid() instanceof Message) {
+			return new Integer(((Message) this.getPid()).get_id()).hashCode();
+		} else if (this.getPid() instanceof Transaction) {
+			return ((Transaction) this.getPid()).getId().hashCode();
+		} else if (this.getPid() instanceof Event) {
+			return ((Event) this.getPid()).getId().hashCode();
+		} else if (this.getPid() instanceof Photo) {
+			return ((Photo) this.getPid()).getId().hashCode();
+		} else if (this.getPid() instanceof Feed) {
+			return ((Feed) this.getPid()).getId().hashCode();
+		}
+
+		return 0;
+	}
+
+	public boolean isSame(Task t2) {
+		if (this.getPid() != null && t2.getPid() != null) {
+			if (!this.getPid().getClass().getCanonicalName().equals(t2.getPid().getClass().getCanonicalName())) {
+				return false;
+			} else {
+				if (this.getPid() instanceof Email) {
+					if (((Email) this.getPid()).getId().equals(((Email) t2.getPid()).getId())) {
+						return true;
+					}
+				} else if(this.getPid() instanceof Message) {
+					if (((Message) this.getPid()).get_id()==((Message) t2.getPid()).get_id()) {
+						return true;
+					}
+				}else if(this.getPid() instanceof Transaction) {
+					if (((Transaction) this.getPid()).getId().equals(((Transaction) t2.getPid()).getId())) {
+						return true;
+					}
+				}else if(this.getPid() instanceof Event) {
+					if (((Event) this.getPid()).getId().equals(((Event) t2.getPid()).getId())) {
+						return true;
+					}
+				}else if(this.getPid() instanceof Photo) {
+					if (((Photo) this.getPid()).getId().equals(((Photo) t2.getPid()).getId())) {
+						return true;
+					}
+				}else if(this.getPid() instanceof Feed) {
+					if (((Feed) this.getPid()).getId().equals(((Feed) t2.getPid()).getId())) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+
+
+	}
+
+
 }

@@ -7,11 +7,11 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
 <process binding="Process" isExecutable="true" id="makeReservation">
 <locals>
 <who name="whoMadeTheReservation"/>
-<who name="forWhoIsTheReservation "/>
+<who name="forWhoIsTheReservation"/>
 <what name="whatToBeReserved"/>
 <when name="whenWasTheReservationMade"/>
-<when name="whenWasTheReservationScheduled "/>
-<where name="whereWasTheReservationMade "/>
+<when name="whenWasTheReservationScheduled"/>
+<where name="whereWasTheReservationMade"/>
 </locals>
 <startEvent name="" id="SubProcessStart"/>
 <endEvent name="" id="SubProcessEnd"/>

@@ -109,7 +109,7 @@
 		"Email":"subject_date"
 	},
 	"whenIsMessageEvent":{
-		"Message":"content_date"
+		"Message":"contentDate"
 	},
 	"whereWasTheReservation":{
 		"Email":"subjectAt"
@@ -122,6 +122,7 @@
 	},
 	"whoMadeTheReservation":"whoReceivedEmail",
 	"whenWasTheReservationMade":"whenWasSent",
+	"whenWasTheReservationScheduled ":"whenWasEvent",
 	"whenIsTheProposedEvent":["whenIsEmailEvent","whenIsMessageEvent"],
 	"whereWasTheReservationMade":"whereWasTheReservation",
 	"whoInitiatedTheConversation":["whoSentEmail","whoSentMessage"],
@@ -132,7 +133,7 @@
 	"whenTripOccurred":["whenIsEmailEvent","whenIsMessageEvent", "whenTheEventStarts","whenTheEventEnds", "whenWasEvent","whenIsEmailEvent","whenIsMessageEvent"],
 	"whereTripOccurred":[ "whereWasPosted", "whereIsTheEvent"],
 	"whenTripBooked":["whenPaid","whenEventWasCreated"],
-	"whereEatingOccurred":["wherePaymentOccurred","whereWasTheReservation","whereWasTheReservationMade","whereWasPosted","whereWasUploaded","whereIsTheEvent","whereIsTheVenue"],
+	"whereEatingOccurred":["wherePaymentOccurred","whereWasTheReservation","whereWasTheReservationMade","whereWasPosted","whereWasUploaded","whereIsTheEvent","whereIsTheVenue","whereIsEmailEvent","whereIsMessageEvent"],
 	"whenWasTheReservationScheduled":["whenWasEvent"],
 	"whatWasEatingAbout":["whatIsPostAbout","whatIsPhotoAbout","whatIsTheEventAbout"],
 	"whoMadeThePayment":"whoPaid",
@@ -149,5 +150,7 @@
 	"whenEventWasCreated":"whenWasTheEventCreated",
 	"whatWasTripAbout":"whatIsTheEventAbout",
 	"howMuchWasTheEatingOut":"howMuchWasPaid",
-	"howMuchWasThePayment":"howMuchWasPaid"
+	"howMuchWasThePayment":"howMuchWasPaid",
+	"whereIsThePlanToGo":["whereIsMessageEvent", "whereIsEmailEvent"]
+
 }

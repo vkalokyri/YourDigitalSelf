@@ -1,7 +1,7 @@
 {
   "Eating_Out":{
     "strongTriggers":["makeAPayment<restaurant>","makeReservation<restaurant>","writeInCalendar<restaurant>","attendEatingOutEvent<restaurant>"],
-    "weakTriggers":["initiateDiscussion<restaurant>"]
+    "weakTriggers":["initiateDiscussion<restaurant>" ]
     },
   "GoingForATrip":{
     "strongTriggers":["makeReservation<hotel>","makeAPayment<flight>","makeReservation<flight>","writeInCalendar<trip>"]

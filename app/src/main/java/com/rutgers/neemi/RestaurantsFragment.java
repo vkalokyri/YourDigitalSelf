@@ -23,6 +23,7 @@ import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.rutgers.neemi.interfaces.Clues;
 import com.rutgers.neemi.interfaces.Triggers;
 import com.rutgers.neemi.interfaces.W5hLocals;
+import com.rutgers.neemi.model.Data;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Feed;
@@ -58,6 +59,7 @@ import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -65,6 +67,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.json.JsonString;
@@ -78,10 +81,10 @@ public class RestaurantsFragment extends Fragment {
     String scriptKeywords;
     static Triggers scriptTriggers;
     static Clues clues;
-    public static HashMap<Object,Object> triggers_Clues = new HashMap<Object,Object>();
+    //public static HashMap<Object, Object> triggers_Clues = new HashMap<>();
     DatabaseHelper helper;
-    List<Task> tasksRunning=new ArrayList<Task>();
-    static ArrayList<Script> listOfScripts = new ArrayList<Script>();
+    List<Task> tasksRunning = new ArrayList<>();
+    static ArrayList<Script> listOfScripts = new ArrayList<>();
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     RuntimeExceptionDao<ScriptDefinition, String> scriptDefDao;
     RuntimeExceptionDao<Subscript, String> subscriptsDao;
@@ -90,7 +93,7 @@ public class RestaurantsFragment extends Fragment {
     RuntimeExceptionDao<ScriptLocalValues, String> scriptlocalValuesDao;
     RuntimeExceptionDao<TaskLocalValues, String> tasklocalValuesDao;
 
-    Integer[] imgid={
+    Integer[] imgid = {
             R.drawable.restaurant
     };
 
@@ -176,13 +179,13 @@ public class RestaurantsFragment extends Fragment {
 //        }
 
 
-         findScriptInstances("restaurant");
+        findScriptInstances("restaurant");
 
     }
 
-    public void parseAttributes(XmlPullParser parser) throws IOException, XmlPullParserException{
+    public void parseAttributes(XmlPullParser parser) throws IOException, XmlPullParserException {
         int eventType = parser.getEventType();
-        if (eventType==XmlPullParser.START_TAG && parser.getName().equals("attribute")) {
+        if (eventType == XmlPullParser.START_TAG && parser.getName().equals("attribute")) {
             while (eventType != XmlPullParser.END_TAG && !parser.getName().equals("record")) {
                 String attributeName = parser.getAttributeValue(null, "name");
                 System.out.println("attributeName = " + attributeName);
@@ -208,65 +211,25 @@ public class RestaurantsFragment extends Fragment {
 
 
         myView = inflater.inflate(R.layout.fragment_restaurants, container, false);
-        ListView list1 =  (ListView) myView.findViewById(R.id.restaurant_list);
+        ListView list1 = (ListView) myView.findViewById(R.id.restaurant_list);
         myView.setBackgroundColor(getResources().getColor(android.R.color.white));
 
 
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-//        SharedPreferences.Editor editor = prefs.edit();
-//        TinyDB tinydb = new TinyDB(getContext());
-//        editor.putBoolean("restaurantFirstTime", false);
-//
-//        if (!prefs.getBoolean("restaurantFirstTime", false)) {
-//            // <---- run your one time code here
-//            findScriptInstances();
-//
-//            ArrayList<Object> scriptObjects = new ArrayList<Object>();
-//
-//            for(Script s : listOfScripts){
-//                scriptObjects.add((Object)s);
-//                break;
-//            }
-//
-//            tinydb.putListObject("restaurantScripts", scriptObjects);
-//
-////            // mark first time has runned.
-//            editor.putBoolean("restaurantFirstTime", true);
-////
-////            Gson gson = new Gson();
-////            ArrayList<String> objStrings = new ArrayList<String>();
-////            for(Script obj : listOfScripts){
-////                objStrings.add(gson.toJson(obj));
-////            }
-////            String[] myStringList = objStrings.toArray(new String[objStrings.size()]);
-////            editor.putString("restaurantScripts", TextUtils.join("‚‗‚", myStringList)).apply();
-////            editor.commit();
-//        }else{
-//            ArrayList<Object> scriptObjects = tinydb.getListObject("restaurantScripts", Script.class);
-//
-//            for(Object objs : scriptObjects){
-//                listOfScripts.add((Script) objs);
-//            }
-//        }
-
-
-
         list1.setOnItemClickListener(
-                new AdapterView.OnItemClickListener()
-                {
+                new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> arg0, View view,
                                             int position, long id) {
                         ScriptFragment scriptFragment = new ScriptFragment();
                         Bundle arguments = new Bundle();
                         arguments.putSerializable("processes", listOfScripts);
-                        arguments.putSerializable("position",position);
-                        arguments.putSerializable("id",id);
+                        arguments.putSerializable("position", position);
+                        arguments.putSerializable("id", id);
 
                         scriptFragment.setArguments(arguments);
 
                         android.support.v4.app.FragmentTransaction scriptfragmentTrans = getFragmentManager().beginTransaction();
-                        scriptfragmentTrans.add(R.id.frame,scriptFragment);
+                        scriptfragmentTrans.add(R.id.frame, scriptFragment);
                         scriptfragmentTrans.addToBackStack(null);
                         scriptfragmentTrans.commit();
                         Toast.makeText(getContext(), "Pressed!", Toast.LENGTH_LONG).show();
@@ -278,9 +241,9 @@ public class RestaurantsFragment extends Fragment {
     }
 
 
-    public void findScriptInstances(String scriptName){
+    public void findScriptInstances(String scriptName) {
 
-        helper=DatabaseHelper.getHelper(getActivity());
+        helper = DatabaseHelper.getHelper(getActivity());
         scriptDefDao = helper.getScriptDefDao();
         subscriptsDao = helper.getSubScriptDao();
         taskDefDao = helper.getTaskDefinitionDao();
@@ -289,89 +252,63 @@ public class RestaurantsFragment extends Fragment {
         tasklocalValuesDao = helper.getTaskLocalValuesDao();
 
 
-        try{
+        try {
             ConfigReader config = new ConfigReader(getContext());
-            InputStream fis=null;
+            InputStream fis = null;
 
             /*get the keywords to search in the documents*/
-            if(scriptName.equalsIgnoreCase("restaurant")) {
+            if (scriptName.equalsIgnoreCase("restaurant")) {
                 fis = getContext().getAssets().open(config.getStr(PROPERTIES.RESTAURANT_KEYWORDS_FILE));
-            }else if (scriptName.equalsIgnoreCase("trip")) {
+            } else if (scriptName.equalsIgnoreCase("trip")) {
                 fis = getContext().getAssets().open(config.getStr(PROPERTIES.TRIP_KEYWORDS_FILE));
             }
             //InputStream fis = getContext().getAssets().open(config.getStr(PROPERTIES.KEYWORDS_FILE));
             InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
             BufferedReader br = new BufferedReader(isr);
-            String keywords="";
+            String keywords = "";
             String line;
             while ((line = br.readLine()) != null) {
-                keywords=keywords+"\""+line+"\""+" OR ";
+                keywords = keywords + "\"" + line + "\"" + " OR ";
             }
-            this.scriptKeywords=keywords.substring(0, keywords.length()-4);
+            this.scriptKeywords = keywords.substring(0, keywords.length() - 4);
 
             //Get the strong triggers and clues for triggers of the script
             TriggersFactory JsonTriggerFactory = TriggersFactory.getTriggersFactory(TriggersFactory.json);
-            scriptTriggers= JsonTriggerFactory.getTriggers(getContext(),scriptName);
+            scriptTriggers = JsonTriggerFactory.getTriggers(getContext(), scriptName);
             clues = JsonTriggerFactory.getClues(getContext());
+            HashMap<Object, Object> triggers_Clues = new HashMap<>();
 
-            for (int i=0;i<scriptTriggers.getStrongTriggers().size();i++){
+
+            for (int i = 0; i < scriptTriggers.getStrongTriggers().size(); i++) {
                 String strongTrigger = scriptTriggers.getStrongTriggers().get(i);
-                String [] strongArray = strongTrigger.split("<");
-                triggers_Clues.put(strongTrigger, clues.getClues(strongArray[0].substring(1), strongArray[1].substring(0,strongArray[1].length()-2),getContext()));
+                String[] strongArray = strongTrigger.split("<");
+                triggers_Clues.put(strongTrigger, clues.getClues(strongArray[0].substring(1), strongArray[1].substring(0, strongArray[1].length() - 2), getContext()));
                 //printTriggersAndClues(triggers_Clues);
             }
 
-            for (int i=0;i<scriptTriggers.getWeakTriggers().size();i++){
-                String weakTrigger = scriptTriggers.getWeakTriggers().get(i);
-                String [] weakArray = weakTrigger.split("<");
-                triggers_Clues.put(weakTrigger, clues.getClues(weakArray[0].substring(1), weakArray[1].substring(0,weakArray[1].length()-2),getContext()));
-                //printTriggersAndClues(triggers_Clues);
-            }
 
             /*find the initial tasks that are running*/
-            List <Task> tasksrunning= findTaskInstancesInDatabase(triggers_Clues);
+            List<Task> strongTasksFound = findTaskInstancesInDatabase(triggers_Clues);
 
-            /*extract all the local properties from the tasks*/
-            for (Task task:tasksrunning) {
-                String taskName = task.getName();
-                System.out.println("Task is: " + taskName);
-                Object pid = task.getPid();
-                if (pid instanceof Event) {
-                    System.err.println("Task = " + taskName + ", Event = " + ((Event) pid).get_id());
-
-                } else if (pid instanceof Email) {
-                    System.err.println("Task = " + taskName + ", Email = " + ((Email) pid).get_id());
-
-                } else if (pid instanceof Transaction) {
-                    System.err.println("Task = " + taskName + ", Transaction = " + ((Transaction) pid).getMerchant_name());
-
-                } else if (pid instanceof Feed) {
-                    System.err.println("Task = " + taskName + ", Feed = " + ((Feed) pid).getMessage());
-                } else if (pid instanceof Message) {
-                    System.err.println("Task = " + taskName + ", Message = " + ((Message) pid).get_id());
-
-                }
-                ArrayList<LocalProperties> taskLocals = helper.extractTaskLocals(taskName);
-
-                task.getTaskDefinition().setLocals(taskLocals);
-
-                if (taskLocals!=null){
-                    for(LocalProperties w5h:taskLocals){
-                        W5hLocals locals = JsonTriggerFactory.getLocals(getContext());
-                        ArrayList<String> localValue = locals.getLocals(w5h.getW5h_value(), task, getContext());
-                        if (localValue.size()>0) {
-                            for (String lValue:localValue) {
-                                TaskLocalValues w5hInfo = new TaskLocalValues();
-                                w5hInfo.setLocalProperties(w5h);
-                                w5hInfo.setLocal_value(lValue);
-                                //w5hInfo.setTask(task);
-                                tasklocalValuesDao.create(w5hInfo);
-                                task.addLocalValue(w5hInfo);
-                            }
-                        }
-                    }
-                }
+            HashMap<Object, Object> weakTriggers = new HashMap<>();
+            for (int i = 0; i < scriptTriggers.getWeakTriggers().size(); i++) {
+                String weakTrigger = scriptTriggers.getWeakTriggers().get(i);
+                String[] weakArray = weakTrigger.split("<");
+                weakTriggers.put(weakTrigger, clues.getClues(weakArray[0].substring(1), weakArray[1].substring(0, weakArray[1].length() - 2), getContext()));
+                //printTriggersAndClues(weakTriggers);
             }
+
+            List<Task> tasksRunning = setLocalValuesInTheTasks(strongTasksFound); //tasks from strong triggers
+            List<Task> newTasks =  findTasksByWhereInText(tasksRunning, weakTriggers);
+            tasksRunning.addAll(newTasks); //add weak tasks that contain the where from the strong triggers
+
+            List<Task> weakTasksFound = findTaskInstancesInDatabase(weakTriggers);
+
+            tasksRunning = eliminateCommonTasks(weakTasksFound);
+
+
+            setLocalValuesInTheTasks(tasksRunning); //add unique weak tasks not retrieved before
+
 
             ArrayList<ArrayList<Task>> tasks = mergeTasksByEventDate(tasksRunning);
             ArrayList<ArrayList<Task>> tasksThreads = mergeThreads(tasks);
@@ -379,25 +316,280 @@ public class RestaurantsFragment extends Fragment {
             listOfScripts = mergeScriptsByWhenAndWhere(listOfScripts);
 
 
+
             //sort them
             Collections.sort(listOfScripts, new Comparator<Script>() {
-                @Override public int compare(Script p1, Script p2) {
-                    return Float.compare(p2.getScore(),p1.getScore()); // Ascending
+                @Override
+                public int compare(Script p1, Script p2) {
+                    return Float.compare(p2.getScore(), p1.getScore()); // Ascending
                 }
 
             });
 
-            CustomListAdapter adapter=new CustomListAdapter(getActivity(), listOfScripts, imgid);
-            ListView list= myView.findViewById(R.id.restaurant_list);
+            listOfScripts.removeIf(n -> (n.getScore() < 0.4));
+
+
+            CustomListAdapter adapter = new CustomListAdapter(getActivity(), listOfScripts, imgid);
+            ListView list = myView.findViewById(R.id.restaurant_list);
             list.setAdapter(adapter);
         } catch (FileNotFoundException e1) {
             e1.printStackTrace();
-        }catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
+    public List<Task> eliminateCommonTasks(List<Task> tasks){
+
+        Set<Task> s= new HashSet<Task>();
+
+        System.out.println("Java Find duplicate objects in list using Set");
+        for (Task t:tasks){
+            if(!s.add(t)){   //  // java.util.Set only unique object so if object will not bee add in Set it will return false so can consider it as Duplicate
+                System.out.println(t.getPid().getClass().getCanonicalName());
+                if(t.getPid() instanceof Email){
+                    System.out.println(((Email)t.getPid()).getSubject());
+
+                }else if(t.getPid() instanceof Message){
+                    System.out.println(((Message)t.getPid()).getContent());
+
+                }
+            }
+        }
+
+        s.addAll(tasks);
+        tasks = new ArrayList<Task>();
+        tasks.addAll(s);
+        //Now the List ha
+
+//        List<Task> finalTasks = new ArrayList<>();
+//
+//        for (int i=0;i< tasks.size()-1;i++) {
+//            for (int j = 1; j < tasks.size(); j++){
+//                if (tasks.get(i).isSame(tasks.get(j))) {
+//                    continue;
+//                }
+//            }
+//            finalTasks.add(tasks.get(i));
+//        }
+
+        return tasks;
+    }
+
+    public List<Task> findTasksByWhereInText(List<Task> tasks, HashMap<Object, Object> weakTriggers) throws SQLException, IOException {
+        Log.d(TAG, "SIZE OF tasks before retrieving where in text: " + tasks.size());
+        TriggersFactory JsonTriggerFactory = TriggersFactory.getTriggersFactory(TriggersFactory.json);
+        HashSet whereValues = new HashSet();
+        HashSet pids = new HashSet();
+
+        ArrayList<Task> newTasks = new ArrayList<>();
+
+        for (Task task:tasks) {
+            if (task.getPid() instanceof Email) {
+                pids.add(((Email) task.getPid()).getId());
+            } else if (task.getPid() instanceof Message) {
+                pids.add(((Message) task.getPid()).get_id());
+            }
+        }
+
+
+        for (Task task:tasks) {
+            for (TaskLocalValues tLocalValues : task.getLocalValues()) {
+                String label = tLocalValues.getLocalProperties().getW5h_label();
+                if (label.equals("where")) {
+                    String whereValue = tLocalValues.getLocal_value();
+                    if (!whereValues.contains(whereValue)) {
+                        whereValues.add(whereValue);
+                        for (HashMap.Entry<Object, Object> entry : weakTriggers.entrySet()) {
+                            String scriptType = ((String) entry.getKey()).replace("\"", "");
+
+                            System.err.println("Script = " + scriptType);
+                            String[] scriptArray = scriptType.split("<");
+                            String scriptName = null;
+                            String typeOf = null;
+                            if (scriptArray != null) {
+                                scriptName = scriptArray[0];
+                                typeOf = scriptArray[1].substring(0, scriptArray[1].length() - 1);
+                            } else {
+                                scriptName = scriptType;
+                            }
+                            ScriptDefinition sd = helper.getScriptDefinition(scriptName, typeOf);
+                            Script script = new Script();
+                            script.setScriptDefinition(sd);
+                            List<HashMap<Object, Object>> values = (List<HashMap<Object, Object>>) entry.getValue();
+                            if (values != null) {
+                                for (HashMap<Object, Object> value : values) {
+                                    for (HashMap.Entry<Object, Object> subtasks : value.entrySet()) {
+                                        String subtask = (String) subtasks.getKey();
+                                        String query = "select * ";
+                                        String fromClause = " from ";
+                                        String whereClause = " where ";
+
+                                        String fromTable = "";
+                                        HashMap<Object, Object> fromWhereValues = (HashMap<Object, Object>) subtasks.getValue();
+                                        for (HashMap.Entry<Object, Object> clues : fromWhereValues.entrySet()) {
+                                            String fromWhere = (String) clues.getKey();
+                                            //System.out.print("FromWhere = " + fromWhere);
+                                            if (fromWhere.equals("from")) {
+                                                for (int i = 0; i < ((ArrayList) clues.getValue()).size(); i++) {
+                                                    //System.out.println("From value = " + ((ArrayList) clues.getValue()).get(i));
+                                                    if (i == 0) {
+                                                        fromTable = ((ArrayList) clues.getValue()).get(i).toString();
+                                                        Log.d(TAG, "fromTable " + fromTable);
+                                                        fromClause = fromClause + "`" + ((ArrayList) clues.getValue()).get(i) + "`";
+                                                    } else {
+                                                        fromClause = fromClause + ",`" + ((ArrayList) clues.getValue()).get(i) + "`";
+                                                    }
+                                                }
+                                            } else if (fromWhere.equals("where")) {
+                                                HashMap<Object, Object> clue = (HashMap<Object, Object>) clues.getValue();
+                                                for (HashMap.Entry<Object, Object> cluesKeyValues : clue.entrySet()) {
+                                                    String clueKey = (String) cluesKeyValues.getKey();
+                                                    //System.out.println("AndOrOr = " + clueKey);
+                                                    Object clueValue = cluesKeyValues.getValue();
+                                                    if (clueKey.equals("and") || clueKey.equals("or")) {
+                                                        HashMap<Object, Object> valuesOfAndOr = (HashMap<Object, Object>) clueValue;
+                                                        whereClause = whereClause + " ( ";
+                                                        for (HashMap.Entry<Object, Object> valueOfAndOr : valuesOfAndOr.entrySet()) {
+                                                            String andOrKey = (String) valueOfAndOr.getKey();
+                                                            Object andOrValue = valueOfAndOr.getValue();
+                                                            Log.d(TAG, "clue key " + andOrKey);
+                                                            whereClause = whereClause + " `" + andOrKey + "` MATCH '(" + whereValue + ")'";
+                                                            whereClause = whereClause + " )";
+                                                            whereClause = whereClause + " " + clueKey;
+                                                        }
+                                                    }
+                                                    whereClause = whereClause + ")";
+                                                }
+                                            }
+                                        }
+
+                                        whereClause = whereClause.substring(0, whereClause.length() - 4) + ")";
+                                        List<Task> dbTasks = fullTextSearch(whereClause, fromTable, subtask, script);
+
+
+                                        //set the local values for these new tasks
+                                        for (Task dbtask : dbTasks) {
+                                            if(dbtask.getPid() instanceof Email){
+                                                if(pids.contains(((Email) dbtask.getPid()).getId())){
+                                                    continue;
+                                                }else{
+                                                    pids.add(((Email) dbtask.getPid()).getId());
+                                                }
+                                            }else if (dbtask.getPid() instanceof Message){
+                                                if(pids.contains(((Message) dbtask.getPid()).get_id())){
+                                                    continue;
+                                                }else{
+                                                    pids.add(((Message) dbtask.getPid()).get_id());
+                                                }
+                                            }
+                                            String taskName = dbtask.getName();
+                                            System.out.println("Task is: " + taskName);
+                                            Object pid = dbtask.getPid();
+                                            if (pid instanceof Email) {
+                                                System.err.println("Task = " + taskName + ", Email = " + ((Email) pid).get_id());
+                                                TaskLocalValues w5hInfo = new TaskLocalValues();
+                                                w5hInfo.setLocalProperties(new LocalProperties("where", "whereIsEmailEvent"));
+                                                w5hInfo.setLocal_value(whereValue);
+                                                tasklocalValuesDao.create(w5hInfo);
+                                                dbtask.addLocalValue(w5hInfo);
+                                            } else if (pid instanceof Message) {
+                                                System.err.println("Task = " + taskName + ", Message = " + ((Message) pid).get_id());
+                                                TaskLocalValues w5hInfo = new TaskLocalValues();
+                                                w5hInfo.setLocalProperties(new LocalProperties("where", "whereIsMessageEvent"));
+                                                w5hInfo.setLocal_value(whereValue);
+                                                tasklocalValuesDao.create(w5hInfo);
+                                                dbtask.addLocalValue(w5hInfo);
+                                            }
+                                            ArrayList<LocalProperties> taskLocals = helper.extractTaskLocals(taskName);
+                                            dbtask.getTaskDefinition().setLocals(taskLocals);
+
+                                            if (taskLocals != null) {
+                                                for (LocalProperties w5h : taskLocals) {
+                                                    W5hLocals locals = JsonTriggerFactory.getLocals(getContext());
+                                                    ArrayList<String> localValue = locals.getLocals(w5h.getW5h_value(), dbtask, getContext());
+                                                    if (localValue.size() > 0) {
+                                                        for (String lValue : localValue) {
+                                                            TaskLocalValues w5hInfo = new TaskLocalValues();
+                                                            w5hInfo.setLocalProperties(w5h);
+                                                            w5hInfo.setLocal_value(lValue);
+                                                            tasklocalValuesDao.create(w5hInfo);
+                                                            dbtask.addLocalValue(w5hInfo);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            newTasks.add(dbtask);
+                                        }
+
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        Log.d(TAG, "SIZE OF tasks after retrieving where in text: " + newTasks.size());
+
+        return newTasks;
+    }
+
+
+
+    public ArrayList<Task> setLocalValuesInTheTasks(List <Task> tasksFound) throws SQLException, IOException {
+        TriggersFactory JsonTriggerFactory = TriggersFactory.getTriggersFactory(TriggersFactory.json);
+
+        /*extract all the local properties from the tasks*/
+        for (Task task:tasksFound) {
+            String taskName = task.getName();
+            System.out.println("Task is: " + taskName);
+            Object pid = task.getPid();
+            if (pid instanceof Event) {
+                System.err.println("Task = " + taskName + ", Event = " + ((Event) pid).get_id());
+
+            } else if (pid instanceof Email) {
+                System.err.println("Task = " + taskName + ", Email = " + ((Email) pid).get_id());
+
+            } else if (pid instanceof Transaction) {
+                System.err.println("Task = " + taskName + ", Transaction = " + ((Transaction) pid).getMerchant_name());
+
+            } else if (pid instanceof Feed) {
+                System.err.println("Task = " + taskName + ", Feed = " + ((Feed) pid).getMessage());
+            } else if (pid instanceof Message) {
+                System.err.println("Task = " + taskName + ", Message = " + ((Message) pid).get_id());
+            }
+            ArrayList<LocalProperties> taskLocals = helper.extractTaskLocals(taskName);
+
+            task.getTaskDefinition().setLocals(taskLocals);
+
+            if (taskLocals!=null){
+                for(LocalProperties w5h:taskLocals){
+                    W5hLocals locals = JsonTriggerFactory.getLocals(getContext());
+                    ArrayList<String> localValue = locals.getLocals(w5h.getW5h_value(), task, getContext());
+                    if (localValue.size()>0) {
+                        for (String lValue:localValue) {
+                            TaskLocalValues w5hInfo = new TaskLocalValues();
+                            w5hInfo.setLocalProperties(w5h);
+                            w5hInfo.setLocal_value(lValue);
+                            //w5hInfo.setTask(task);
+                            tasklocalValuesDao.create(w5hInfo);
+                            task.addLocalValue(w5hInfo);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        return (ArrayList<Task>) tasksFound;
+    }
+
 
 
 
@@ -631,11 +823,26 @@ public class RestaurantsFragment extends Fragment {
                         e.printStackTrace();
                     }
                 }
+                else if (((Email) task.getPid()).getBodyDate()!=null) {
+                    try {
+                        extractedDate = sdf.parse(sdf.format(((Email) task.getPid()).getBodyDate()));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                }
             }else if (task.getPid() instanceof Event){
                 try {
                     extractedDate = sdf.parse(sdf.format(((Event) task.getPid()).getStartTime()));
                 } catch (ParseException e) {
                     e.printStackTrace();
+                }
+            }else if (task.getPid() instanceof Message){
+                if (((Message) task.getPid()).getContentDate()!=null) {
+                    try {
+                        extractedDate = sdf.parse(sdf.format(((Message) task.getPid()).getContentDate()));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
                 }
             }else if (task.getPid() instanceof Feed){
                 try {
@@ -719,6 +926,9 @@ public class RestaurantsFragment extends Fragment {
 
     }
 
+
+
+
     public ArrayList<Script> mergeScriptsByWhenAndWhere(List<Script> scripts) throws SQLException {
 
         Log.d(TAG,"SIZE OF scripts before merging: " +scripts.size());
@@ -734,7 +944,6 @@ public class RestaurantsFragment extends Fragment {
             String where = null;
 
             if (script.getTasks().get(0).getPid() instanceof Transaction) {
-
                 //get the when and where values from scripts (in case of GPS put all the possible wheres into whereList)
                 for (ScriptLocalValues scriptLocalValues : script.getLocalValues()) {
                     String label = scriptLocalValues.getLocalProperties().getW5h_label();
@@ -745,34 +954,35 @@ public class RestaurantsFragment extends Fragment {
                         where = officialPlaces.get(0).getName();
                     }
                 }
-                String where_when = where+when;
-                if(transactionsHashMap.containsKey(where_when)){
+                String where_when = where + when;
+                if (transactionsHashMap.containsKey(where_when)) {
                     transactionsHashMap.get(where_when).add(script);
-                }else {
+                } else {
                     ArrayList<Script> list = new ArrayList<>();
                     list.add(script);
-                    transactionsHashMap.put(where_when,list);
-                }
-                copyOfScripts.remove(script);
-            }else if (script.getTasks().get(0).getPid() instanceof Email && ((Email) script.getTasks().get(0).getPid()).getFrom().getName().contains("OpenTable")){
-                for (ScriptLocalValues scriptLocalValues : script.getLocalValues()) {
-                    String label = scriptLocalValues.getLocalProperties().getW5h_label();
-                    if (label.equals("when")) {
-                        when = scriptLocalValues.getLocal_value();
-                    } else if (label.equals("where")) {
-                        where = scriptLocalValues.getLocal_value();
-                    }
-                }
-                String where_when = where+when;
-                if(transactionsHashMap.containsKey(where_when)){
-                    transactionsHashMap.get(where_when).add(script);
-                }else {
-                    ArrayList<Script> list = new ArrayList<>();
-                    list.add(script);
-                    transactionsHashMap.put(where_when,list);
+                    transactionsHashMap.put(where_when, list);
                 }
                 copyOfScripts.remove(script);
             }
+//            }else if (script.getTasks().get(0).getPid() instanceof Email && ((Email) script.getTasks().get(0).getPid()).getFrom().getName().contains("OpenTable")){
+//                for (ScriptLocalValues scriptLocalValues : script.getLocalValues()) {
+//                    String label = scriptLocalValues.getLocalProperties().getW5h_label();
+//                    if (label.equals("when")) {
+//                        when = scriptLocalValues.getLocal_value();
+//                    } else if (label.equals("where")) {
+//                        where = scriptLocalValues.getLocal_value();
+//                    }
+//                }
+//                String where_when = where+when;
+//                if(transactionsHashMap.containsKey(where_when)){
+//                    transactionsHashMap.get(where_when).add(script);
+//                }else {
+//                    ArrayList<Script> list = new ArrayList<>();
+//                    list.add(script);
+//                    transactionsHashMap.put(where_when,list);
+//                }
+//                copyOfScripts.remove(script);
+//            }
 
         }
 
@@ -793,7 +1003,7 @@ public class RestaurantsFragment extends Fragment {
                }
             }
 
-            if (when != null && whereList !=null) {
+            if (when != null && whereList.size() !=0) {
 
                 for (String where : whereList) {
                     String where_when = where + when;
@@ -925,12 +1135,20 @@ public class RestaurantsFragment extends Fragment {
 
             } else {
                 //not mergedScript
-                listofMergedScripts.add(script);
+               // if (script.getScore()>0.5) {
+                    listofMergedScripts.add(script);
+                //}
             }
         }
 
         for(String tr:leftTransactions.keySet()){
             listofMergedScripts.addAll(leftTransactions.get(tr));
+//            for(Script s:leftTransactions.get(tr)){
+//               // if (s.getScore()>0.5) {
+//                    listofMergedScripts.add(s);
+//                //}
+//            }
+
         }
 
 
@@ -941,7 +1159,9 @@ public class RestaurantsFragment extends Fragment {
                 mergedScript.merge(scriptHashMap.get(whenAndWhere).get(i));
             }
             mergedScript.assignScore(getContext());
+            //if (mergedScript.getScore()>0.5) {
             listofMergedScripts.add(mergedScript);
+            //}
         }
 
         Log.d(TAG,"SIZE OF scripts after merging: " +listofMergedScripts.size());
@@ -1002,10 +1222,11 @@ public class RestaurantsFragment extends Fragment {
 
         System.err.println("Total processes running before threading ="+tasks.size());
 
-        ArrayList<ArrayList<Task>> listofMergedTasks = new ArrayList<ArrayList<Task>>();
+        ArrayList<ArrayList<Task>> listofMergedTasks = new ArrayList<>();
 
 		//hashmap of key:threadId and value:task
         HashMap<String,ArrayList<Task>> mergeTasksByThread = new HashMap();
+
 
         for (ArrayList<Task> tasksInAScript: tasks){
             String previous_thread_id=null;
@@ -1023,9 +1244,14 @@ public class RestaurantsFragment extends Fragment {
                         list.add(task);
                     }
                 }else if(task.getPid() instanceof Message){
+                    String msg = ((Message)task.getPid()).getContent();
+                    if(msg.contains("voted for") || msg.contains("changed vote to") || msg.contains("removed vote for") || msg.contains("responded Going to") || msg.contains("responded Can't Go to")) {
+                        continue;
+                    }
                     String thread = ((Message) task.getPid()).getThread();
                     int thread_id = ((Message) task.getPid()).getThread_id();
                     previous_thread_id=thread+"_"+thread_id;
+
                     ArrayList<Task> list = mergeTasksByThread.get(previous_thread_id);
                     if (list == null) {
                         list = new ArrayList<>();
@@ -1056,6 +1282,8 @@ public class RestaurantsFragment extends Fragment {
                 listofMergedTasks.add(tasklist);
             }
         }
+
+
 
         for (String thread_id: mergeTasksByThread.keySet()) {
             ArrayList<Task> mergedtasks = mergeTasksByThread.get(thread_id);

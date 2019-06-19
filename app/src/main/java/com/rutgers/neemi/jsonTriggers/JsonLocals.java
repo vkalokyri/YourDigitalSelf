@@ -150,6 +150,16 @@ public class JsonLocals implements W5hLocals{
 									String reservationName = (reservationSubject.substring(reservationReview.length(),reservationSubject.length()-1));
 									localValues.add(reservationName);
 								}
+								reservationReview= "Re: Your review of ";
+								if(reservationSubject.startsWith(reservationReview)){
+									String reservationName = (reservationSubject.substring(reservationReview.length(),reservationSubject.length()));
+									localValues.add(reservationName);
+								}
+								String reservationPoints= "Your Points Confirmation for Dining at ";
+								if(reservationSubject.startsWith(reservationPoints)){
+									String reservationName = (reservationSubject.substring(reservationPoints.length(),reservationSubject.length()));
+									localValues.add(reservationName);
+								}
 							} else if (attributeName.toString().equalsIgnoreCase("\"bodyDate\"")) {
 								if (((Email) pid).getBodyDate() != null) {
 									localValues.add(((Email) pid).getBodyDate().toString());
