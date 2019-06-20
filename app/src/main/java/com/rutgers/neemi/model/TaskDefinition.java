@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class TaskDefinition implements Serializable {
 
 	@DatabaseField(generatedId = true)
-	int _id;
+	int id;
 	@DatabaseField
 	String name;
 
@@ -25,11 +25,11 @@ public class TaskDefinition implements Serializable {
 	}
 
 	public int getId() {
-		return _id;
+		return id;
 	}
 
 	public void setId(int id) {
-		this._id = id;
+		this.id = id;
 	}
 
 	public String getName() {

@@ -1186,7 +1186,7 @@ public class RestaurantsFragment extends Fragment {
 
         for (ArrayList<Task> alreadyMerged:alreadyMergedTasks) {
             String previous_thread_id=null;
-            ArrayList<Task> tasklist = null;
+            ArrayList<Task> tasklist = new ArrayList<>();
             for (Task task : alreadyMerged) {
                 if (task.getPid() instanceof Email) {
                     String key = ((Email) task.getPid()).getThreadId();
@@ -1221,7 +1221,7 @@ public class RestaurantsFragment extends Fragment {
 
                 }
             }
-            if(tasklist!=null) {
+            if(tasklist!=null && tasklist.size()>0) {
                 listofMergedTasks.add(tasklist);
             }
         }

@@ -852,7 +852,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT label_id, w5h_label, w5h_value FROM LocalProperties, TaskDefHasLocalProperties, TaskDefinition where TaskDefinition.name='");
 		sb.append(taskName);
-		sb.append("' and taskdefinition_id=_id and localProperties_id=label_id;");
+		sb.append("' and taskdefinition_id=id and localProperties_id=label_id;");
 
 		GenericRawResults<LocalProperties> rawResults =
 				localPropertiesDao.queryRaw(sb.toString(),
