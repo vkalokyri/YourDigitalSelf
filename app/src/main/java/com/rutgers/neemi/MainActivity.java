@@ -241,6 +241,24 @@ public class MainActivity extends AppCompatActivity {
                     setfragmentTransaction.addToBackStack(null);
                     setfragmentTransaction.commit();
                 }
+
+                if (key.equalsIgnoreCase("gmaps")) {
+                    if(items == 0) {
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
+                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), "No locations fetched.", Snackbar.LENGTH_LONG ).show();
+                    } else if(items>0) {
+                        SettingsFragment settingsfragment = new SettingsFragment();
+                        android.support.v4.app.FragmentTransaction setfragmentTransaction = getSupportFragmentManager().beginTransaction();
+                        setfragmentTransaction.add(R.id.frame, settingsfragment);
+                        setfragmentTransaction.addToBackStack(null);
+                        setfragmentTransaction.commit();
+                        Snackbar.make(findViewById(R.id.mainCoordinatorLayout), items+" staying points fetched.", Snackbar.LENGTH_LONG ).show();
+                    }
+                }
                 getFragmentManager().beginTransaction()
                         .replace(R.id.frame, new SettingsFragment2())
                         .commit();

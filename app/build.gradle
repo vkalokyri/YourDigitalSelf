@@ -94,6 +94,7 @@ dependencies {
     implementation files('libs/opennlp-tools.jar')
     implementation files('libs/htmlcleaner-2.22.jar')
     implementation files('libs/jericho-html-3.4.jar')
+    implementation 'com.google.http-client:google-http-client-gson:1.19.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -79,6 +79,7 @@ public class ApplicationManager {
                 if (scriptDef == null) {
                     scriptDefDao.create(scriptDefinition);
                     ArrayList<LocalProperties> locals = scriptDefinition.getLocalProperties();
+                    //save local properties of script
                     for (LocalProperties local : locals) {
                         localPropertiesDao.create(local);
                         ScriptDefHasLocalProperties scriptDefLocals = new ScriptDefHasLocalProperties(scriptDefinition,local);
@@ -108,7 +109,6 @@ public class ApplicationManager {
                         scriptHasTasksDao.create(scriptTasks);
                     }
                 }
-
                 //readSubscripts
                 ScriptDefinition superScript = (ScriptDefinition) scriptElements.get(key);
                 for (ScriptDefinition subscript : superScript.getSubscripts()) {

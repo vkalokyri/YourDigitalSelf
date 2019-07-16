@@ -593,6 +593,12 @@ public class MessengerDriveActivity extends AppCompatActivity {
 
             if (output) {
                 Log.d(TAG,"All dates have been extracted");
+                long rows = helper.getMessageDao().countOf();
+                Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                myIntent.putExtra("key", "messenger");
+                myIntent.putExtra("items", (int)rows);
+                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(myIntent);
             } else {
                 Log.e(TAG,"There was an error while extracting message dates");
             }

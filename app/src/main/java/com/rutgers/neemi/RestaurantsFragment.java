@@ -228,7 +228,7 @@ public class RestaurantsFragment extends Fragment {
 
             });
 
-   //         listOfScripts.removeIf(n -> (n.getScore() < 0.3));
+            listOfScripts.removeIf(n -> (n.getScore() < 0.3));
 
 
             CustomListAdapter adapter = new CustomListAdapter(getActivity(), listOfScripts, imgid);
@@ -248,7 +248,7 @@ public class RestaurantsFragment extends Fragment {
         Set<Task> s= new HashSet<>();
 
         for (Task t:tasks){
-            if(!s.add(t)){  // java.util.Set only unique object so if object will not bee add in Set it will return false so can consider it as Duplicate
+            if(!s.add(t)){  // java.util.Set only unique object so if object will not be added in Set it will return false so can consider it as Duplicate
                 System.out.println(t.getPid().getClass().getCanonicalName());
                 if(t.getPid() instanceof Email){
                     System.out.println(((Email)t.getPid()).getSubject());
@@ -451,6 +451,8 @@ public class RestaurantsFragment extends Fragment {
                 System.err.println("Task = " + taskName + ", Feed = " + ((Feed) pid).getMessage());
             } else if (pid instanceof Message) {
                 System.err.println("Task = " + taskName + ", Message = " + ((Message) pid).get_id());
+            }else if (pid instanceof Photo) {
+                System.err.println("Task = " + taskName + ", Photo = " + ((Photo) pid).get_id());
             }
             ArrayList<LocalProperties> taskLocals = helper.extractTaskLocals(taskName);
 
