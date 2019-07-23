@@ -143,7 +143,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
         }
         gmailService = new com.google.api.services.gmail.Gmail.Builder(
                 transport, jsonFactory, mCredential)
-                .setApplicationName("Gmail API Android")
+                .setApplicationName("YourDigitalSelf")
                 .build();
 
         Intent i = getIntent();

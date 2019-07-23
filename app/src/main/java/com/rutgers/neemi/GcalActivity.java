@@ -557,7 +557,7 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
             System.out.println("since = "+since);
             String timestamp = null;
 
-            GenericRawResults<String[]> rawResults = calendarDao.queryRaw("select max(timestamp) from Event;");
+            GenericRawResults<String[]> rawResults = calendarDao.queryRaw("select max(timestamp) from Event where source=\"gcal\";");
             List<String[]> results = null;
             try {
                 results = rawResults.getResults();
@@ -646,9 +646,10 @@ public class GcalActivity extends AppCompatActivity implements EasyPermissions.P
                             }else{
                                 event.setStartTime(start.getValue());
                             }
-                            if(gcalevent.getSource()!=null) {
-                                event.setSource(gcalevent.getSource().getUrl());
-                            }
+                            event.setSource("gcal");
+                            //if(gcalevent.getSource()!=null) {
+                            //    event.setSource(gcalevent.getSource().getUrl());
+                            //}
                             List<Person> attendeesList = new ArrayList<Person>();
                             if (gcalevent.getAttendees()!=null){
                                 for (EventAttendee attendee:gcalevent.getAttendees()){

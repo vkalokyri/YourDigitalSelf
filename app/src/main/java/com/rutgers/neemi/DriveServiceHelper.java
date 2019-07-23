@@ -80,7 +80,7 @@ public class DriveServiceHelper {
     Double overflow = Double.parseDouble("4294967296");
     RuntimeExceptionDao<StayPoint, String> stayPointDao;
     GeoApiContext geoApiContext = new GeoApiContext.Builder()
-            .apiKey("AIzaSyDe8nWbXFA6ESFS6GnQtYPPsXzYmLz3Lf0")
+            .apiKey("AIzaSyCwsSXnT_jN107mMLhz55vo7JKwREaflJQ")
             .build();
 
 

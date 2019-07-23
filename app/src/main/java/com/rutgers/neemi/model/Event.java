@@ -157,4 +157,12 @@ public class Event implements Serializable {
     public void setSource(String source) {
         this.source = source;
     }
+
+    public Place getPlace() {
+        return place;
+    }
+
+    public void setPlace(Place place) {
+        this.place = place;
+    }
 }
