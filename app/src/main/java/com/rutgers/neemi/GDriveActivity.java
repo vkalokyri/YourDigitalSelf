@@ -391,35 +391,11 @@ public class GDriveActivity extends Activity {
 
                                 listOfPlaces.addAll(findTransactionPlaces(gmapsResponse, geoApiContext));
 
-
-//                                if (gmapsResponse.results != null) {
-//                                    if (gmapsResponse.results.length > 0) {
-//                                        PlacesSearchResult place = gmapsResponse.results[0];
-//                                        if (place.photos != null) {
-//                                            PhotoResult photoResult = PlacesApi.photo(geoApiContext,place.photos[0].photoReference).maxWidth(1600)
-//                                                    .await();
-//                                            byte[] image = photoResult.imageData;
-//
-//                                            //String imageUrl = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + gmapsResponse.results[0].photos[0].photoReference + "&key=AIzaSyAG3EDauXS9f5BsCEPb90rl7Cdub2VvUZE";
-//                                            if (placeExists!=null) {
-//                                                placeExists.setImage(image);
-//                                            }else{
-//                                                placeExists = new Place();
-//                                                placeExists.setImage(image);
-//                                                placeExists.setName(place.name);
-//                                                placeExists.setStreet(place.formattedAddress);
-//                                            }
-//
-//                                        }
-//                                    }
-//                                }
                             } catch (ApiException e) {
                                 e.printStackTrace();
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                            //placeDao.create(placeExists);
-                            //payment.setPlace(placeExists);
                             transactionDao.create(payment);
 
                             for (Place p:listOfPlaces){
@@ -427,9 +403,6 @@ public class GDriveActivity extends Activity {
                                 helper.getTransactionHasPlacesDao().create(transactionHasPlaces);
 
                             }
-
-                            //TransactionHasPlaces tranHasPlaces = new TransactionHasPlaces(payment,placeExists);
-                            //helper.getTransactionHasPlacesDao().create(tranHasPlaces);
                         }
 
                         String category =csvRecord.get("Category");
@@ -515,6 +488,7 @@ public class GDriveActivity extends Activity {
                                     PlaceHasCategory trans_categories = new PlaceHasCategory(placeExists, categoryExists);
                                     helper.getPlaceHasCategoryRuntimeDao().create(trans_categories);
                                 }
+                                //break; //just get the first type
                             }
                             listOfPlaces.add(placeExists);
                         }else{

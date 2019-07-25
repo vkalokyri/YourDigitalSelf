@@ -89,7 +89,7 @@ public class BankFragment extends Fragment {
             .build();
 
     GeoApiContext context = new GeoApiContext.Builder()
-            .apiKey("AIzaSyDe8nWbXFA6ESFS6GnQtYPPsXzYmLz3Lf0")
+            .apiKey("AIzaSyCwsSXnT_jN107mMLhz55vo7JKwREaflJQ")
             .build();
 
     FusedLocationProviderClient fusedLocationClient;

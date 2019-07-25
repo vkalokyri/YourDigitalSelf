@@ -66,7 +66,19 @@
 		"Event":"title"
 	},
 	"whereIsTheEvent":{
-		"Event":"location"
+		"Event":"place_id"
+	},
+	"whoIsTheCreator":{
+		"Event":"creator_id"
+	},
+	"whatEvent":{
+		"Event":"title"
+	},
+	"whenIsTheEvent":{
+		"Event":"startTime"
+	},
+	"whereIsTheEvent":{
+		"Event":"place_id"
 	},
 	"whoInitiatedTheConversation":{
 		"Email":"from"
@@ -123,12 +135,12 @@
 	"whoMadeTheReservation":"whoReceivedEmail",
 	"whenWasTheReservationMade":"whenWasSent",
 	"whenWasTheReservationScheduled ":"whenWasEvent",
-	"whenIsTheProposedEvent":["whenIsEmailEvent","whenIsMessageEvent"],
+	"whenIsTheProposedEvent":["whenIsEmailEvent","whenIsMessageEvent","whenIsTheEvent"],
 	"whereWasTheReservationMade":"whereWasTheReservation",
 	"whoInitiatedTheConversation":["whoSentEmail","whoSentMessage"],
 	"whoWasIncludedInTheConversation":["whoReceivedEmail","whoWasCCed","whoWasBCCed","whoReceivedMessage"],
 	"whenWasTheConversationInitiated":["whenWasSent","whenMessageWasSent"],
-	"whoAttended":["whoIsTheEventCreator","whoWillBeInTheEvent","whoSentEmail","whoReceivedMessage","whoReceivedEmail","whoWasCCed","whoWasBCCed","whoMadeThePost", "whoIsIncludedInPost", "whoCreatedEvent", "whoIsIncludedInPhoto"],
+	"whoAttended":["whoIsTheEventCreator","whoIsTheCreator","whoWillBeInTheEvent","whoSentEmail","whoReceivedMessage","whoReceivedEmail","whoWasCCed","whoWasBCCed","whoMadeThePost", "whoIsIncludedInPost", "whoCreatedEvent", "whoIsIncludedInPhoto"],
 	"whenEatingOccurred": ["whenIsEmailEvent","whenIsMessageEvent","whenPaid", "whenWasEvent","whenWasPosted","whenWasPhotoUploaded","whenTheEventStarts","whenTheEventEnds","whenWasTheStayInVenue"],
 	"whenTripOccurred":["whenIsEmailEvent","whenIsMessageEvent", "whenTheEventStarts","whenTheEventEnds", "whenWasEvent","whenIsEmailEvent","whenIsMessageEvent"],
 	"whereTripOccurred":[ "whereWasPosted", "whereIsTheEvent"],
@@ -151,6 +163,6 @@
 	"whatWasTripAbout":"whatIsTheEventAbout",
 	"howMuchWasTheEatingOut":"howMuchWasPaid",
 	"howMuchWasThePayment":"howMuchWasPaid",
-	"whereIsThePlanToGo":["whereIsMessageEvent", "whereIsEmailEvent"]
+	"whereIsThePlanToGo":["whereIsMessageEvent", "whereIsEmailEvent","whereIsTheEvent"]
 
 }

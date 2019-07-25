@@ -223,10 +223,12 @@ public class JsonLocals implements W5hLocals{
 							}
 						} else if (objectClass.equalsIgnoreCase("Event")) {
 							if (attributeName.toString().equalsIgnoreCase("\"creator_id\"")) {
-								if (((Event) pid).getCreator().getName() != null) {
-									localValues.add(((Event) pid).getCreator().getName());
-								} else {
-									localValues.add(((Event) pid).getCreator().getEmail());
+								if(((Event) pid).getCreator()!=null) {
+									if (((Event) pid).getCreator().getName() != null) {
+										localValues.add(((Event) pid).getCreator().getName());
+									} else {
+										localValues.add(((Event) pid).getCreator().getEmail());
+									}
 								}
 							} else if (attributeName.toString().equalsIgnoreCase("\"title\"")) {
 								localValues.add(String.valueOf(((Event) pid).getTitle()));
@@ -241,16 +243,28 @@ public class JsonLocals implements W5hLocals{
 									localValues.add(String.valueOf(((Event) pid).getLocation()));
 								}
 							} else if (attributeName.toString().equalsIgnoreCase("\"organizer_id\"")) {
-								if (((Event) pid).getOrganizer().getName() != null) {
-									localValues.add(((Event) pid).getOrganizer().getName());
-								} else {
-									localValues.add(((Event) pid).getOrganizer().getEmail());
+								if(((Event) pid).getOrganizer()!=null) {
+									if (((Event) pid).getOrganizer().getName() != null) {
+										localValues.add(((Event) pid).getOrganizer().getName());
+									} else {
+										localValues.add(((Event) pid).getOrganizer().getEmail());
+									}
 								}
 							} else if (attributeName.toString().equalsIgnoreCase("\"place_id\"")) {
-								if (((Photo) pid).getPlace().getName() != null) {
-									localValues.add(String.valueOf(((Photo) pid).getPlace().getName()));
-								} else if (((Photo) pid).getPlace().getCity() != null) {
-									localValues.add(String.valueOf(((Photo) pid).getPlace().getCity()));
+								if (pid instanceof Photo) {
+									if (((Photo) pid).getPlace().getName() != null) {
+										localValues.add(String.valueOf(((Photo) pid).getPlace().getName()));
+									} else if (((Photo) pid).getPlace().getCity() != null) {
+										localValues.add(String.valueOf(((Photo) pid).getPlace().getCity()));
+									}
+								}else if(pid instanceof Event) {
+									if(((Event) pid).getPlace()!=null) {
+										if (((Event) pid).getPlace().getName() != null) {
+											localValues.add(String.valueOf(((Event) pid).getPlace().getName()));
+										} else if (((Event) pid).getPlace().getCity() != null) {
+											localValues.add(String.valueOf(((Event) pid).getPlace().getCity()));
+										}
+									}
 								}
 							}
 						} else if (objectClass.equalsIgnoreCase("Feed")) {

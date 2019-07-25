@@ -41,7 +41,7 @@
 				"from": ["Category","Transaction","TransactionHasPlaces","PlaceHasCategory"],
 				"where": {
 					"and": {
-						"category" :["restaurant", "food"],
+						"category" :["restaurant"],
 						"`Transaction`._id": "TransactionHasPlaces.transaction_id",
 						"TransactionHasPlaces.place_id": "PlaceHasCategory.place_id",
 						"Category._id":"PlaceHasCategory.category_id"
@@ -89,6 +89,14 @@
 					"where": {
 						"or": {
 							"content":	"KEYWORDS_FILE"
+						}
+					}
+				},
+				"SendFacebookEvent": {
+					"from": "Event",
+					"where": {
+						"and": {
+							"title": "KEYWORDS_FILE"
 						}
 					}
 				}
