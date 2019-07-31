@@ -9,6 +9,8 @@
         android:maxSdkVersion="22" />
     <uses-permission android:name="com.example.permission.MAPS_RECEIVE" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission
         android:name="android.permission.MANAGE_ACCOUNTS"
         android:maxSdkVersion="22" />
@@ -128,6 +130,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.rutgers.neemi.MainActivity" />
         </activity>
+
         <service
             android:name=".LocationUpdatesIntentService"
             android:exported="false" />
@@ -147,7 +150,14 @@
         <activity android:name=".GmapsActivity" />
         <activity
             android:name=".MapsActivity"
-            android:label="@string/title_activity_maps"></activity>
+            android:label="@string/title_activity_maps" />
+        <activity
+            android:name=".SmsActivity"
+            android:label="@string/title_activity_sms"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"></activity>
+        <activity
+            android:name=".GPhotosActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"></activity>
     </application>
 
 </manifest>
