@@ -859,6 +859,29 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         return null;
     }
 
+	public ArrayList<Photo> getPhotosInInterval(long arrive, long leave) throws SQLException {
+
+		RuntimeExceptionDao<Photo, String> photoDao = getPhotoDao();
+
+		QueryBuilder<Photo, String> queryBuilder =
+				photoDao.queryBuilder();
+		Where<Photo, String> where = queryBuilder.where();
+		try {
+			where.le("created_time", leave);
+			where.ge("created_time", arrive);
+			where.and(2);
+			List<Photo> results = queryBuilder.query();
+			if (results.size() != 0) {
+				return (ArrayList<Photo>) results;
+			} else
+				return null;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+
+
+	}
 
 	public ArrayList<LocalProperties> extractTaskLocals(String taskName) throws SQLException {
 

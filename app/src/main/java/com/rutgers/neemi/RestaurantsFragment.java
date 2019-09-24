@@ -203,6 +203,9 @@ public class RestaurantsFragment extends Fragment {
             List<Task> tasksRunning = setLocalValuesInTheTasks(strongTasksFound); //tasks from strong triggers
             List<Task> newTasks =  findTasksByWhereInText(tasksRunning, weakTriggers);
             tasksRunning.addAll(newTasks); //add weak tasks that contain the where from the strong triggers
+            ArrayList<Task> photoTasks = addPhotosInTheScript(tasksRunning);
+            tasksRunning.addAll(setLocalValuesInTheTasks(photoTasks));
+
 
             List<Task> weakTasksFound = findTaskInstancesInDatabase(weakTriggers);
 
@@ -228,7 +231,7 @@ public class RestaurantsFragment extends Fragment {
 
             });
 
-           // listOfScripts.removeIf(n -> (n.getScore() < 0.3));
+            listOfScripts.removeIf(n -> (n.getScore() < 0.3));
 
 
             CustomListAdapter adapter = new CustomListAdapter(getActivity(), listOfScripts, imgid);
@@ -241,6 +244,35 @@ public class RestaurantsFragment extends Fragment {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+
+    public ArrayList<Task> addPhotosInTheScript(List<Task> tasks) throws SQLException {
+        ArrayList<Task> newTasks = new ArrayList<>();
+        for(Task t:tasks){
+            if(t.getName().equals("StayingInVenue")){
+                Place p = (Place)t.getList_of_pids().get(0);
+                long arrive = p.getSp().getArrive();
+                long leave = p.getSp().getLeave();
+                ArrayList<Photo> photos = helper.getPhotosInInterval(arrive,leave);
+                if (photos!=null) {
+                    for (Photo photo : photos) {
+                        Task task = new Task();
+                        task.setPid(photo);
+                        task.setName("TakePictures");
+                        task.setOid(photo.getId());
+                        ScriptDefinition sd = helper.getScriptDefinition("attendEatingOutEvent","restaurant");
+                        Script script = new Script();
+                        script.setScriptDefinition(sd);
+                        task.setScript(script);
+                        task.setTaskDefinition(new TaskDefinition("TakePictures"));
+                        newTasks.add(task);
+                    }
+                }
+
+            }
+        }
+        return newTasks;
     }
 
     public List<Task> eliminateCommonTasks(List<Task> tasks){
@@ -746,6 +778,12 @@ public class RestaurantsFragment extends Fragment {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
+            }else if (task.getList_of_pids()!=null) {
+                try {
+                    extractedDate = sdf.parse(sdf.format(((Place) task.getList_of_pids().get(0)).getSp().getArrive()));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
 
             if(extractedDate!=null) {
@@ -768,15 +806,17 @@ public class RestaurantsFragment extends Fragment {
         for (Date date: hashMap.keySet()){
             boolean isTransaction=false;
             boolean isEvent=false;
+            boolean isGps=false;
 
-            ArrayList<Task> list = new ArrayList<Task>();
+
+            ArrayList<Task> list = new ArrayList<>();
             for(int i=0;i<hashMap.get(date).size();i++){
                 if (hashMap.get(date).get(i).getPid() instanceof Transaction){
                     if(!isTransaction){
                         isTransaction=true;
                         list.add(hashMap.get(date).get(i));
                     }else{
-                        ArrayList<Task> list2 = new ArrayList<Task>();
+                        ArrayList<Task> list2 = new ArrayList<>();
                         list2.add(hashMap.get(date).get(i));
                         listofMergedTasks.add(list2);
                     }
@@ -785,7 +825,16 @@ public class RestaurantsFragment extends Fragment {
                         isEvent=true;
                         list.add(hashMap.get(date).get(i));
                     }else{
-                        ArrayList<Task> list2 = new ArrayList<Task>();
+                        ArrayList<Task> list2 = new ArrayList<>();
+                        list2.add(hashMap.get(date).get(i));
+                        listofMergedTasks.add(list2);
+                    }
+                }else if (hashMap.get(date).get(i).getList_of_pids().size()>0){
+                    if(!isGps){
+                        isGps=true;
+                        list.add(hashMap.get(date).get(i));
+                    }else{
+                        ArrayList<Task> list2 = new ArrayList<>();
                         list2.add(hashMap.get(date).get(i));
                         listofMergedTasks.add(list2);
                     }
@@ -796,6 +845,8 @@ public class RestaurantsFragment extends Fragment {
             listofMergedTasks.add(list);
             //listofMergedTasks.add(hashMap.get(date));
         }
+
+
 
         Log.d(TAG,"SIZE OF tasks AFTER merging by event date: " +listofMergedTasks.size());
 
