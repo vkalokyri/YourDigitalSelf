@@ -898,6 +898,7 @@ public class RestaurantsFragment extends Fragment {
                 }
 
                 if (when != null && whereList.size() != 0) {
+                    boolean added=false;
 
                     for (String where : whereList) {
                         String where_when = where + when;
@@ -910,6 +911,7 @@ public class RestaurantsFragment extends Fragment {
                             String where_when2 = where + plus2Days;
 
                             if (transactionsHashMap.containsKey(where_when)) {
+                                added=true;
                                 try {
                                     script = deleteLocalValuesInSuperscripts(script, where);
                                 } catch (IOException e) {
@@ -945,6 +947,7 @@ public class RestaurantsFragment extends Fragment {
                                 }
                                 break;
                             } else if (transactionsHashMap.containsKey(where_when1)) {
+                                added=true;
                                 try {
                                     script = deleteLocalValuesInSuperscripts(script, where);
                                 } catch (IOException e) {
@@ -980,6 +983,7 @@ public class RestaurantsFragment extends Fragment {
                                 }
                                 break;
                             } else if (transactionsHashMap.containsKey(where_when2)) {
+                                added=true;
                                 try {
                                     script = deleteLocalValuesInSuperscripts(script, where);
                                 } catch (IOException e) {
@@ -1025,6 +1029,10 @@ public class RestaurantsFragment extends Fragment {
                                 scriptHashMap.put(where_when, list);
                             }
                         }
+                    }
+                    if(!added){
+                        listofMergedScripts.add(script);
+
                     }
 
                 } else {
