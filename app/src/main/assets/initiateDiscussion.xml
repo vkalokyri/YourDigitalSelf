@@ -29,11 +29,20 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
     <where name="whereIsEmailEvent"/>
 </locals>
 </task>
+<task binding="Task" completionQuantity="1" startQuantity="1" name="SendEmail" id="SendTextMessage">
+    <locals>
+        <who name="whoIsIncludedInTheConversation"/>
+        <what name="whatWasMessageAbout"/>
+        <when name="whenMessageWasSent"/>
+        <when name="whenIsMessageEvent"/>
+        <where name="whereIsMessageEvent"/>
+    </locals>
+</task>
 <task binding="Task" completionQuantity="1" startQuantity="1" name="SendFacebookInboxMsg" id="SendFacebookInboxMsg">
 <locals>
     <who name="whoSentMessage"/>
     <who name="whoReceivedMessage"/>
-    <what name="whatMessageAbout"/>
+    <what name="whatWasMessageAbout"/>
     <when name="whenMessageWasSent"/>
     <when name="whenIsMessageEvent"/>
     <where name="whereIsMessageEvent"/>

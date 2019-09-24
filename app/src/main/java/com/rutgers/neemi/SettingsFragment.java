@@ -50,6 +50,20 @@ public class SettingsFragment extends Fragment {
     public ArrayList<ExpandListGroup> SetStandardGroups() {
         ArrayList<ExpandListGroup> list = new ArrayList<ExpandListGroup>();
         ArrayList<ExpandListChild> list2 = new ArrayList<ExpandListChild>();
+
+        ExpandListGroup gru6 = new ExpandListGroup();
+        gru6.setName("Phone data");
+        ExpandListChild ch6_1 = new ExpandListChild();
+        ch6_1.setName("Text Messages");
+        ch6_1.setImg(R.drawable.textmessages);
+        list2.add(ch6_1);
+        ExpandListChild ch6_2 = new ExpandListChild();
+        ch6_2.setName("Google Photos");
+        ch6_2.setImg(R.drawable.gphotos);
+        list2.add(ch6_2);
+        gru6.setItems(list2);
+
+        list2 = new ArrayList<>();
         ExpandListGroup gru1 = new ExpandListGroup();
         gru1.setName("Social Media");
         ExpandListChild ch1_1 = new ExpandListChild();
@@ -66,7 +80,7 @@ public class SettingsFragment extends Fragment {
         list2.add(ch1_3);
         gru1.setItems(list2);
 
-        list2 = new ArrayList<ExpandListChild>();
+        list2 = new ArrayList<>();
         ExpandListGroup gru2 = new ExpandListGroup();
         gru2.setName("Calendar");
         ExpandListChild ch2_1 = new ExpandListChild();
@@ -79,7 +93,7 @@ public class SettingsFragment extends Fragment {
         list2.add(ch2_2);
         gru2.setItems(list2);
 
-        list2 = new ArrayList<ExpandListChild>();
+        list2 = new ArrayList<>();
         ExpandListGroup gru3 = new ExpandListGroup();
         gru3.setName("Email");
         ExpandListChild ch3_1 = new ExpandListChild();
@@ -89,7 +103,7 @@ public class SettingsFragment extends Fragment {
         gru3.setItems(list2);
 
 
-        list2 = new ArrayList<ExpandListChild>();
+        list2 = new ArrayList<>();
         ExpandListGroup gru4 = new ExpandListGroup();
         gru4.setName("Bank transactions");
         ExpandListChild ch4_1 = new ExpandListChild();
@@ -102,7 +116,7 @@ public class SettingsFragment extends Fragment {
         list2.add(ch4_2);
         gru4.setItems(list2);
 
-        list2 = new ArrayList<ExpandListChild>();
+        list2 = new ArrayList<>();
         ExpandListGroup gru5 = new ExpandListGroup();
         gru5.setName("Location services");
         ExpandListChild ch5_1 = new ExpandListChild();
@@ -119,7 +133,7 @@ public class SettingsFragment extends Fragment {
         list2.add(ch5_3);
         gru5.setItems(list2);
 
-
+        list.add(gru6);
         list.add(gru1);
         list.add(gru2);
         list.add(gru3);
@@ -145,6 +159,18 @@ public class SettingsFragment extends Fragment {
             @Override
             public boolean onChildClick(ExpandableListView expandableListView, View view, int i, int i1, long l) {
                 String Selecteditem= ((ExpandListChild)ExpAdapter.getChild(i,i1)).getName();
+                if (Selecteditem.equalsIgnoreCase("Text Messages")){
+                    Intent myIntent = new Intent(getActivity(), SmsActivity.class);
+                    myIntent.putExtra("action", "sync");
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(myIntent);
+                }
+                if (Selecteditem.equalsIgnoreCase("Google Photos")){
+                    Intent myIntent = new Intent(getActivity(), GPhotosActivity.class);
+                    myIntent.putExtra("action", "sync");
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(myIntent);
+                }
                 if (Selecteditem.equalsIgnoreCase("Google Calendar")){
                     Intent myIntent = new Intent(getActivity(), GcalActivity.class);
                     myIntent.putExtra("action", "sync");

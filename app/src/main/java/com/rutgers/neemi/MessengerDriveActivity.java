@@ -433,6 +433,7 @@ public class MessengerDriveActivity extends AppCompatActivity {
                                             }
 
                                             message.setThread_id(thread_id);
+                                            message.setSource("messenger");
                                             helper.getMessageDao().create(message);
 
 //                                            try {
@@ -573,7 +574,7 @@ public class MessengerDriveActivity extends AppCompatActivity {
 
 
 
-    private class ExtractTimeTask extends AsyncTask<Void, Void, Boolean> {
+    public class ExtractTimeTask extends AsyncTask<Void, Void, Boolean> {
 
         Parser parser = new Parser();
 

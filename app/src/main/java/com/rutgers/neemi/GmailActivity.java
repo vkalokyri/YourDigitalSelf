@@ -995,7 +995,7 @@ public class GmailActivity extends AppCompatActivity implements EasyPermissions.
     }
 
 
-    @Override
+        @Override
         protected void onPreExecute() {
             mProgress.show();
         }

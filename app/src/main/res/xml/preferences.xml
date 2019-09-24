@@ -6,22 +6,6 @@
     android:background="@color/red">
 
     <PreferenceCategory
-        android:title="Phone device"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <CheckBoxPreference
-            android:key="sms"
-            android:title="SMS information"
-            android:defaultValue="false"
-            android:persistent="true"
-            android:icon="@drawable/fb_logo"
-            android:summaryOn="YourDigitalSelf was authorized to access your SMS information."
-            android:summaryOff="This option if selected will authorize the application to check SMS updates.">
-        </CheckBoxPreference>
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
         android:title="Social Media"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

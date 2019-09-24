@@ -25,6 +25,7 @@ import com.rutgers.neemi.DatabaseHelper;
 import com.rutgers.neemi.interfaces.Clues;
 import com.rutgers.neemi.interfaces.Triggers;
 import com.rutgers.neemi.interfaces.W5hLocals;
+import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Email;
 import com.rutgers.neemi.model.Event;
 import com.rutgers.neemi.model.Feed;
@@ -167,7 +168,15 @@ public class JsonLocals implements W5hLocals{
 							}
 						} if (objectClass.equalsIgnoreCase("Message")) {
 							if (attributeName.toString().equalsIgnoreCase("\"from\"")) {
-								localValues.add(((Message) pid).getFrom().getName());
+								if(((Message) pid).getFrom().getName()!=null && !((Message) pid).getFrom().getName().isEmpty()) {
+									localValues.add(((Message) pid).getFrom().getName());
+								}else if (((Message) pid).getFrom().getUsername()!=null) {
+										localValues.add(((Message) pid).getFrom().getUsername());
+								}else if (((Message) pid).getFrom().getEmail()!=null) {
+									localValues.add(((Message) pid).getFrom().getEmail());
+								}else if (((Message) pid).getFrom().getPhone()!=null) {
+									localValues.add(((Message) pid).getFrom().getPhone());
+								}
 							} else if (attributeName.toString().equalsIgnoreCase("\"to\"")) {
 								for (Person to : ((Message) pid).getTo()) {
 									if (to != null) {
@@ -215,6 +224,17 @@ public class JsonLocals implements W5hLocals{
 											localValues.add(p.getName());
 										} else {
 											localValues.add(p.getUsername());
+										}
+									}
+								} catch (SQLException e) {
+									e.printStackTrace();
+								}
+							}else if (attributeName.toString().equalsIgnoreCase("\"Category\"")) {
+								try {
+									ArrayList<Category> categories = helper.getPhotoCategory(((Photo) pid).get_id());
+									for (Category c : categories) {
+										if (c.getCategoryName() != null) {
+											localValues.add(c.getCategoryName());
 										}
 									}
 								} catch (SQLException e) {

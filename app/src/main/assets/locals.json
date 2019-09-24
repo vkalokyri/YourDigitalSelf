@@ -99,6 +99,12 @@
 	"whatIsPhotoAbout":{
 		"Photo":"name"
 	},
+	"whatIsPictureAbout":{
+		"Photo":"Category"
+	},
+	"whenPictureWasTaken":{
+		"Photo":"created_time"
+	},
 	"whenWasPosted":{
 		"Feed":"created_time"
 	},
@@ -132,16 +138,22 @@
 	"whoUploadedThePhoto": {
 		"Photo":"creator_id"
 	},
+	"whoIsIncludedInTheConversation":{
+		"Message":"from"
+	},
+	"whatWasMessageAbout":{
+		"Message":"content"
+	},
 	"whoMadeTheReservation":"whoReceivedEmail",
 	"whenWasTheReservationMade":"whenWasSent",
 	"whenWasTheReservationScheduled ":"whenWasEvent",
 	"whenIsTheProposedEvent":["whenIsEmailEvent","whenIsMessageEvent","whenIsTheEvent"],
 	"whereWasTheReservationMade":"whereWasTheReservation",
 	"whoInitiatedTheConversation":["whoSentEmail","whoSentMessage"],
-	"whoWasIncludedInTheConversation":["whoReceivedEmail","whoWasCCed","whoWasBCCed","whoReceivedMessage"],
+	"whoWasIncludedInTheConversation":["whoReceivedEmail","whoWasCCed","whoWasBCCed","whoReceivedMessage","whoIsIncludedInTheConversation"],
 	"whenWasTheConversationInitiated":["whenWasSent","whenMessageWasSent"],
-	"whoAttended":["whoIsTheEventCreator","whoIsTheCreator","whoWillBeInTheEvent","whoSentEmail","whoReceivedMessage","whoReceivedEmail","whoWasCCed","whoWasBCCed","whoMadeThePost", "whoIsIncludedInPost", "whoCreatedEvent", "whoIsIncludedInPhoto"],
-	"whenEatingOccurred": ["whenIsEmailEvent","whenIsMessageEvent","whenPaid", "whenWasEvent","whenWasPosted","whenWasPhotoUploaded","whenTheEventStarts","whenTheEventEnds","whenWasTheStayInVenue"],
+	"whoAttended":["whoIsTheEventCreator","whoIsTheCreator","whoWillBeInTheEvent","whoSentEmail","whoReceivedMessage","whoReceivedEmail","whoWasCCed","whoWasBCCed","whoMadeThePost", "whoIsIncludedInPost", "whoCreatedEvent", "whoIsIncludedInPhoto","whoIsIncludedInTheConversation"],
+	"whenEatingOccurred": ["whenIsEmailEvent","whenIsMessageEvent","whenPaid", "whenWasEvent","whenWasPosted","whenWasPhotoUploaded","whenTheEventStarts","whenTheEventEnds","whenWasTheStayInVenue","whenPictureWasTaken"],
 	"whenTripOccurred":["whenIsEmailEvent","whenIsMessageEvent", "whenTheEventStarts","whenTheEventEnds", "whenWasEvent","whenIsEmailEvent","whenIsMessageEvent"],
 	"whereTripOccurred":[ "whereWasPosted", "whereIsTheEvent"],
 	"whenTripBooked":["whenPaid","whenEventWasCreated"],

@@ -29,6 +29,8 @@ public class Message implements Serializable{
         String content;
         @DatabaseField
         Date contentDate;
+        @DatabaseField
+        String source;
 
 
         ArrayList<Person> to = new ArrayList<>();
@@ -100,5 +102,13 @@ public class Message implements Serializable{
 
     public void setThread(String thread) {
         this.thread = thread;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }

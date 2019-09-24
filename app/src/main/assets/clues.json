@@ -87,7 +87,7 @@
 				"SendFacebookInboxMsg": {
 					"from": "Message",
 					"where": {
-						"or": {
+						"and": {
 							"content":	"KEYWORDS_FILE"
 						}
 					}
@@ -97,6 +97,14 @@
 					"where": {
 						"and": {
 							"title": "KEYWORDS_FILE"
+						}
+					}
+				},
+				"SendTextMessage": {
+					"from": "Message",
+					"where": {
+						"or": {
+							"content":	"KEYWORDS_FILE"
 						}
 					}
 				}
@@ -244,7 +252,20 @@
 							"StayPointHasPlaces.place_id" : "Place._id"
 						}
 					}
+				},
+				"TakePictures":{
+					"from": ["Photo", "PhotoHasCategory", "Category"],
+					"where": {
+						"and": {
+							"category": [
+								"FOOD"
+							],
+							"Photo._id": "PhotoHasCategory.photo_id",
+							"Category._id": "PhotoHasCategory.category_id"
+						}
+					}
 				}
+
 		}]
 	}
 

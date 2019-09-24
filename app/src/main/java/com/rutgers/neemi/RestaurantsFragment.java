@@ -228,7 +228,7 @@ public class RestaurantsFragment extends Fragment {
 
             });
 
-            listOfScripts.removeIf(n -> (n.getScore() < 0.3));
+           // listOfScripts.removeIf(n -> (n.getScore() < 0.3));
 
 
             CustomListAdapter adapter = new CustomListAdapter(getActivity(), listOfScripts, imgid);

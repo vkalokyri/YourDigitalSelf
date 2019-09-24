@@ -1,5 +1,5 @@
 #
-# generated on 2019/06/20 02:31:40
+# generated on 2019/09/23 05:25:51
 #
 # --table-start--
 dataClass=com.rutgers.neemi.model.Email
@@ -206,6 +206,10 @@ fieldName=isSelf
 # --field-start--
 fieldName=username
 columnName=username
+# --field-end--
+# --field-start--
+fieldName=phone
+columnName=phone
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -1016,6 +1020,9 @@ fieldName=content
 # --field-start--
 fieldName=contentDate
 # --field-end--
+# --field-start--
+fieldName=source
+# --field-end--
 # --table-fields-end--
 # --table-end--
 #################################
@@ -1057,6 +1064,31 @@ foreign=true
 foreignAutoRefresh=true
 maxForeignAutoRefreshLevel=2
 columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Place(_id) ON DELETE CASCADE
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=com.rutgers.neemi.model.PhotoHasCategory
+tableName=PhotoHasCategory
+# --table-fields-start--
+# --field-start--
+fieldName=_id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=photo
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Photo(_id) ON DELETE CASCADE
+# --field-end--
+# --field-start--
+fieldName=category
+foreign=true
+foreignAutoRefresh=true
+maxForeignAutoRefreshLevel=2
+columnDefinition=INTEGER CONSTRAINT FK_NAME REFERENCES Category(_id) ON DELETE CASCADE
 # --field-end--
 # --table-fields-end--
 # --table-end--

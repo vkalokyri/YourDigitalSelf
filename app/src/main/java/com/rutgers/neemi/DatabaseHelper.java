@@ -1,5 +1,6 @@
 package com.rutgers.neemi;
 
+import java.lang.ref.PhantomReference;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import com.rutgers.neemi.model.LocalProperties;
 import com.rutgers.neemi.model.Message;
 import com.rutgers.neemi.model.MessageHasPlaces;
 import com.rutgers.neemi.model.MessageParticipants;
+import com.rutgers.neemi.model.PhotoHasCategory;
 import com.rutgers.neemi.model.ScriptDefHasLocalProperties;
 import com.rutgers.neemi.model.ScriptLocalValues;
 import com.rutgers.neemi.model.ScriptDefHasTaskDef;
@@ -104,6 +106,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private RuntimeExceptionDao<Message, String> messageDao = null;
 	private RuntimeExceptionDao<MessageParticipants, String> messageParticipantsDao = null;
 	private RuntimeExceptionDao<MessageHasPlaces, String> messageHasPlacesDao = null;
+	private RuntimeExceptionDao<PhotoHasCategory, String> photoHasCategoriesDao = null;
 
 
 
@@ -173,6 +176,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, Message.class);
 			TableUtils.createTable(connectionSource, MessageParticipants.class);
 			TableUtils.createTable(connectionSource, MessageHasPlaces.class);
+			TableUtils.createTable(connectionSource, PhotoHasCategory.class);
+
 
 
 
@@ -245,6 +250,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.dropTable(connectionSource, Message.class, true);
 			TableUtils.dropTable(connectionSource, MessageParticipants.class, true);
 			TableUtils.dropTable(connectionSource, MessageHasPlaces.class, true);
+			TableUtils.dropTable(connectionSource, PhotoHasCategory.class, true);
 
 
 
@@ -534,6 +540,13 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		return  messageHasPlacesDao;
 	}
 
+	public RuntimeExceptionDao<PhotoHasCategory, String> getPhotoHasCategoryDao() {
+		if ( photoHasCategoriesDao == null) {
+			photoHasCategoriesDao = getRuntimeExceptionDao(PhotoHasCategory.class);
+		}
+		return  photoHasCategoriesDao;
+	}
+
 
 
 	/**
@@ -564,6 +577,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 		messageParticipantsDao = null;
 		messageDao = null;
 		messageHasPlacesDao=null;
+		photoHasCategoriesDao=null;
 	}
 
 
@@ -1209,7 +1223,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	public Category categoryExists(String name) {
 
 		QueryBuilder<Category, String> queryBuilder =
-				this.categoryRuntimeDao.queryBuilder();
+				this.getCategoryDao().queryBuilder();
 		Where<Category, String> where = queryBuilder.where();
 		try {
 			where.eq(Category.CATEGORY, name);
@@ -1266,6 +1280,27 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 						});
 
 		return (ArrayList<Person>)rawResults.getResults();
+
+	}
+
+	public ArrayList<Category> getPhotoCategory(int photo_id) throws SQLException {
+		RuntimeExceptionDao<Category, String> categoryDao = getCategoryDao();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT Category._id, Category.category from Category, PhotoHasCategory, Photo where Photo._id=");
+		sb.append(photo_id);
+		sb.append(" and Photo._id=PhotoHasCategory.photo_id and Category._id=PhotoHasCategory.category_id;");
+
+		GenericRawResults<Category> rawResults =
+				categoryDao.queryRaw(sb.toString(),
+						new RawRowMapper<Category>() {
+							public Category mapRow(String[] columnNames,
+												 String[] resultColumns) {
+								return new Category(Integer.parseInt((String)resultColumns[0]),(String)resultColumns[1]);
+							}
+						});
+
+		return (ArrayList<Category>)rawResults.getResults();
 
 	}
 

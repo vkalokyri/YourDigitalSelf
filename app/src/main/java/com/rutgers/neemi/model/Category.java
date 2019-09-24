@@ -23,6 +23,12 @@ public class Category implements Serializable {
     public Category() {
     }
 
+
+    public Category(int id, String categoryName) {
+        this._id=id;
+        this.categoryName=categoryName;
+    }
+
     public int get_id() {
         return _id;
     }

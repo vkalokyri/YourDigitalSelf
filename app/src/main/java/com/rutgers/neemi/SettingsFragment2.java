@@ -20,7 +20,6 @@ import android.view.ViewGroup;
 public class SettingsFragment2 extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
 
-    private CheckBoxPreference smsPreference;
     private CheckBoxPreference fbPreference;
     private CheckBoxPreference instagramPreference;
     private CheckBoxPreference gmailPreference;
@@ -111,7 +110,6 @@ public class SettingsFragment2 extends PreferenceFragment implements SharedPrefe
         instagramPreference.setSelectable(!isEnabled);
         //instagramPreference.setSelectable(!isEnabled);
 
-        smsPreference = (CheckBoxPreference) getPreferenceScreen().findPreference("sms");
         fbPreference = (CheckBoxPreference) getPreferenceScreen().findPreference("facebook");
         gmailPreference = (CheckBoxPreference) getPreferenceScreen().findPreference("gmail");
         gcalPreference = (CheckBoxPreference) getPreferenceScreen().findPreference("gcal");
@@ -157,13 +155,6 @@ public class SettingsFragment2 extends PreferenceFragment implements SharedPrefe
                 myIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 myIntent.putExtra(Intent.EXTRA_STREAM, Telephony.Sms.CONTENT_URI);
 
-                startActivity(myIntent);
-            }
-        }else if (key.equals("sms")) {
-            if (smsPreference.isChecked()) {
-                Intent myIntent = new Intent(getActivity(), GPhotosActivity.class);
-                myIntent.putExtra("action", "grant");
-                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(myIntent);
             }
         }else if (key.equals("facebook")) {

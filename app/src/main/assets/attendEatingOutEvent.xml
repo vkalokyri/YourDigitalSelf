@@ -23,7 +23,14 @@ targetNamespace="http://www.activiti.org/bpmn2.0">
         <where name="whereIsTheVenue"/>
     </locals>
 </task>
-<task binding="Task"  completionQuantity="1" startQuantity="1" name="TakePictures" id="TakePictures"/>
+<task binding="Task"  completionQuantity="1" startQuantity="1" name="TakePictures" id="TakePictures">
+    <locals>
+        <who name="whoIsInPicture"/>
+        <what name="whatIsPictureAbout"/>
+        <when name="whenPictureWasTaken"/>
+        <where name="wherePictureWasTaken"/>
+    </locals>
+</task>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="TakeVideo" id="TakeVideo"/>
 <task binding="Task"  completionQuantity="1" startQuantity="1" name="PostOnFacebook" id="PostOnFacebook">
 <locals>

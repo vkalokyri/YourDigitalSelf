@@ -396,7 +396,11 @@ public class ScriptFragment extends Fragment{
             //String text = "whoSent: "+((Email) childTask.getPid()).getFrom().getName()+" \n whoReceived: "+ sb.toString()+" \n whenSent: "+ ((Email) childTask.getPid()).getDate();
             txtListHeaderBody.setText(text);
         }else if(childTask.getPid() instanceof Message){
-            imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.messenger));
+            if(((Message) childTask.getPid()).getSource().equals("sms")){
+                imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.textmessages));
+            }else{
+                imageView.setImageDrawable(ContextCompat.getDrawable(getContext(),R.drawable.messenger));
+            }
             StringBuilder sb = new StringBuilder();
             for (Person p: ((Message) childTask.getPid()).getTo()){
                 if(p!=null) {
@@ -655,12 +659,15 @@ public class ScriptFragment extends Fragment{
         }else if(childTask.getPid() instanceof Photo) {
             if (((Photo) childTask.getPid()).getSource().equalsIgnoreCase("facebook")) {
                 imageView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.fb_logo));
-            }else{
+            }else if(((Photo) childTask.getPid()).getSource().equalsIgnoreCase("instagram")) {
                 imageView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.insta_logo));
+            }else if(((Photo) childTask.getPid()).getSource().equalsIgnoreCase("gphotos")) {
+                imageView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.gphotos));
             }
             txtListHeader.setText(((Photo) childTask.getPid()).getName());
-            txtListHeaderBody.setText(((Photo) childTask.getPid()).getCreator().getName());
-
+            if(!((Photo) childTask.getPid()).getSource().equalsIgnoreCase("gphotos")) {
+                txtListHeaderBody.setText(((Photo) childTask.getPid()).getCreator().getName());
+            }
             StringBuilder text = new StringBuilder();
             for(TaskLocalValues taskLocalValues : childTask.getLocalValues()){
                 if (taskLocalValues.getLocalProperties().getW5h_label().equalsIgnoreCase("when")){

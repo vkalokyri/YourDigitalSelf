@@ -2,6 +2,7 @@ package com.rutgers.neemi;
 
 import android.accounts.AccountManager;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -35,19 +36,32 @@ import com.google.photos.library.v1.proto.ContentCategory;
 import com.google.photos.library.v1.proto.ContentFilter;
 import com.google.photos.library.v1.proto.Filters;
 import com.google.photos.types.proto.MediaItem;
+import com.rutgers.neemi.model.Category;
 import com.rutgers.neemi.model.Photo;
+import com.rutgers.neemi.model.PhotoHasCategory;
+import com.rutgers.neemi.model.PhotoTags;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
+import javax.json.JsonObject;
 
 public class GPhotosActivity extends AppCompatActivity {
 
@@ -66,26 +80,35 @@ public class GPhotosActivity extends AppCompatActivity {
     public static String URL_EXTN_API_KEY = "&key=AIzaSyCwsSXnT_jN107mMLhz55vo7JKwREaflJQ";
     /** URL to the paginated next set of images */
     private String nextLink = null;
-    public static String JSON_FIELD_ITEMS = "items";
-    public static String JSON_FIELD_NEXT_LINK = "nextLink";
-    public static String JSON_FIELD_SELF_LINK = "selfLink";
-    public static String JSON_FIELD_TITLE = "title";
-    public static String JSON_FIELD_THUMBNAIL = "thumbnailLink";
+    public static String JSON_FIELD_ITEMS = "mediaItems";
+    public static String JSON_FIELD_NEXT_LINK = "nextPageToken";
     public static String JSON_FIELD_MIME_TYPE = "mimeType";
     public static String JSON_FIELD_MIME_IMG = "image";
-    private boolean endOfResultsDisplay = false;
     public static int currentPage = 1;
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    String frequency;
+    DatabaseHelper helper;
+    ProgressDialog mProgress;
+    Integer totalNbrOfPhotos=0;
 
 
     /** URLs and extensions required for the API calls */
-    public static String URL_FILES = "https://photoslibrary.googleapis.com/v1/mediaItems:search?alt:json";
+    public static String URL_FILES = "https://photoslibrary.googleapis.com/v1/mediaItems:search";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        helper=DatabaseHelper.getHelper(this);
+        mProgress = new ProgressDialog(this);
+        mProgress.setMessage("Getting your google photos. Please wait ...");
+
+
+
 
         setContentView(R.layout.activity_sms);
+        frequency = PreferenceManager.getDefaultSharedPreferences(this).getString("sync_frequency", "");
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -115,9 +138,9 @@ public class GPhotosActivity extends AppCompatActivity {
         String url = null;
         // If its the initial API inocation, construct the URL for Files API, else, use the 'nextLink'
         if(currentPage == 1) {
-            url = URL_FILES + URL_EXTN_API_KEY;
+            url = URL_FILES; //+ URL_EXTN_API_KEY;
         } else {
-            url = nextLink + URL_EXTN_API_KEY;
+            url = URL_FILES+"?pageToken="+nextLink; //+ URL_EXTN_API_KEY;
         }
         return url;
     }
@@ -133,46 +156,103 @@ public class GPhotosActivity extends AppCompatActivity {
 
         if (isDeviceOnline()) {
 
-            new AsyncTask<Void, Void, Void>() {
+            new AsyncTask<Void, Void, Integer>() {
+
+
                 @Override
-                protected Void doInBackground(Void... voids) {
-                    if(currentPage ==1 || (currentPage > 1 && isMoreAvailable())) {
-                        ArrayList<Photo> photoResults = new ArrayList<>();
-                        // get the photo search results
-                        try {
-                            photoResults = getPhotos(currentPage);
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                protected Integer doInBackground(Void... voids) {
+                    ArrayList<Photo> photoResults = new ArrayList<>();
+                    ArrayList<String> photoCategories = new ArrayList();
+                    photoCategories.add("FOOD");
+                    photoCategories.add("SELFIES");
+                    photoCategories.add("HOLIDAYS");
+                    photoCategories.add("PEOPLE");
+                    photoCategories.add("TRAVEL");
+                    photoCategories.add("SPORT");
+                    for(String category:photoCategories) {
+                        currentPage = 1;
+                        Log.d(TAG,category);
+                        while (currentPage == 1 || (currentPage > 1 && isMoreAvailable())) {
+                            // get the photo search results
+                            try {
+                                photoResults.addAll(getPhotos(currentPage, category));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            if (photoResults.size() > 0) {
+                                currentPage++;
+                            } else
+                                nextLink = null;
                         }
-                        if (photoResults.size() > 0) {
-                        }else
-                            endOfResultsDisplay = true;
-
-                        currentPage++;
-                    } else {
-                        endOfResultsDisplay = true;
                     }
-                    return null;
+                    totalNbrOfPhotos = totalNbrOfPhotos+photoResults.size();
+
+                    return photoResults.size();
                 }
 
                 @Override
-                protected void onPostExecute(Void aVoid) {
-
+                protected void onPostExecute(Integer result) {
+                    mProgress.dismiss();
+                    Intent myIntent = new Intent(getApplicationContext(), MainActivity.class);
+                    myIntent.putExtra("key", "gphotos");
+                    myIntent.putExtra("items", totalNbrOfPhotos);
+                    myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(myIntent);
                 }
+
+
+
             }.execute();
+
         } else {
             Toast.makeText(this, "Device not online", Toast.LENGTH_LONG).show();
-
         }
 
     }
 
-    public ArrayList<Photo> getPhotos(int currentPage) throws IOException {
+    public Calendar getCalendarDate(String period){
+        Calendar cal = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+
+        if (period.equals("7")){
+            cal.add(Calendar.DATE, -7);
+        }else if(period.equals("30")){
+            cal.add(Calendar.MONTH, -1);
+        }else if(period.equals("180")){
+            cal.add(Calendar.MONTH, -3);
+        }else if(period.equals("365")){
+            cal.add(Calendar.MONTH, -12);
+        }else if(period.equals("1")){
+            cal.add(Calendar.DATE, -1);
+        }
+        cal.add(Calendar.MONTH, -1);
+        return cal;
+    }
+
+    public ArrayList<Photo> getPhotos(int currentPage, String category) throws IOException {
 
 
         ArrayList<Photo> photos = new ArrayList<>();
 
-        String serverResponse = fetchFromServer(getUrl(currentPage));
+        Calendar since = getCalendarDate(frequency);
+        Calendar now = Calendar.getInstance(Calendar.getInstance().getTimeZone());
+
+        String serverResponse = fetchFromServer(getUrl(currentPage),category,since,now);
+        photos.addAll(parseResponse(serverResponse,category));
+
+        return photos;
+    }
+
+    private ArrayList<Photo> parseResponse(String serverResponse, String contentFilter){
+
+        ArrayList<Photo> photos = new ArrayList<>();
+        Category category = new Category();
+        category.setCategoryName(contentFilter);
+        Category c = helper.categoryExists(contentFilter);
+        if (c==null){
+            helper.getCategoryDao().create(category);
+        }else{
+            category=c;
+        }
 
         if (!serverResponse.isEmpty()) {
             try {
@@ -198,37 +278,89 @@ public class GPhotosActivity extends AppCompatActivity {
                     mimeType = jObj.getString(JSON_FIELD_MIME_TYPE);
                     if(null != mimeType && mimeType.startsWith(JSON_FIELD_MIME_IMG)) {
                         Photo photo = new Photo();
-                        photo.setName(jObj.getString(JSON_FIELD_TITLE));
-                        photo.setLink(jObj.getString(JSON_FIELD_THUMBNAIL));
+                        photo.setName(jObj.getString("filename"));
+                        photo.setLink(jObj.getString("productUrl"));
+                        JSONObject metadata = jObj.getJSONObject("mediaMetadata");
+                        String date = metadata.getString("creationTime");
+                        photo.setId(jObj.getString("id"));
+                        photo.setCreated_time(dateFormat.parse(date).getTime());
+                        photo.setSource("gphotos");
                         photos.add(photo);
+                        helper.getPhotoDao().create(photo);
+                        PhotoHasCategory photoCategory = new PhotoHasCategory(photo,category);
+                        helper.getPhotoHasCategoryDao().create(photoCategory);
                     }
                 }
-
             } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
-
         return photos;
     }
 
 
-
-    private String fetchFromServer(String strURL) {
+    private String fetchFromServer(String strURL, String category, Calendar since, Calendar now) {
         StringBuffer response = new StringBuffer();
         HttpURLConnection urlConnection = null;
+
         System.err.println(strURL);
         String line = "";
 
         try {
             URL url = new URL(strURL);
             urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+
             try {
                 // Add the AuthToken to header
                 urlConnection.setRequestProperty (HEADER_NAME_AUTH,
                         HEADER_AUTH_VAL_PRFX + googleAuthToken);
+
+                JSONObject allFilters = new JSONObject();
+                JSONObject filters = new JSONObject();
+                JSONObject ranges = new JSONObject();
+                JSONArray rangeArray=new JSONArray();
+                JSONObject startDateValues=new JSONObject();
+                JSONObject endDateValues=new JSONObject();
+                JSONObject dates = new JSONObject();
+                JSONObject includedContentCategories = new JSONObject();
+                JSONArray categories=new JSONArray();
+
+                startDateValues.put("day",since.get(Calendar.DAY_OF_MONTH));
+                startDateValues.put("month",since.get(Calendar.MONTH)+1);
+                startDateValues.put("year",since.get(Calendar.YEAR));
+
+                endDateValues.put("day",now.get(Calendar.DAY_OF_MONTH));
+                endDateValues.put("month",now.get(Calendar.MONTH)+1);
+                endDateValues.put("year",now.get(Calendar.YEAR));
+
+                dates.put("startDate",startDateValues);
+                dates.put("endDate",endDateValues);
+
+                rangeArray.put(0,dates);
+                ranges.put("ranges",rangeArray);
+
+                categories.put(category);
+                includedContentCategories.put("includedContentCategories",categories);
+
+                allFilters.put("dateFilter",ranges);
+                allFilters.put("contentFilter",includedContentCategories);
+
+                filters.put("filters",allFilters);
+                filters.put("pageSize",100);
+
+                urlConnection.setDoOutput(true);
+                DataOutputStream wr = new DataOutputStream(urlConnection.getOutputStream());
+                wr.writeBytes(filters.toString());
+                wr.flush();
+                wr.close();
+
+
             } catch (Exception e) {
-                Log.e(TAG+"dfghjk",e.getMessage());
+                Log.e(TAG,e.getMessage());
             }
             InputStream in;
             int status = urlConnection.getResponseCode();
@@ -252,8 +384,6 @@ public class GPhotosActivity extends AppCompatActivity {
 
         return response.toString();
     }
-
-
 
 
 
@@ -327,6 +457,9 @@ public class GPhotosActivity extends AppCompatActivity {
     }
 
 
+
+
+
     private void fetchAuthToken() {
         if (accountName != null) {
             SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
@@ -335,10 +468,11 @@ public class GPhotosActivity extends AppCompatActivity {
             editor.commit();
 
             if (isDeviceOnline()) {
-                new AsyncTask(){
+                new AsyncTask<Void, Void, Integer>() {
+
 
                     @Override
-                    protected Object doInBackground(Object[] objects) {
+                    protected Integer doInBackground(Void... voids) {
                         try {
                             Log.d(TAG,"Requesting token for account: " +
                                     accountName);
@@ -347,6 +481,7 @@ public class GPhotosActivity extends AppCompatActivity {
 
                             Log.d(TAG, "Received Token: " + googleAuthToken);
                             fetchAndShowImages();
+
                         } catch (IOException e) {
                             Log.e(TAG, e.getMessage());
                             e.printStackTrace();
@@ -356,8 +491,19 @@ public class GPhotosActivity extends AppCompatActivity {
                             Log.e(TAG, e.getMessage());
                             e.printStackTrace();
                         }
-                        return null;
+
+                        return null;                    }
+
+                    @Override
+                    protected void onPreExecute() {
+                        mProgress.show();
                     }
+
+
+
+
+
+
                 }.execute();
             } else {
                 Toast.makeText(this, "Device not online", Toast.LENGTH_LONG).show();
