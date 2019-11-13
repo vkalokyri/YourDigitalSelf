@@ -1274,7 +1274,12 @@ public class RestaurantsFragment extends Fragment {
                 } else {
                     if (previous_thread_id != null) {
                         ArrayList<Task> list = mergeTasksByThread.get(previous_thread_id);
-                        list.add(task);
+                        if (list!=null) {
+                            list.add(task);
+                        }else{
+                            list=new ArrayList<Task>();
+                            list.add(task);
+                        }
                         mergeTasksByThread.put(previous_thread_id, list);
                     } else {
                         tasklist.add(task);

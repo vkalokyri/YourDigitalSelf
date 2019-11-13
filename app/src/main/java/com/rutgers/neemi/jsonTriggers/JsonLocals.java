@@ -94,7 +94,9 @@ public class JsonLocals implements W5hLocals{
 		JsonObject jsonObject = jsonReader.readObject();
 		ArrayList<String> localValues = new ArrayList<String>();
 
-		JsonObject localObject = jsonObject.getJsonObject(local);
+		try {
+			JsonObject localObject = jsonObject.getJsonObject(local);
+
 		if (localObject!=null){
 			for (String objectClass: localObject.keySet()){
 				Object pid = task.getPid();
@@ -339,6 +341,9 @@ public class JsonLocals implements W5hLocals{
 					}
 				}
 			}
+		}
+		}catch(Exception e){
+
 		}
 		return localValues;
 
