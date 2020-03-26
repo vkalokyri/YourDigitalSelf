@@ -1,8 +1,6 @@
 # YourDigitalSelf - Android app
 > A Personal Digital Trace Integration Tool.
 
-[![NPM Version][npm-image]][npm-url]
-
 ## About
 YourDigitalSelf is an Android mobile device application that gathers and integrates personal digital traces into coherent groupings that share a common theme, task or goal. This app is used as the basis to retrieve personal digital data originating from various sources to be used to implement and evaluate our research in the DigitalSelf project, through user studies and surveys. It can also act as a standalone user interface to help users navigate through their own personal digital traces in order to make sense of their data and individual patterns as well as to provide them with narrative views of their digital memories.
 
@@ -46,8 +44,6 @@ The services that are currently supported by the app are (you can select which o
 ## Meta
 
 Valia Kalokyri – vkalokyri@gmail.com
-
-Distributed under the XYZ license. See ``LICENSE`` for more information.
 
 [https://github.com/vkalokyri/]
 
