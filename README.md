@@ -10,7 +10,9 @@ You can download YourDigitalSelf app in your Android mobile device, and see the 
 
 It is important to stress that YourDigitalSelf keeps all data on the user’s device and therefore guarantees full privacy.
 
-![](header.png)
+![](restaurantsFull.png)
+![](tripsFull.png)
+
 
 ## Installation
 
