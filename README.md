@@ -1,32 +1,27 @@
-# YourDigitalSelf
-> A personal digital trace integration tool.
+# YourDigitalSelf - Android app
+> A Personal Digital Trace Integration Tool.
 
 [![NPM Version][npm-image]][npm-url]
-[![Build Status][travis-image]][travis-url]
 
+## About
 YourDigitalSelf is an Android mobile device application that gathers and integrates personal digital traces into coherent groupings that share a common theme, task or goal. This app is used as the basis to retrieve personal digital data originating from various sources to be used to implement and evaluate our research in the DigitalSelf project, through user studies and surveys. It can also act as a standalone user interface to help users navigate through their own personal digital traces in order to make sense of their data and individual patterns as well as to provide them with narrative views of their digital memories.
 
-You can download YourDigitalSelf app in your Android mobile device, and see the results of our instantiation algorithms on a variety of real-life scripts. 
+You can download YourDigitalSelf app in your Android mobile device, and see the results of our instantiation algorithms on a variety of real-life scripts. You can download the .apk from [here](https://github.com/yourdigitalself/YourDigitalSelfApp/releases).
 
 It is important to stress that YourDigitalSelf keeps all data on the user’s device and therefore guarantees full privacy.
 
+## Screenshots
 ![](restaurantsFull.png)
 ![](tripsFull.png)
 
 
 ## Installation
 
-OS X & Linux:
+Android:
 
-```sh
-npm install my-crazy-module --save
-```
+You can download the .apk directly to your phone from [here](https://github.com/yourdigitalself/YourDigitalSelfApp/releases).
 
-Windows:
 
-```sh
-edit autoexec.bat
-```
 
 ## Usage example
 
@@ -43,36 +38,36 @@ make install
 npm test
 ```
 
-## Release History
+## Permissions
 
-* 0.2.1
-    * CHANGE: Update docs (module code remains unchanged)
-* 0.2.0
-    * CHANGE: Remove `setDefaultXYZ()`
-    * ADD: Add `init()`
-* 0.1.1
-    * FIX: Crash when calling `baz()` (Thanks @GenerousContributorName!)
-* 0.1.0
-    * The first proper release
-    * CHANGE: Rename `foo()` to `bar()`
-* 0.0.1
-    * Work in progress
+YourDigitalSelf requires the following permissions:
+
+- Full Network Access.
+- Run at startup.
+- Read and write access to phone's storage.
+
+The services that are currently supported by the app are (you can select which ones you want to include in the app):
+- Gmail
+- Google Calendar
+- Plaid (for all major bank institutions)
+- Facebook
+- Instagram
+- Phone text messages
+- Google Drive
+- Messenger (by downloading them manually and inserting the data through GDrive)
+- Google Maps Location History (by downloading them manually and inserting the data through GDrive)
+- Phone location services
+
 
 ## Meta
 
-Your Name – [@YourTwitter](https://twitter.com/dbader_org) – YourEmail@example.com
+Valia Kalokyri – vkalokyri@gmail.com
 
 Distributed under the XYZ license. See ``LICENSE`` for more information.
 
-[https://github.com/yourname/github-link](https://github.com/dbader/)
+[https://github.com/vkalokyri/]
 
-## Contributing
 
-1. Fork it (<https://github.com/yourname/yourproject/fork>)
-2. Create your feature branch (`git checkout -b feature/fooBar`)
-3. Commit your changes (`git commit -am 'Add some fooBar'`)
-4. Push to the branch (`git push origin feature/fooBar`)
-5. Create a new Pull Request
 
 <!-- Markdown link & img dfn's -->
 [npm-image]: https://img.shields.io/npm/v/datadog-metrics.svg?style=flat-square
