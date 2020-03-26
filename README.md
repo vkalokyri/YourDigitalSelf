@@ -51,7 +51,10 @@ Distributed under the XYZ license. See ``LICENSE`` for more information.
 
 [https://github.com/vkalokyri/]
 
+## License
 
+This application is released under GNU GPLv3 (see [LICENSE](LICENSE)).
+Some of the used libraries are released under different licenses.
 
 <!-- Markdown link & img dfn's -->
 [npm-image]: https://img.shields.io/npm/v/datadog-metrics.svg?style=flat-square
